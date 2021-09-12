@@ -7,21 +7,12 @@ const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD
 const enmap = require('enmap');
 const fetch = require('node-fetch');
 
-const { token, prefix } = require('./config.json');
+const { token } = require('./config.json');
+
+let defaultPrefix = "!"
 //const bot = new Discord.Client();
 
 
-let ratingRoles = [
-    { 'id': '886639565492858920', 'rating': 0 },
-    { 'id': '886639501064142880', 'rating': 800 },
-    { 'id': '886639444294270997', 'rating': 1000 },
-    { 'id': '886639227863961680', 'rating': 1200 },
-    { 'id': '886639255609307187', 'rating': 1400 },
-    { 'id': '886639297904656444', 'rating': 1600 },
-    { 'id': '886639335468826664', 'rating': 1800 },
-    { 'id': '886639353185595422', 'rating': 2000 },
-    { 'id': '886639368285069322', 'rating': 2200 },
-];
 const settings = new enmap({
     name: "settings",
     autoFetch: true,
@@ -33,12 +24,16 @@ const settings = new enmap({
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
-    client.user.setActivity(`${prefix}info`, { type: `WATCHING` });
+    client.user.setActivity(`Mention me to find the prefix`, { type: `WATCHING` });
 });
 
 // Messages without the prefix
 client.on('message', async message => {
     if (message.author.bot) return;
+
+    let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
+
+    if (prefix === undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) === 0) return;
    
@@ -49,7 +44,9 @@ client.on('message', async message => {
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
-        if (timestamp === undefined || timestamp + 100 * 1000 < Date.now())
+        let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+
+        if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles !== undefined && ratingRoles.length > 0)
         {
             settings.set(`last-updated-${message.author.id}`, Date.now())
             let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
@@ -123,7 +120,7 @@ client.on('message', async message => {
 
 				highestRating = Math.max(lichessHighestRating, bulletRating, blitzRating, rapidRating)
 			}
-			
+
 			let highestRole = ratingRoles[0];
 
 			let rolesToRemove = []
@@ -150,13 +147,92 @@ client.on('message', async message => {
 // Messages with the prefix
 client.on('message', async message => {
     if (message.author.bot) return;
+
+    let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
+
+    if (prefix === undefined) prefix = defaultPrefix
+
     if (message.content.indexOf(prefix) !== 0) return;
 
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
 
-    if (command == "lichess") {
+        if (command == "prefix")
+        {
+            if (!message.member.permissions.has("ADMINISTRATOR"))
+            {
+                return message.reply("Access Denied")
+            }
+
+            else if (args[0].length > 5)
+            {
+                return message.reply("Prefix cannot exceed 5 characters!")
+            }
+
+            settings.set(`guild-prefix-${message.guild.id}`, args[0])
+            message.reply('Prefix was successfully set to `' + args[0] + '`')
+        }
+        else if(command == "addelo")
+        {
+            if (args.length < 2) {
+                return message.reply(`${prefix}addelo [elo] [@role]`)
+            }
+            else if (message.mentions.roles.size != 1)
+            {
+                return message.reply(`${prefix}addelo [elo] [@role]`)
+            }
+
+            let elo = args[0]
+
+
+
+            let template = []
+
+            template.id = message.mentions.roles.first().id
+            template.rating = elo
+
+
+            await settings.set(`guild-elo-roles-${message.guild.id}`, template.toString())
+
+            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+
+            console.log(' a' + roles.toString())
+            message.reply(`Success.`)
+
+        }
+        else if (command == "getelo") {
+
+            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`, 'id')
+
+            if (roles === undefined)
+                roles = []
+
+            else
+                console.log(' a' + roles)
+
+            let msgToSend = ""
+
+            for (let i = 0; i < roles.length; i++)
+            {
+                msgToSend = msgToSend + "<@" + roles[i].id + "> ( " + roles[i].rating + " ELO ) \n "
+            }
+
+            if (msgToSend == "")
+            {
+                msgToSend = "None."
+            }
+            const embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(msgToSend)
+
+            message.reply({ embeds: [embed] })
+
+        }
+        else if (command == "resetelo") {
+           settings.delete(`guild-elo-roles-${message.guild.id}`)
+        }
+        else if (command == "lichess") {
         //deleteMessageAfterTime(message, 2000);
 
         if (args[0]) {

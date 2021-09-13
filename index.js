@@ -252,7 +252,7 @@ client.on('message', async message => {
             }
 
             settings.delete(`guild-elo-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all elo related roles! To undo:\n` + '```' + msgToSend + '```')
+            message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
         }
         else if (command == "lichess") {
         //deleteMessageAfterTime(message, 2000);

@@ -46,7 +46,7 @@ client.on('message', async message => {
 
         let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-        if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles !== undefined && ratingRoles.length > 0)
+        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now()) && ratingRoles !== undefined && ratingRoles.length > 0)
         {
             settings.set(`last-updated-${message.author.id}`, Date.now())
             let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
@@ -160,7 +160,10 @@ client.on('message', async message => {
     let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
     if (ratingRoles === undefined)
+    {
         settings.set(`guild-elo-roles-${message.guild.id}`, [])
+        ratingRoles = []
+    }
 
         if (command == "prefix")
         {
@@ -182,30 +185,31 @@ client.on('message', async message => {
             if (!message.member.permissions.has("ADMINISTRATOR")) {
                 return message.reply("Access Denied")
             }
-            else if (args.length < 2) {
-                return message.reply(`${prefix}addelo [elo] [@role]`)
+            else if (args.length == 0 || args.length % 2 != 0) {
+                return message.reply(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
             }
-            else if (message.mentions.roles.size != 1)
+
+            let msgToSend = ""
+
+
+
+            for (let i = 0; i < (args.length / 2); i++)
             {
-                return message.reply(`${prefix}addelo [elo] [@role]`)
+                let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+
+                let result = 'Could not find role'
+
+                if(role)
+                    result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+
+                msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
             }
 
-            let elo = args[0]
-
-            for (let i = 0; i < ratingRoles.length; i++)
-            {
-                if (ratingRoles[i].id == message.mentions.roles.first().id)
-                    return message.reply(`This role was already added to the bot!`)
+            if (msgToSend == "") {
+                msgToSend = "Internal Error, Cringe :("
             }
 
-            let template = { id: message.mentions.roles.first().id, rating: elo };
-
-            settings.push(`guild-elo-roles-${message.guild.id}`, template)
-
-            let lorem = await settings.get(`guild-elo-roles-${message.guild.id}`)
-
-            message.reply(`Success.`)
-
+            message.reply(msgToSend)
         }
         else if (command == "getelo") {
 
@@ -213,25 +217,18 @@ client.on('message', async message => {
                 return message.reply("Access Denied")
             }
 
-            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`)
-
-            if (roles === undefined)
-                roles = []
-
-            else
-                console.log(' a' + roles)
-
             let msgToSend = ""
 
-            for (let i = 0; i < roles.length; i++)
+            for (let i = 0; i < ratingRoles.length; i++)
             {
-                msgToSend = msgToSend + "<@&" + roles[i].id + "> ( " + roles[i].rating + " ELO ) \n "
+                msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
             }
 
             if (msgToSend == "")
             {
                 msgToSend = "None."
             }
+
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(msgToSend)
@@ -244,8 +241,18 @@ client.on('message', async message => {
                 return message.reply("Access Denied")
             }
 
+            let msgToSend = "!addelo "
+
+            for (let i = 0; i < ratingRoles.length; i++) {
+                msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
+            }
+
+            if (msgToSend == "!addelo ") {
+                msgToSend = "Nothing was even deleted to undo..."
+            }
+
             settings.delete(`guild-elo-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all elo related roles!`)
+            message.reply(`Successfully reset all elo related roles! To undo:\n` + '```' + msgToSend + '```')
         }
         else if (command == "lichess") {
         //deleteMessageAfterTime(message, 2000);
@@ -380,3 +387,32 @@ async function deleteMessageAfterTime(message, time)
         catch {}
     }, time);
 }
+
+function getRoleFromMentionString(guild, str) {
+    if (!str) return;
+
+    if (str.startsWith('<@&') && str.endsWith('>')) {
+        str = str.slice(3, -1);
+
+        if (str.startsWith('!')) {
+            str = str.slice(1);
+        }
+
+        return guild.roles.cache.get(str);
+    }
+}
+
+function addEloCommand(message, ratingRoles, role, elo) {
+    for (let i = 0; i < ratingRoles.length; i++) {
+        if (ratingRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, rating: elo };
+
+    settings.push(`guild-elo-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+// !addelo 0 @0+ 200 @200+ 400 @400+ 600 @600+ 800 @800+ 1000 @1000+ 1200 @1200+ 1400 @1400+ 

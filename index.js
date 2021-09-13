@@ -157,6 +157,10 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
 
+    let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+
+    if (ratingRoles === undefined)
+        settings.set(`guild-elo-roles-${message.guild.id}`, [])
 
         if (command == "prefix")
         {
@@ -175,7 +179,10 @@ client.on('message', async message => {
         }
         else if(command == "addelo")
         {
-            if (args.length < 2) {
+            if (!message.member.permissions.has("ADMINISTRATOR")) {
+                return message.reply("Access Denied")
+            }
+            else if (args.length < 2) {
                 return message.reply(`${prefix}addelo [elo] [@role]`)
             }
             else if (message.mentions.roles.size != 1)
@@ -185,22 +192,28 @@ client.on('message', async message => {
 
             let elo = args[0]
 
+            for (let i = 0; i < ratingRoles.length; i++)
+            {
+                if (ratingRoles[i].id == message.mentions.roles.first().id)
+                    return message.reply(`This role was already added to the bot!`)
+            }
 
+            let template = { id: message.mentions.roles.first().id, rating: elo };
 
-            let template = {}
+            settings.push(`guild-elo-roles-${message.guild.id}`, template)
 
-            template.id = message.mentions.roles.first().id
-            template.rating = elo
-
-
-             settings.push(`guild-elo-roles-${message.guild.id}`, template)
+            let lorem = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
             message.reply(`Success.`)
 
         }
         else if (command == "getelo") {
 
-            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`, 'id')
+            if (!message.member.permissions.has("ADMINISTRATOR")) {
+                return message.reply("Access Denied")
+            }
+
+            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
             if (roles === undefined)
                 roles = []
@@ -212,7 +225,7 @@ client.on('message', async message => {
 
             for (let i = 0; i < roles.length; i++)
             {
-                msgToSend = msgToSend + "<@" + roles[i].id + "> ( " + roles[i].rating + " ELO ) \n "
+                msgToSend = msgToSend + "<@&" + roles[i].id + "> ( " + roles[i].rating + " ELO ) \n "
             }
 
             if (msgToSend == "")
@@ -227,7 +240,12 @@ client.on('message', async message => {
 
         }
         else if (command == "resetelo") {
-           settings.delete(`guild-elo-roles-${message.guild.id}`)
+            if (!message.member.permissions.has("ADMINISTRATOR")) {
+                return message.reply("Access Denied")
+            }
+
+            settings.delete(`guild-elo-roles-${message.guild.id}`)
+            message.reply(`Successfully reset all elo related roles!`)
         }
         else if (command == "lichess") {
         //deleteMessageAfterTime(message, 2000);

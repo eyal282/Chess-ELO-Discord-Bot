@@ -2,3 +2,5 @@ config.json
 data/
 .vs/
 *.bat
+.vs/slnx.sqlite
+.vs/Chess-ELO-Discord-Bot/v16/.suo

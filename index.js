@@ -177,8 +177,16 @@ client.on('message', async message => {
                 return message.reply("Prefix cannot exceed 5 characters!")
             }
 
+            else if (!message.mentions.has(client.user)) {
+                return message.reply(`To avoid double changing prefixes, use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
+            }
+
             settings.set(`guild-prefix-${message.guild.id}`, args[0])
             message.reply('Prefix was successfully set to `' + args[0] + '`')
+        }
+        else if (command == "help") {
+            message.reply(`${prefix}addelo [elo] [@role] ---> Adds a new role milestone\n
+            ${prefix}prefix [prefix] ---> Changes the bot's `)
         }
         else if(command == "addelo")
         {

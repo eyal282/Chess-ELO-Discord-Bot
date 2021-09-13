@@ -187,17 +187,14 @@ client.on('message', async message => {
 
 
 
-            let template = []
+            let template = {}
 
             template.id = message.mentions.roles.first().id
             template.rating = elo
 
 
-            await settings.set(`guild-elo-roles-${message.guild.id}`, template.toString())
+             settings.push(`guild-elo-roles-${message.guild.id}`, template)
 
-            let roles = await settings.get(`guild-elo-roles-${message.guild.id}`)
-
-            console.log(' a' + roles.toString())
             message.reply(`Success.`)
 
         }

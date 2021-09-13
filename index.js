@@ -36,8 +36,8 @@ client.on('message', async message => {
     if (prefix === undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) === 0) return;
-   
-    if (message.mentions.has(client.user)) {
+
+    if (message.mentions.has(client.user) && message.mentions.users.size == 1) {
         message.reply('Prefix is `' + prefix + '`')
     }
     else
@@ -46,9 +46,17 @@ client.on('message', async message => {
 
         let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now()) && ratingRoles !== undefined && ratingRoles.length > 0)
+
+        if (ratingRoles === undefined)
+        {
+            settings.set(`guild-elo-roles-${message.guild.id}`, [])
+            ratingRoles = []
+        }
+
+        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now()) && ratingRoles.length > 0)
         {
             settings.set(`last-updated-${message.author.id}`, Date.now())
+
             let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
 			let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
 
@@ -165,147 +173,169 @@ client.on('message', async message => {
         ratingRoles = []
     }
 
-        if (command == "prefix")
+    if (command == "prefix")
+    {
+        if (!message.member.permissions.has("ADMINISTRATOR"))
         {
-            if (!message.member.permissions.has("ADMINISTRATOR"))
-            {
-                return message.reply("Access Denied")
-            }
-
-            else if (args[0].length > 5)
-            {
-                return message.reply("Prefix cannot exceed 5 characters!")
-            }
-
-            else if (!message.mentions.has(client.user)) {
-                return message.reply(`To avoid double changing prefixes, use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
-            }
-
-            settings.set(`guild-prefix-${message.guild.id}`, args[0])
-            message.reply('Prefix was successfully set to `' + args[0] + '`')
+            return message.reply("Access Denied")
         }
-        else if (command == "help") {
-            message.reply(`${prefix}addelo [elo] [@role] ---> Adds a new role milestone\n
-            ${prefix}prefix [prefix] ---> Changes the bot's `)
-        }
-        else if(command == "addelo")
+
+        else if (args[0].length > 5)
         {
-            if (!message.member.permissions.has("ADMINISTRATOR")) {
-                return message.reply("Access Denied")
-            }
-            else if (args.length == 0 || args.length % 2 != 0) {
-                return message.reply(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
-            }
-
-            let msgToSend = ""
-
-
-
-            for (let i = 0; i < (args.length / 2); i++)
-            {
-                let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
-
-                let result = 'Could not find role'
-
-                if(role)
-                    result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
-
-                msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-            }
-
-            if (msgToSend == "") {
-                msgToSend = "Internal Error, Cringe :("
-            }
-
-            message.reply(msgToSend)
+            return message.reply("Prefix cannot exceed 5 characters!")
         }
-        else if (command == "getelo") {
 
-            if (!message.member.permissions.has("ADMINISTRATOR")) {
-                return message.reply("Access Denied")
-            }
-
-            let msgToSend = ""
-
-            for (let i = 0; i < ratingRoles.length; i++)
-            {
-                msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
-            }
-
-            if (msgToSend == "")
-            {
-                msgToSend = "None."
-            }
-
-            const embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(msgToSend)
-
-            message.reply({ embeds: [embed] })
-
+        else if (!message.mentions.has(client.user) || message.mentions.users.size != 1) {
+            return message.reply(`To avoid double changing prefixes, use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
         }
-        else if (command == "resetelo") {
-            if (!message.member.permissions.has("ADMINISTRATOR")) {
-                return message.reply("Access Denied")
-            }
 
-            let msgToSend = "!addelo "
+        settings.set(`guild-prefix-${message.guild.id}`, args[0])
+        message.reply('Prefix was successfully set to `' + args[0] + '`')
+    }
+    else if (command == "help")
+    {
+        let result = ""
 
-            for (let i = 0; i < ratingRoles.length; i++) {
-                msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
-            }
+        result = addCommandToHelp(result, prefix, `lichess [user] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
+        result = addCommandToHelp(result, prefix, `chess [user] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
+        result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
+        result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
+        result = addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
+        result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
 
-            if (msgToSend == "!addelo ") {
-                msgToSend = "Nothing was even deleted to undo..."
-            }
+        message.reply(result)
+    }
+    else if(command == "addelo")
+    {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else if (args.length == 0 || args.length % 2 != 0) {
+            return message.reply(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
+        }
+
+        let msgToSend = ""
+
+
+
+        for (let i = 0; i < (args.length / 2); i++)
+        {
+            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+
+            let result = 'Could not find role'
+
+            if(role)
+                result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+
+            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "Internal Error, Cringe :("
+        }
+
+        message.reply(msgToSend)
+    }
+    else if (command == "getelo") {
+
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+
+        let msgToSend = ""
+
+        for (let i = 0; i < ratingRoles.length; i++)
+        {
+            msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
+        }
+
+        if (msgToSend == "")
+        {
+            msgToSend = "None."
+        }
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(msgToSend)
+
+        message.reply({ embeds: [embed] })
+
+    }
+    else if (command == "resetelo") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+
+        let msgToSend = `${prefix}addelo `
+
+        for (let i = 0; i < ratingRoles.length; i++) {
+            msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
+        }
+
+        if (msgToSend == `${prefix}addelo `) {
+            message.reply(`There were no role milestones to delete.`)
+        }
+        else {
 
             settings.delete(`guild-elo-roles-${message.guild.id}`)
             message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
         }
-        else if (command == "lichess") {
-        //deleteMessageAfterTime(message, 2000);
+    }
+    else if (command == "lichess") {
+    //deleteMessageAfterTime(message, 2000);
 
         if (args[0]) {
 
-            let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
-                if (response.status == 404) { // Not Found
-                    return null
-                }
-                else if (response.status == 429) { // Rate Limit
-                    return "Rate Limit"
-                }
-                else if (response.status == 200) { // Status OK
-                    return response.json()
-                }
-            })
-
-            if (result == null) {
-                message.reply("User was not found!")
+            if (ratingRoles.length == 0)
+            {
+                return message.reply('The server has yet to setup any rating role milestones')
             }
-            else if (result == "Rate Limit") {
-                message.reply("Rate Limit Encountered! Please try again!")
-            }
-            else {
-                // result.profile.location
-                let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
+            let timestamp = await settings.get(`last-command-${message.author.id}`)
 
-               
-                if (result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                    settings.set(`lichess-account-of-${message.author.id}`, result.username)
+            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now())) {
+                settings.set(`last-command-${message.author.id}`, Date.now())
 
-                    const embed = new MessageEmbed()
-                        .setColor('#0099ff')
-                        .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
+                let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
+                    if (response.status == 404) { // Not Found
+                        return null
+                    }
+                    else if (response.status == 429) { // Rate Limit
+                        return "Rate Limit"
+                    }
+                    else if (response.status == 200) { // Status OK
+                        return response.json()
+                    }
+                })
 
-                    message.reply({ embeds: [embed] })
-
+                if (result == null) {
+                    message.reply("User was not found!")
+                }
+                else if (result == "Rate Limit") {
+                    message.reply("Rate Limit Encountered! Please try again!")
                 }
                 else {
-                    const embed = new MessageEmbed()
-                        .setColor('#0099ff')
-                        .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+                    // result.profile.location
+                    let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-                    message.reply({ embeds: [embed] })
+
+                    if (result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+                        settings.set(`lichess-account-of-${message.author.id}`, result.username)
+
+                        const embed = new MessageEmbed()
+                            .setColor('#0099ff')
+                            .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
+
+                        message.reply({ embeds: [embed] })
+
+                    }
+                    else {
+                        const embed = new MessageEmbed()
+                            .setColor('#0099ff')
+                            .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+
+                        message.reply({ embeds: [embed] })
+                    }
                 }
             }
         }
@@ -324,47 +354,54 @@ client.on('message', async message => {
     }
 	else if (command == "chess") {
         //deleteMessageAfterTime(message, 2000);
-
+        if (ratingRoles.length == 0) {
+            return message.reply('The server has yet to setup any rating role milestones')
+        }
         if (args[0]) {
 
-            let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
-                if (response.status == 404) { // Not Found
-                    return null
+            let timestamp = await settings.get(`last-command-${message.author.id}`)
+
+            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
+                settings.set(`last-command-${message.author.id}`, Date.now())
+                let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
+                    if (response.status == 404) { // Not Found
+                        return null
+                    }
+                    else if (response.status == 429) { // Rate Limit
+                        return "Rate Limit"
+                    }
+                    else if (response.status == 200) { // Status OK
+                        return response.json()
+                    }
+                })
+
+                if (result == null) {
+                    message.reply("User was not found!")
                 }
-                else if (response.status == 429) { // Rate Limit
-                    return "Rate Limit"
-                }
-                else if (response.status == 200) { // Status OK
-                    return response.json()
-                }
-            })
-
-            if (result == null) {
-                message.reply("User was not found!")
-            }
-            else if (result == "Rate Limit") {
-                message.reply("Rate Limit Encountered! Please try again!")
-            }
-            else {
-                // result.profile.location
-                let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
-
-                if (result.location && fullDiscordUsername == result.location) {
-                    settings.set(`chesscom-account-of-${message.author.id}`, result.username)
-
-                    const embed = new MessageEmbed()
-                        .setColor('#0099ff')
-                        .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
-
-                    message.reply({ embeds: [embed] })
-
+                else if (result == "Rate Limit") {
+                    message.reply("Rate Limit Encountered! Please try again!")
                 }
                 else {
-                    const embed = new MessageEmbed()
-                        .setColor('#0099ff')
-                        .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
+                    // result.profile.location
+                    let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-                    message.reply({ embeds: [embed] })
+                    if (result.location && fullDiscordUsername == result.location) {
+                        settings.set(`chesscom-account-of-${message.author.id}`, result.username)
+
+                        const embed = new MessageEmbed()
+                            .setColor('#0099ff')
+                            .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
+
+                        message.reply({ embeds: [embed] })
+
+                    }
+                    else {
+                        const embed = new MessageEmbed()
+                            .setColor('#0099ff')
+                            .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
+
+                        message.reply({ embeds: [embed] })
+                    }
                 }
             }
         }
@@ -379,7 +416,6 @@ client.on('message', async message => {
             message.reply({ embeds: [embed] })
         }
     }
-
 });
 
 client.login(token);
@@ -423,4 +459,6 @@ function addEloCommand(message, ratingRoles, role, elo) {
     return `Success.`
 }
 
-// !addelo 0 @0+ 200 @200+ 400 @400+ 600 @600+ 800 @800+ 1000 @1000+ 1200 @1200+ 1400 @1400+ 
+function addCommandToHelp(result, prefix, commandData) {
+    return result + prefix + commandData + '\n'
+}

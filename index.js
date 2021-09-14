@@ -173,6 +173,13 @@ client.on('message', async message => {
         ratingRoles = []
     }
 
+    let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+
+    if (ratingRoles === undefined) {
+        settings.set(`guild-elo-roles-${message.guild.id}`, [])
+        ratingRoles = []
+    }
+
 
     else if (command == "help")
     {
@@ -182,8 +189,11 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
         result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
         result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
+        result = addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
         result = addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
+        result = addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
+        result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
 
         message.reply(result)
     }
@@ -399,6 +409,7 @@ client.on('message', async message => {
         message.reply({ embeds: [embed] })
 
     }
+
     else if (command == "resetelo") {
         if (!message.member.permissions.has("ADMINISTRATOR")) {
             return message.reply("Access Denied")
@@ -420,7 +431,78 @@ client.on('message', async message => {
             message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
         }
     }
-   
+    else if (command == "addtitle") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else if (args.length == 0 || args.length % 2 != 0) {
+            return message.reply(`${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`)
+        }
+
+        let msgToSend = ""
+
+        for (let i = 0; i < (args.length / 2); i++) {
+            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+
+            let result = 'Could not find role'
+
+            if (role)
+                result = addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+
+            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "Internal Error, Cringe :("
+        }
+
+        message.reply(msgToSend)
+    }
+    else if (command == "gettitle") {
+
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+
+        let msgToSend = ""
+
+        for (let i = 0; i < ratingRoles.length; i++) {
+            msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "None."
+        }
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(msgToSend)
+
+        message.reply({ embeds: [embed] })
+
+    }
+
+    else if (command == "resetelo") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+
+        let msgToSend = `${prefix}addelo `
+
+        for (let i = 0; i < ratingRoles.length; i++) {
+            msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
+        }
+
+        if (msgToSend == `${prefix}addelo `) {
+            message.reply(`There were no role milestones to delete.`)
+        }
+        else {
+
+            settings.delete(`guild-elo-roles-${message.guild.id}`)
+            message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+        }
+    }
 });
 
 client.login(token);
@@ -460,6 +542,19 @@ function addEloCommand(message, ratingRoles, role, elo) {
     let template = { id: role.id, rating: elo };
 
     settings.push(`guild-elo-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+function addTitleCommand(message, titleRoles, role, title) {
+    for (let i = 0; i < titleRoles.length; i++) {
+        if (titleRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, title: title };
+
+    settings.push(`guild-title-roles-${message.guild.id}`, template)
 
     return `Success.`
 }

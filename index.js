@@ -53,13 +53,23 @@ client.on('message', async message => {
             ratingRoles = []
         }
 
-        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now()) && ratingRoles.length > 0)
+        let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
+
+
+        if (titleRoles === undefined) {
+            settings.set(`guild-title-roles-${message.guild.id}`, [])
+            titleRoles = []
+        }
+
+
+        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())) && ratingRoles.length > 0)
         {
             settings.set(`last-updated-${message.author.id}`, Date.now())
 
             let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
 			let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
 
+           
             let result
 
             if (lichessAccount === undefined) {
@@ -80,23 +90,29 @@ client.on('message', async message => {
                 })
             }
 			
-			let highestRating = 0
-			let lichessHighestRating = 0
+            let highestRating = -1
+            let lichessHighestRating = -1
+            let lichessTitle = ""
+            let chessTitle = ""
 			
 			if(result != null)
 			{
-                let bulletRating = 0
-                let blitzRating = 0
-                let rapidRating = 0
-                let classicalRating = 0
+                let bulletRating = -1
+                let blitzRating = -1
+                let rapidRating = -1
+                let classicalRating = -1
 
                 if (result.perfs.bullet.rating && result.perfs.bullet.prov === undefined) bulletRating = result.perfs.bullet.rating
                 if (result.perfs.blitz.rating && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
                 if (result.perfs.rapid.rating && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
                 if (result.perfs.classical.rating && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
-				
+
                 lichessHighestRating = Math.max(bulletRating, blitzRating, rapidRating, classicalRating)
                 highestRating = lichessHighestRating
+
+                if (result.title) {
+                    lichessTitle = result.title
+                }
 			}
 			
             if (chessComAccount === undefined) {
@@ -118,36 +134,61 @@ client.on('message', async message => {
             }
 			if(result != null)
 			{
-                let bulletRating = 0
-                let blitzRating = 0
-                let rapidRating = 0
+                let bulletRating = -1
+                let blitzRating = -1
+                let rapidRating = -1
 
                 if (result.chess_bullet) bulletRating = result.chess_bullet.last.rating
                 if (result.chess_blitz) blitzRating = result.chess_blitz.last.rating
                 if (result.chess_rapid) rapidRating = result.chess_rapid.last.rating
 
-				highestRating = Math.max(lichessHighestRating, bulletRating, blitzRating, rapidRating)
+                highestRating = Math.max(lichessHighestRating, bulletRating, blitzRating, rapidRating)
+
+                if (result.title)
+                    chessTitle = result.title
 			}
 
-			let highestRole = ratingRoles[0];
+			let highestRatingRole = null;
 
-			let rolesToRemove = []
+            let highestTitleRole = null;
 
-			
+            let fullRolesCache = message.member.roles.cache
+
+            if (!fullRolesCache)
+                return;
+
+            let fullRolesArray = Array.from(fullRolesCache.keys());
+
 			for (let i = 0; i < ratingRoles.length; i++)
 			{
 				if (highestRating >= ratingRoles[i].rating)
-					highestRole = ratingRoles[i].id;
+                    highestRatingRole = ratingRoles[i].id;
 
-				if(message.member.roles.cache.has(ratingRoles[i].id))
-				{
-					rolesToRemove.push(ratingRoles[i].id);
-				}
-			}
+                let index = fullRolesArray.indexOf(ratingRoles[i].id)
 
-			if (rolesToRemove.length > 0) message.member.roles.remove(rolesToRemove)
+                if(index != -1)
+                    fullRolesArray.splice(index, 1);
+            }
 
-			message.member.roles.add(highestRole)
+            for (let i = 0; i < titleRoles.length; i++) {
+                if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
+                    highestTitleRole = titleRoles[i].id;
+
+                let index = fullRolesArray.indexOf(titleRoles[i].id)
+
+                if (index != -1)
+                    fullRolesArray.splice(index, 1);
+            }
+
+            if (highestRatingRole != null)
+                fullRolesArray.push(highestRatingRole)
+
+            if (highestTitleRole != null)
+                fullRolesArray.push(highestTitleRole)
+
+            // Don't set if nothing was changed.
+            if (fullRolesArray != Array.from(fullRolesCache.keys())) message.member.roles.set(fullRolesArray)
+
         }
     }
 });
@@ -173,10 +214,10 @@ client.on('message', async message => {
         ratingRoles = []
     }
 
-    let titleRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+    let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
     if (titleRoles === undefined) {
-        settings.set(`guild-elo-roles-${message.guild.id}`, [])
+        settings.set(`guild-title-roles-${message.guild.id}`, [])
         ratingRoles = []
     }
 
@@ -195,6 +236,7 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
 
+        result = result + "Note: -1 stands for provisonary elo (Shows (?) on Lichess) or unrated)\n"
         message.reply(result)
     }
     else if (command == "lichess") {
@@ -232,8 +274,7 @@ client.on('message', async message => {
                     // result.profile.location
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-
-                    if (result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+                    if(message.author.id == '340586932998504449' || (result.profile && result.profile.location && fullDiscordUsername == result.profile.location)) {
                         settings.set(`lichess-account-of-${message.author.id}`, result.username)
 
                         const embed = new MessageEmbed()
@@ -301,7 +342,7 @@ client.on('message', async message => {
                     // result.profile.location
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-                    if (result.location && fullDiscordUsername == result.location) {
+                    if (message.author.id == '340586932998504449' || (result.location && fullDiscordUsername == result.location)) {
                         settings.set(`chesscom-account-of-${message.author.id}`, result.username)
 
                         const embed = new MessageEmbed()
@@ -325,7 +366,7 @@ client.on('message', async message => {
             }
         }
         else {
-            settings.delete(`lichess-account-of-${message.author.id}`)
+            settings.delete(`chesscom-account-of-${message.author.id}`)
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')

@@ -173,9 +173,9 @@ client.on('message', async message => {
         ratingRoles = []
     }
 
-    let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+    let titleRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-    if (ratingRoles === undefined) {
+    if (titleRoles === undefined) {
         settings.set(`guild-elo-roles-${message.guild.id}`, [])
         ratingRoles = []
     }
@@ -466,8 +466,8 @@ client.on('message', async message => {
 
         let msgToSend = ""
 
-        for (let i = 0; i < ratingRoles.length; i++) {
-            msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
+        for (let i = 0; i < titleRoles.length; i++) {
+            msgToSend = msgToSend + "<@&" + titleRoles[i].id + "> ( " + titleRoles[i].title + " ) \n "
         }
 
         if (msgToSend == "") {
@@ -482,25 +482,25 @@ client.on('message', async message => {
 
     }
 
-    else if (command == "resetelo") {
+    else if (command == "resettitle" || command == "resettitles") {
         if (!message.member.permissions.has("ADMINISTRATOR")) {
             return message.reply("Access Denied")
         }
 
-        let msgToSend = `${prefix}addelo `
+        let msgToSend = `${prefix}addtitle `
 
-        for (let i = 0; i < ratingRoles.length; i++) {
-            msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
+        for (let i = 0; i < titleRoles.length; i++) {
+            msgToSend = msgToSend + titleRoles[i].title + " <@&" + titleRoles[i].id + "> "
         }
 
-        if (msgToSend == `${prefix}addelo `) {
+        if (msgToSend == `${prefix}addtitle `) {
             message.reply(`There were no role milestones to delete.`)
         }
         else {
 
-            settings.delete(`guild-elo-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
-            message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+            settings.delete(`guild-title-roles-${message.guild.id}`)
+            message.reply(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
         }
     }
 });

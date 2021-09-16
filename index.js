@@ -2,6 +2,8 @@ const Discord = require('discord.js');
 const { MessageEmbed } = require('discord.js');
 const { Permissions } = require('discord.js');
 
+// To do: Puzzle ratings, remove bullet, complete segregation of Chess.com and Lichess.org.
+
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const enmap = require('enmap');

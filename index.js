@@ -1,17 +1,24 @@
 const Discord = require('discord.js');
 const { MessageEmbed } = require('discord.js');
 const { Permissions } = require('discord.js');
+const Parser = require('expr-eval').Parser;
 
-// To do: Puzzle ratings, remove bullet, complete segregation of Chess.com and Lichess.org.
+
+// To do: Puzzle ratings
 
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const enmap = require('enmap');
 const fetch = require('node-fetch');
 
+
 const { token } = require('./config.json');
 
 let defaultPrefix = "!"
+
+let Constant_lichessDefaultRatingEquation = "x"
+let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
+let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
 
@@ -55,6 +62,8 @@ client.on('message', async message => {
             ratingRoles = []
         }
 
+        ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+
         let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
 
@@ -63,6 +72,30 @@ client.on('message', async message => {
             titleRoles = []
         }
 
+        let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
+
+        if (lichessRatingEquation === undefined) {
+            settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+            lichessRatingEquation = Constant_lichessDefaultRatingEquation
+        }
+
+        let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
+
+        if (chessComRatingEquation === undefined) {
+            settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+            chessComRatingEquation = Constant_chessComDefaultRatingEquation
+        }
+
+        try {
+            Parser.evaluate(lichessRatingEquation, { x: 1000 })
+            Parser.evaluate(lichessRatingEquation, { x: 0 })
+            Parser.evaluate(lichessRatingEquation, { x: -1 })
+
+            Parser.evaluate(chessComRatingEquation, { x: 1000 })
+            Parser.evaluate(chessComRatingEquation, { x: 0 })
+            Parser.evaluate(chessComRatingEquation, { x: -1 })
+        }
+        catch {}
 
         if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())) && ratingRoles.length > 0)
         {
@@ -94,22 +127,38 @@ client.on('message', async message => {
 			
             let highestRating = -1
             let lichessHighestRating = -1
+            let lichessPuzzleRating = -1
             let lichessTitle = ""
             let chessTitle = ""
 			
 			if(result != null)
-			{
-                let bulletRating = -1
+            {
+                let corresRating = -1
                 let blitzRating = -1
                 let rapidRating = -1
                 let classicalRating = -1
 
-                if (result.perfs.bullet.rating && result.perfs.bullet.prov === undefined) bulletRating = result.perfs.bullet.rating
-                if (result.perfs.blitz.rating && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
-                if (result.perfs.rapid.rating && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
-                if (result.perfs.classical.rating && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
+                let puzzleRating = -1
 
-                lichessHighestRating = Math.max(bulletRating, blitzRating, rapidRating, classicalRating)
+                if (result.perfs.correspondence && result.perfs.correspondence.prov === undefined) corresRating = result.perfs.correspondence.rating
+                if (result.perfs.blitz && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
+                if (result.perfs.rapid && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
+                if (result.perfs.classical && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
+
+                if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzle = result.perfs.puzzle.rating
+
+                lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
+                lichessPuzzleRating = puzzleRating
+
+                let value = lichessHighestRating
+
+                try {
+                    value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
+                }
+
+                catch { console.log(error)}
+
+                lichessHighestRating = value
                 highestRating = lichessHighestRating
 
                 if (result.title) {
@@ -136,15 +185,28 @@ client.on('message', async message => {
             }
 			if(result != null)
 			{
-                let bulletRating = -1
+                let corresRating = -1
                 let blitzRating = -1
                 let rapidRating = -1
 
-                if (result.chess_bullet) bulletRating = result.chess_bullet.last.rating
-                if (result.chess_blitz) blitzRating = result.chess_blitz.last.rating
-                if (result.chess_rapid) rapidRating = result.chess_rapid.last.rating
+                let puzzleRating = -1
 
-                highestRating = Math.max(lichessHighestRating, bulletRating, blitzRating, rapidRating)
+                if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
+                if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+                if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+
+                if (result.tactics) puzzleRating = result.tactics.highest.rating
+
+                let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
+
+                let value = chessComHighestRating
+
+                try {
+                    value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
+                }
+                catch {}
+                chessComHighestRating = value
+                highestRating = Math.max(lichessHighestRating, chessComHighestRating)
 
                 if (result.title)
                     chessTitle = result.title
@@ -223,6 +285,19 @@ client.on('message', async message => {
         ratingRoles = []
     }
 
+    let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
+
+    if (lichessRatingEquation === undefined) {
+        settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+        lichessRatingEquation = Constant_lichessDefaultRatingEquation
+    }
+
+    let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
+
+    if (chessComRatingEquation === undefined) {
+        settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+        chessComRatingEquation = Constant_chessComDefaultRatingEquation
+    }
 
     else if (command == "help")
     {
@@ -237,8 +312,11 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
+        result = addCommandToHelp(result, prefix, `lichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `chessequation --->Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
 
-        result = result + "Note: -1 stands for provisonary elo (Shows (?) on Lichess) or unrated)\n"
+        result = result + "Note: -1 ELO stands for provisonary elo (Shows (?) on Lichess) or unrated)\n"
+        result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
         message.reply(result)
     }
     else if (command == "lichess") {
@@ -428,11 +506,6 @@ client.on('message', async message => {
         message.reply(msgToSend)
     }
     else if (command == "getelo") {
-
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
-            return message.reply("Access Denied")
-        }
-
         let msgToSend = ""
 
         for (let i = 0; i < ratingRoles.length; i++)
@@ -502,11 +575,6 @@ client.on('message', async message => {
         message.reply(msgToSend)
     }
     else if (command == "gettitle") {
-
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
-            return message.reply("Access Denied")
-        }
-
         let msgToSend = ""
 
         for (let i = 0; i < titleRoles.length; i++) {
@@ -544,6 +612,83 @@ client.on('message', async message => {
             settings.delete(`guild-title-roles-${message.guild.id}`)
             message.reply(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
             message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+        }
+    }
+
+    else if (command == "lichessequation") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else {
+            if (args.length == 0)
+            {
+                settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+
+                message.reply(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+
+                return;
+            }
+
+            let argString = ""
+
+            for (let i = 0; i < args.length; i++) {
+
+                argString + " " + args[i]
+            }
+
+            argString = argString.trim()
+
+            try {
+                Parser.evaluate(argString, { x: 1000 })
+                Parser.evaluate(argString, { x: 0 })
+                Parser.evaluate(argString, { x: -1 })
+            }
+            catch (error) {
+                message.reply(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+
+                return;
+            }
+
+            settings.set(`guild-lichess-rating-equation-${message.guild.id}`, argString)
+            message.reply(`Successfully set Lichess rating equation to: ${argString}`)
+        }
+    }
+
+    else if (command == "chessequation") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else {
+            if (args.length == 0) {
+                settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+
+                message.reply(`Successfully reset Chess.com rating equation to default: ${Constant_chessComDefaultRatingEquation}`)
+
+                return;
+            }
+
+            let argString = ""
+
+            for (let i = 0; i < args.length; i++) {
+
+                argString = argString + " " + args[i]
+            }
+
+            argString = argString.trim()
+
+            try {
+                Parser.evaluate(argString, { x: 1000 })
+                Parser.evaluate(argString, { x: 0 })
+                Parser.evaluate(argString, { x: -1 })
+            }
+            catch(error) {
+                message.reply(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+
+                return;
+            }
+
+            settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, argString)
+            message.reply(`Successfully set Chess.com rating equation to: ${argString}`)
         }
     }
 });

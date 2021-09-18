@@ -1,5 +1,5 @@
 config.json
+node_modules/
 data/
 .vs/
-.vs/slnx.sqlite
-.vs/Chess-ELO-Discord-Bot/v16/.suo
+

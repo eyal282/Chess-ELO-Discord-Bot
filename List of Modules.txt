@@ -1,0 +1,8 @@
+Each should be run seperately, with cmd.exe being run as admin.
+
+npm install discord.js
+npm install node-fetch@2
+npm install expr-eval
+npm install -g --add-python-to-path --vs2015 --production windows-build-tools
+npm install -g node-gyp@latest
+npm install enmap

@@ -455,6 +455,121 @@ client.on('message', async message => {
             message.reply({ embeds: [embed] })
         }
     }
+	else if (command == "forcelichess") {
+        //deleteMessageAfterTime(message, 2000);
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        if (args[0]) {
+
+            if (ratingRoles.length == 0) {
+                return message.reply('The server has yet to setup any rating role milestones')
+            }
+			
+			if (message.mentions.users.size != 1) {
+                message.reply(`${prefix}forcelichess [username] [@user]`)
+            }
+
+            let target = message.mentions.users.first()
+            
+            let timestamp = await settings.get(`last-command-${message.author.id}`)
+
+            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now())) {
+                settings.set(`last-command-${message.author.id}`, Date.now())
+
+                let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
+                    if (response.status == 404) { // Not Found
+                        return null
+                    }
+                    else if (response.status == 429) { // Rate Limit
+                        return "Rate Limit"
+                    }
+                    else if (response.status == 200) { // Status OK
+                        return response.json()
+                    }
+                })
+
+                if (result == null) {
+                    message.reply("User was not found!")
+                }
+                else if (result == "Rate Limit") {
+                    message.reply("Rate Limit Encountered! Please try again!")
+                }
+                else {
+					console.log("a")
+                    settings.set(`lichess-account-of-${target.id}`, result.username)
+
+                    const embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Successfully linked [Lichess Profile](${result.url}) for ${target}`)
+
+                    message.reply({ embeds: [embed] })
+                }
+            }
+            else {
+                message.reply("Rate Limit Encountered! Please try again!")
+            }
+        }
+        else {
+            message.reply(`${prefix}forcelichess [username] [@user]`)
+        }
+    }
+    else if (command == "forcechess") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        if (args[0]) {
+
+            if (ratingRoles.length == 0) {
+                return message.reply('The server has yet to setup any rating role milestones')
+            }
+			
+			if (message.mentions.users.size != 1) {
+                message.reply(`${prefix}forcechess [username] [@user]`)
+            }
+
+            let target = message.mentions.users.first()
+
+            let timestamp = await settings.get(`last-command-${message.author.id}`)
+
+            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
+                settings.set(`last-command-${message.author.id}`, Date.now())
+                let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
+                    if (response.status == 404) { // Not Found
+                        return null
+                    }
+                    else if (response.status == 429) { // Rate Limit
+                        return "Rate Limit"
+                    }
+                    else if (response.status == 200) { // Status OK
+                        return response.json()
+                    }
+                })
+
+                if (result == null) {
+                    message.reply("User was not found!")
+                }
+                else if (result == "Rate Limit") {
+                    message.reply("Rate Limit Encountered! Please try again!")
+                }
+                else {
+                    settings.set(`chesscom-account-of-${target.id}`, result.username)
+
+                    const embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Successfully linked [Chess.com Profile](${result.url}) for ${target}`)
+
+                    message.reply({ embeds: [embed] })
+                }
+            }
+            else {
+                message.reply("Rate Limit Encountered! Please try again!")
+            }
+        }
+        else {
+            message.reply(`${prefix}forcelichess [username] [@user]`)
+        }
+    }
     else if (command == "prefix")
     {
         if (!message.member.permissions.has("ADMINISTRATOR"))

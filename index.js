@@ -327,6 +327,7 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
         result = addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
         result = addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
+        result = addCommandToHelp(result, prefix, `getmod ---> Prints all the bot's moderators`)
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `lichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
@@ -830,16 +831,35 @@ client.on('message', async message => {
             return message.reply("Access Denied")
         }
         else {
-            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+            let role = getRoleFromMentionString(message.guild, args[0])
 
             if (!role)
             {
                 return message.reply(`$(prefix}addmod [@role]`)
             }
 
-            settings.push(`guild-bot-mods-${message.guild.id}`, role)
+            settings.push(`guild-bot-mods-${message.guild.id}`, role.id)
             message.reply(`Successfully added the role as a moderator for this bot.`)
         }
+    }
+
+    else if (command == "getmod" || command == "getmods") {
+        let msgToSend = ""
+
+        for (let i = 0; i < modRoles.length; i++) {
+            msgToSend = msgToSend + "<@&" + modRoles[i] + "> \n "
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "None."
+        }
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(msgToSend)
+
+        message.reply({ embeds: [embed] })
+
     }
 
     else if (command == "resetmod" || command == "resetmods") {

@@ -32,7 +32,10 @@ const settings = new enmap({
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
-
+	
+	const Guilds = client.guilds.cache.map(guild => guild.id);
+    console.log(Guilds);
+	
     client.user.setActivity(`Mention me to find the prefix`, { type: `WATCHING` });
 });
 
@@ -496,7 +499,6 @@ client.on('message', async message => {
                     message.reply("Rate Limit Encountered! Please try again!")
                 }
                 else {
-					console.log("a")
                     settings.set(`lichess-account-of-${target.id}`, result.username)
 
                     const embed = new MessageEmbed()

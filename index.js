@@ -100,6 +100,13 @@ client.on('message', async message => {
         }
         catch {}
 
+        let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+
+        if (modRoles === undefined) {
+            settings.set(`guild-bot-mods-${message.guild.id}`, [])
+            modRoles = []
+        }
+
         if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())) && ratingRoles.length > 0)
         {
             settings.set(`last-updated-${message.author.id}`, Date.now())
@@ -302,6 +309,13 @@ client.on('message', async message => {
         chessComRatingEquation = Constant_chessComDefaultRatingEquation
     }
 
+    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+
+    if (modRoles === undefined) {
+        settings.set(`guild-bot-mods-${message.guild.id}`, [])
+        modRoles = []
+    }
+
     else if (command == "help")
     {
         let result = ""
@@ -316,9 +330,11 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `lichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `chessequation --->Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `chessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
+        result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
 
-        result = result + "Note: -1 ELO stands for provisonary elo (Shows (?) on Lichess) or unrated)\n"
+        result = result + "Note: -1 ELO stands for either unrated or  provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
         message.reply(result)
     }
@@ -460,7 +476,7 @@ client.on('message', async message => {
     }
 	else if (command == "forcelichess") {
         //deleteMessageAfterTime(message, 2000);
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         if (args[0]) {
@@ -517,7 +533,7 @@ client.on('message', async message => {
         }
     }
     else if (command == "forcechess") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         if (args[0]) {
@@ -574,7 +590,7 @@ client.on('message', async message => {
     }
     else if (command == "prefix")
     {
-        if (!message.member.permissions.has("ADMINISTRATOR"))
+        if (!isBotControlAdminByMessage(message)(message))
         {
             return message.reply("Access Denied")
         }
@@ -593,7 +609,7 @@ client.on('message', async message => {
     }
     else if(command == "addelo")
     {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -644,7 +660,7 @@ client.on('message', async message => {
     }
 
     else if (command == "resetelo") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
 
@@ -665,7 +681,7 @@ client.on('message', async message => {
         }
     }
     else if (command == "addtitle") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -711,7 +727,7 @@ client.on('message', async message => {
     }
 
     else if (command == "resettitle" || command == "resettitles") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
 
@@ -733,7 +749,7 @@ client.on('message', async message => {
     }
 
     else if (command == "lichessequation") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         else {
@@ -772,7 +788,7 @@ client.on('message', async message => {
     }
 
     else if (command == "chessequation") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!isBotControlAdminByMessage(message)(message)) {
             return message.reply("Access Denied")
         }
         else {
@@ -806,6 +822,34 @@ client.on('message', async message => {
 
             settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, argString)
             message.reply(`Successfully set Chess.com rating equation to: ${argString}`)
+        }
+    }
+
+    else if (command == "addmod") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else {
+            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+
+            if (!role)
+            {
+                return message.reply(`$(prefix}addmod [@role]`)
+            }
+
+            settings.push(`guild-bot-mods-${message.guild.id}`, role)
+            message.reply(`Successfully added the role as a moderator for this bot.`)
+        }
+    }
+
+    else if (command == "resetmod" || command == "resetmods") {
+        if (!message.member.permissions.has("ADMINISTRATOR")) {
+            return message.reply("Access Denied")
+        }
+        else {
+            
+            settings.delete(`guild-bot-mods-${message.guild.id}`)
+            message.reply(`Successfully removed all moderator roles from this bot.`)
         }
     }
 });
@@ -866,4 +910,21 @@ function addTitleCommand(message, titleRoles, role, title) {
 
 function addCommandToHelp(result, prefix, commandData) {
     return result + prefix + commandData + '\n'
+}
+
+async function isBotControlAdminByMessage(message) {
+    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+
+    if (message.member.permissions.has("ADMINISTRATOR"))
+        return true;
+
+
+    let roleCache = message.member.roles.cache
+
+    for (let i = 0; i < modRoles.length; i++) {
+        if(roleCache.has(modRoles[i]))
+            return true;
+    }
+
+    return false;
 }

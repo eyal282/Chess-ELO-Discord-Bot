@@ -1,10 +1,10 @@
 {
   "name": "ticketbot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Chess ELO Discord Bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,5 +13,9 @@
     "enmap": "^5.8.7",
     "expr-eval": "^2.0.2",
     "node-fetch": "^2.6.2"
-  }
+  },
+  "devDependencies": {
+    "node": "^16.9.1"
+  },
+  "keywords": []
 }

@@ -77,28 +77,42 @@ client.on('message', async message => {
                 titleRoles = []
             }
     
-            await message.guild.roles.fetch()
-            .then(roles => 
-                {
-                    for (let i = 0; i < ratingRoles.length; i++)
-                    {
-                        if (!roles.has(ratingRoles[i].id))
-                            ratingRoles.splice(i, 1)
-                    }
-        
-                    for (let i = 0; i < puzzleRatingRoles.length; i++)
-                    {
-                        if (!roles.has(puzzleRatingRoles[i].id))
-                            puzzleRatingRoles.splice(i, 1)
-                    }
-        
-                    for (let i = 0; i < titleRoles.length; i++) {
-                        if (!roles.has(titleRoles[i].id))
-                            titleRoles.splice(i, 1)
-                    }
-                })
-            .catch(console.error);
-    
+	   await message.guild.roles.fetch()
+	    .then(roles => 
+		{
+		    let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+
+		    if(highestBotRole)
+		    {
+			for (let i = 0; i < ratingRoles.length; i++)
+			{
+			    let role = roles.get(ratingRoles[i].id)
+
+			    // if role doesn't exist or is above bot.
+			    if (!role || highestBotRole.rawPosition < role.rawPosition)
+				ratingRoles.splice(i, 1)
+			}
+
+			for (let i = 0; i < puzzleRatingRoles.length; i++)
+			{
+			    let role = roles.get(puzzleRatingRoles[i].id)
+
+			    // if role doesn't exist or is above bot.
+			    if (!role || highestBotRole.rawPosition < role.rawPosition)
+			    puzzleRatingRoles.splice(i, 1)
+			}
+
+			for (let i = 0; i < titleRoles.length; i++) {
+			    let role = roles.get(titleRoles[i].id)
+
+			    // if role doesn't exist or is above bot.
+			    if (!role || highestBotRole.rawPosition < role.rawPosition)
+			    titleRoles.splice(i, 1)
+			}
+		    }
+		})
+	    .catch(console.error);
+
                 
             ratingRoles.sort(function (a, b) { return a.rating - b.rating });
             puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
@@ -378,7 +392,7 @@ client.on('message', async message => {
                 {
                     let role = roles.get(ratingRoles[i].id)
 
-                    // if role doesn't exist or is below bot.
+                    // if role doesn't exist or is above bot.
                     if (!role || highestBotRole.rawPosition < role.rawPosition)
                         ratingRoles.splice(i, 1)
                 }
@@ -387,15 +401,15 @@ client.on('message', async message => {
                 {
                     let role = roles.get(puzzleRatingRoles[i].id)
 
-                    // if role doesn't exist or is below bot.
+			// if role doesn't exist or is above bot.
                     if (!role || highestBotRole.rawPosition < role.rawPosition)
-                    puzzleRatingRoles.splice(i, 1)
+			puzzleRatingRoles.splice(i, 1)
                 }
 
                 for (let i = 0; i < titleRoles.length; i++) {
                     let role = roles.get(titleRoles[i].id)
 
-                    // if role doesn't exist or is below bot.
+                    // if role doesn't exist or is above bot.
                     if (!role || highestBotRole.rawPosition < role.rawPosition)
                     titleRoles.splice(i, 1)
                 }

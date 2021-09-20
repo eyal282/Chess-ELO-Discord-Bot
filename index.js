@@ -3,9 +3,6 @@ const { MessageEmbed } = require('discord.js');
 const { Permissions } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 
-
-// To do: Puzzle ratings
-
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const enmap = require('enmap');
@@ -437,6 +434,8 @@ client.on('message', async message => {
 
         result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
+        result = result + "Note: Due to Chess.com limits, only puzzle rating of Lichess is calculated at all.\n"
+        result = result + "Title List: `GM` `WGM` `IM` `WIM` `FM` `WFM` `NM` `CM` `WCM` `WNM` `LM` `BOT`\n"
         message.reply(result)
     }
     else if (command == "lichess") {

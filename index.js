@@ -56,69 +56,91 @@ client.on('message', async message => {
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
-        let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
-
-
-        if (ratingRoles === undefined)
+        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())))
         {
-            settings.set(`guild-elo-roles-${message.guild.id}`, [])
-            ratingRoles = []
-        }
 
-        ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+            let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-        let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
-
-        if (puzzleRatingRoles === undefined)
-        {
-            settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, [])
-            puzzleRatingRoles = []
-        }
-
-        puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
-
-        let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
-
-
-        if (titleRoles === undefined) {
-            settings.set(`guild-title-roles-${message.guild.id}`, [])
-            titleRoles = []
-        }
-
-        let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
-
-        if (lichessRatingEquation === undefined) {
-            settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
-            lichessRatingEquation = Constant_lichessDefaultRatingEquation
-        }
-
-        let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
-
-        if (chessComRatingEquation === undefined) {
-            settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
-            chessComRatingEquation = Constant_chessComDefaultRatingEquation
-        }
-
-        try {
-            Parser.evaluate(lichessRatingEquation, { x: 1000 })
-            Parser.evaluate(lichessRatingEquation, { x: 0 })
-            Parser.evaluate(lichessRatingEquation, { x: -1 })
-
-            Parser.evaluate(chessComRatingEquation, { x: 1000 })
-            Parser.evaluate(chessComRatingEquation, { x: 0 })
-            Parser.evaluate(chessComRatingEquation, { x: -1 })
-        }
-        catch {}
-
-        let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
-
-        if (modRoles === undefined) {
-            settings.set(`guild-bot-mods-${message.guild.id}`, [])
-            modRoles = []
-        }
-
-        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())) && ratingRoles.length > 0)
-        {
+            if (ratingRoles === undefined)
+            {
+                ratingRoles = []
+            }
+    
+            let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
+    
+            if (puzzleRatingRoles === undefined)
+            {   
+                puzzleRatingRoles = []
+            }
+    
+            let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
+    
+    
+            if (titleRoles === undefined) {
+                titleRoles = []
+            }
+    
+            await message.guild.roles.fetch()
+            .then(roles => 
+                {
+                    for (let i = 0; i < ratingRoles.length; i++)
+                    {
+                        if (!roles.has(ratingRoles[i].id))
+                            ratingRoles.splice(i, 1)
+                    }
+        
+                    for (let i = 0; i < puzzleRatingRoles.length; i++)
+                    {
+                        if (!roles.has(puzzleRatingRoles[i].id))
+                            puzzleRatingRoles.splice(i, 1)
+                    }
+        
+                    for (let i = 0; i < titleRoles.length; i++) {
+                        if (!roles.has(titleRoles[i].id))
+                            titleRoles.splice(i, 1)
+                    }
+                })
+            .catch(console.error);
+    
+                
+            ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+            puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+            
+            settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
+            settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
+            settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
+    
+            let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
+    
+            if (lichessRatingEquation === undefined) {
+                settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+                lichessRatingEquation = Constant_lichessDefaultRatingEquation
+            }
+    
+            let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
+    
+            if (chessComRatingEquation === undefined) {
+                settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+                chessComRatingEquation = Constant_chessComDefaultRatingEquation
+            }
+    
+            try {
+                Parser.evaluate(lichessRatingEquation, { x: 1000 })
+                Parser.evaluate(lichessRatingEquation, { x: 0 })
+                Parser.evaluate(lichessRatingEquation, { x: -1 })
+    
+                Parser.evaluate(chessComRatingEquation, { x: 1000 })
+                Parser.evaluate(chessComRatingEquation, { x: 0 })
+                Parser.evaluate(chessComRatingEquation, { x: -1 })
+            }
+            catch {}
+    
+            let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+    
+            if (modRoles === undefined) {
+                settings.set(`guild-bot-mods-${message.guild.id}`, [])
+                modRoles = []
+            }
             settings.set(`last-updated-${message.author.id}`, Date.now())
 
             let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
@@ -311,7 +333,6 @@ client.on('message', async message => {
 
     if (ratingRoles === undefined)
     {
-        settings.set(`guild-elo-roles-${message.guild.id}`, [])
         ratingRoles = []
     }
 
@@ -319,14 +340,12 @@ client.on('message', async message => {
 
     if (puzzleRatingRoles === undefined)
     {
-        settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, [])
         puzzleRatingRoles = []
     }
 
     let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
     if (titleRoles === undefined) {
-        settings.set(`guild-title-roles-${message.guild.id}`, [])
         ratingRoles = []
     }
 
@@ -351,7 +370,50 @@ client.on('message', async message => {
         modRoles = []
     }
 
-    else if (command == "help")
+    await message.guild.roles.fetch()
+    .then(roles => 
+        {
+            let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+
+            if(highestBotRole)
+            {
+                for (let i = 0; i < ratingRoles.length; i++)
+                {
+                    let role = roles.get(ratingRoles[i].id)
+
+                    // if role doesn't exist or is below bot.
+                    if (!role || highestBotRole.rawPosition < role.rawPosition)
+                        ratingRoles.splice(i, 1)
+                }
+
+                for (let i = 0; i < puzzleRatingRoles.length; i++)
+                {
+                    let role = roles.get(puzzleRatingRoles[i].id)
+
+                    // if role doesn't exist or is below bot.
+                    if (!role || highestBotRole.rawPosition < role.rawPosition)
+                    puzzleRatingRoles.splice(i, 1)
+                }
+
+                for (let i = 0; i < titleRoles.length; i++) {
+                    let role = roles.get(titleRoles[i].id)
+
+                    // if role doesn't exist or is below bot.
+                    if (!role || highestBotRole.rawPosition < role.rawPosition)
+                    titleRoles.splice(i, 1)
+                }
+            }
+        })
+    .catch(console.error);
+
+    ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+    puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+
+    settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
+    settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
+    settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
+
+    if (command == "help")
     {
         let result = ""
 

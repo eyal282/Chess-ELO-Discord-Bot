@@ -576,7 +576,9 @@ client.on('message', async message => {
     }
 	else if (command == "forcelichess") {
         //deleteMessageAfterTime(message, 2000);
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
         if (args[0]) {
@@ -633,9 +635,12 @@ client.on('message', async message => {
         }
     }
     else if (command == "forcechess") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
+		
         if (args[0]) {
 
             if (ratingRoles.length == 0) {
@@ -690,8 +695,9 @@ client.on('message', async message => {
     }
     else if (command == "prefix")
     {
-        if (!isBotControlAdminByMessage(message))
-        {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
 
@@ -709,7 +715,9 @@ client.on('message', async message => {
     }
     else if(command == "addelo")
     {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -760,7 +768,9 @@ client.on('message', async message => {
     }
 
     else if (command == "resetelo") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
 
@@ -782,7 +792,10 @@ client.on('message', async message => {
     }
     else if(command == "addpuzzleelo")
     {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin)
+		{
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -833,7 +846,9 @@ client.on('message', async message => {
     }
 
     else if (command == "resetpuzzleelo") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
 
@@ -854,7 +869,9 @@ client.on('message', async message => {
         }
     }
     else if (command == "addtitle") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -900,7 +917,9 @@ client.on('message', async message => {
     }
 
     else if (command == "resettitle" || command == "resettitles") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
 
@@ -961,7 +980,9 @@ client.on('message', async message => {
     }
 
     else if (command == "chessequation") {
-        if (!isBotControlAdminByMessage(message)) {
+		let isAdmin = await isBotControlAdminByMessage(message)
+		
+        if (!isAdmin) {
             return message.reply("Access Denied")
         }
         else {

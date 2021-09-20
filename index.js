@@ -67,6 +67,16 @@ client.on('message', async message => {
 
         ratingRoles.sort(function (a, b) { return a.rating - b.rating });
 
+        let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
+
+        if (puzzleRatingRoles === undefined)
+        {
+            settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, [])
+            puzzleRatingRoles = []
+        }
+
+        puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+
         let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
 
@@ -136,6 +146,7 @@ client.on('message', async message => {
             }
 			
             let highestRating = -1
+            let highestPuzzleRating = -1
             let lichessHighestRating = -1
             let lichessPuzzleRating = -1
             let lichessTitle = ""
@@ -155,7 +166,7 @@ client.on('message', async message => {
                 if (result.perfs.rapid && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
                 if (result.perfs.classical && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
 
-                if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzle = result.perfs.puzzle.rating
+                if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzleRating = result.perfs.puzzle.rating
 
                 lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
                 lichessPuzzleRating = puzzleRating
@@ -170,6 +181,7 @@ client.on('message', async message => {
 
                 lichessHighestRating = value
                 highestRating = lichessHighestRating
+                highestPuzzleRating = lichessPuzzleRating
 
                 if (result.title) {
                     lichessTitle = result.title
@@ -223,7 +235,7 @@ client.on('message', async message => {
 			}
 
 			let highestRatingRole = null;
-
+            let highestPuzzleRatingRole = null;
             let highestTitleRole = null;
 
             let fullRolesCache = message.member.roles.cache
@@ -244,6 +256,17 @@ client.on('message', async message => {
                     fullRolesArray.splice(index, 1);
             }
 
+			for (let i = 0; i < puzzleRatingRoles.length; i++)
+			{
+				if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
+                    highestPuzzleRatingRole = puzzleRatingRoles[i].id;
+
+                let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
+
+                if(index != -1)
+                    fullRolesArray.splice(index, 1);
+            }
+
             for (let i = 0; i < titleRoles.length; i++) {
                 if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
                     highestTitleRole = titleRoles[i].id;
@@ -256,6 +279,10 @@ client.on('message', async message => {
 
             if (highestRatingRole != null)
                 fullRolesArray.push(highestRatingRole)
+
+
+            if (highestPuzzleRatingRole != null)
+                fullRolesArray.push(highestPuzzleRatingRole)
 
             if (highestTitleRole != null)
                 fullRolesArray.push(highestTitleRole)
@@ -286,6 +313,14 @@ client.on('message', async message => {
     {
         settings.set(`guild-elo-roles-${message.guild.id}`, [])
         ratingRoles = []
+    }
+
+    let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
+
+    if (puzzleRatingRoles === undefined)
+    {
+        settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, [])
+        puzzleRatingRoles = []
     }
 
     let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
@@ -324,18 +359,21 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
         result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
         result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
+        result = addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
         result = addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
         result = addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
+        result = addCommandToHelp(result, prefix, `getpuzzleelo ---> Prints all puzzle role milestones`)
         result = addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
         result = addCommandToHelp(result, prefix, `getmod ---> Prints all the bot's moderators`)
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
+        result = addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `lichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
         result = addCommandToHelp(result, prefix, `chessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
         result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
         result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
 
-        result = result + "Note: -1 ELO stands for either unrated or  provisonary elo (Shows (?) on Lichess))\n"
+        result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
         message.reply(result)
     }
@@ -477,7 +515,7 @@ client.on('message', async message => {
     }
 	else if (command == "forcelichess") {
         //deleteMessageAfterTime(message, 2000);
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         if (args[0]) {
@@ -534,7 +572,7 @@ client.on('message', async message => {
         }
     }
     else if (command == "forcechess") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         if (args[0]) {
@@ -591,7 +629,7 @@ client.on('message', async message => {
     }
     else if (command == "prefix")
     {
-        if (!isBotControlAdminByMessage(message)(message))
+        if (!isBotControlAdminByMessage(message))
         {
             return message.reply("Access Denied")
         }
@@ -610,7 +648,7 @@ client.on('message', async message => {
     }
     else if(command == "addelo")
     {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -661,7 +699,7 @@ client.on('message', async message => {
     }
 
     else if (command == "resetelo") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
 
@@ -681,8 +719,81 @@ client.on('message', async message => {
             message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
         }
     }
+    else if(command == "addpuzzleelo")
+    {
+        if (!isBotControlAdminByMessage(message)) {
+            return message.reply("Access Denied")
+        }
+        else if (args.length == 0 || args.length % 2 != 0) {
+            return message.reply(`${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`)
+        }
+
+        let msgToSend = ""
+
+
+
+        for (let i = 0; i < (args.length / 2); i++)
+        {
+            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+
+            let result = 'Could not find role'
+
+            if(role)
+                result = addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+
+            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "Internal Error, Cringe :("
+        }
+
+        message.reply(msgToSend)
+    }
+    else if (command == "getpuzzleelo") {
+        let msgToSend = ""
+
+        for (let i = 0; i < puzzleRatingRoles.length; i++)
+        {
+            msgToSend = msgToSend + "<@&" + puzzleRatingRoles[i].id + "> ( " + puzzleRatingRoles[i].rating + " ELO ) \n "
+        }
+
+        if (msgToSend == "")
+        {
+            msgToSend = "None."
+        }
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(msgToSend)
+
+        message.reply({ embeds: [embed] })
+
+    }
+
+    else if (command == "resetpuzzleelo") {
+        if (!isBotControlAdminByMessage(message)) {
+            return message.reply("Access Denied")
+        }
+
+        let msgToSend = `${prefix}addpuzzleelo `
+
+        for (let i = 0; i < puzzleRatingRoles.length; i++) {
+            msgToSend = msgToSend + puzzleRatingRoles[i].rating + " <@&" + puzzleRatingRoles[i].id + "> "
+        }
+
+        if (msgToSend == `${prefix}addpuzzleelo `) {
+            message.reply(`There were no role milestones to delete.`)
+        }
+        else {
+
+            settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
+            message.reply(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+        }
+    }
     else if (command == "addtitle") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         else if (args.length == 0 || args.length % 2 != 0) {
@@ -728,7 +839,7 @@ client.on('message', async message => {
     }
 
     else if (command == "resettitle" || command == "resettitles") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
 
@@ -750,7 +861,7 @@ client.on('message', async message => {
     }
 
     else if (command == "lichessequation") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         else {
@@ -789,7 +900,7 @@ client.on('message', async message => {
     }
 
     else if (command == "chessequation") {
-        if (!isBotControlAdminByMessage(message)(message)) {
+        if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
         else {
@@ -911,6 +1022,19 @@ function addEloCommand(message, ratingRoles, role, elo) {
     let template = { id: role.id, rating: elo };
 
     settings.push(`guild-elo-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
+    for (let i = 0; i < puzzleRatingRoles.length; i++) {
+        if (puzzleRatingRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, rating: elo };
+
+    settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
 
     return `Success.`
 }

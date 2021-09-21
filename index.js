@@ -37,7 +37,7 @@ const settings = new enmap({
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 	
-	const Guilds = client.guilds.cache.map(guild => guild.id);
+	const Guilds = client.guilds.cache.map(guild => `${guild.id} ---> ${guild.name}`);
     console.log(Guilds);
 	
     client.user.setActivity(`Mention me to find the prefix`, { type: `WATCHING` });

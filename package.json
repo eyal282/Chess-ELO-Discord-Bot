@@ -9,9 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "better-sqlite3": "^7.4.3",
     "discord.js": "^13.1.0",
     "enmap": "^5.8.7",
     "expr-eval": "^2.0.2",
+    "express": "^4.17.1",
+    "node": "^16.9.1",
     "node-fetch": "^2.6.2"
   }
 }

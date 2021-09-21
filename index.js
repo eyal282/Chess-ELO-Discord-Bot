@@ -354,7 +354,12 @@ client.on('message', async message => {
                 fullRolesArray.push(highestTitleRole)
 
             // Don't set if nothing was changed.
-            if (fullRolesArray != Array.from(fullRolesCache.keys())) message.member.roles.set(fullRolesArray)
+            if (fullRolesArray != Array.from(fullRolesCache.keys())) 
+            try
+            {
+              message.member.roles.set(fullRolesArray).catch()
+            }
+            catch {}
 
         }
     }

@@ -36,18 +36,21 @@ const settings = new enmap({
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
-	
-	const Guilds = client.guilds.cache.forEach(async function(guild)
-  {
-    let ownerMember = await guild.fetchOwner()
-    let ownerUser = ownerMember.user
-    let fullDiscordUsername = ownerUser.username + "#" + ownerUser.discriminator
-
-    console.info(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
-  } 
-  );
 
   client.user.setActivity(` {Guilds} | Mention me to find the prefix`, { type: `WATCHING` });
+
+    setTimeout(async () => {
+	
+      const Guilds = client.guilds.cache.forEach(async function(guild)
+      {
+        let ownerMember = await guild.fetchOwner()
+        let ownerUser = ownerMember.user
+        let fullDiscordUsername = ownerUser.username + "#" + ownerUser.discriminator
+
+        console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
+      } 
+      );
+    }, 2500);
 });
 
 
@@ -55,7 +58,7 @@ client.on('ready', () => {
 PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The created guild    */
 client.on("guildCreate", function(guild){
-    console.info(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
+    console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
 });
 
 // guildDelete
@@ -63,7 +66,7 @@ client.on("guildCreate", function(guild){
 PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The guild that was deleted    */
 client.on("guildDelete", function(guild){
-    console.info(`the client left a guild: ${guild.id} ---> ${guild.name}`);
+    console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
 });
 
 // Messages without the prefix

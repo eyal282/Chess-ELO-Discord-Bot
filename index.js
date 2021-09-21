@@ -36,6 +36,22 @@ client.on('ready', () => {
     client.user.setActivity(`Mention me to find the prefix`, { type: `WATCHING` });
 });
 
+
+/* Emitted whenever the bot joins a guild.
+PARAMETER    TYPE         DESCRIPTION
+guild        Guild        The created guild    */
+client.on("guildCreate", function(guild){
+    console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
+});
+
+// guildDelete
+/* Emitted whenever a guild is deleted/left.
+PARAMETER    TYPE         DESCRIPTION
+guild        Guild        The guild that was deleted    */
+client.on("guildDelete", function(guild){
+    console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
+});
+
 // Messages without the prefix
 client.on('message', async message => {
     if (message.author.bot) return;

@@ -18,9 +18,6 @@ const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD
 const enmap = require('enmap');
 const fetch = require('node-fetch');
 
-
-const { token } = require('./config.json');
-
 let defaultPrefix = "!"
 
 let Constant_lichessDefaultRatingEquation = "x"

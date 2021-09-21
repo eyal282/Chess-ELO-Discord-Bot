@@ -487,7 +487,7 @@ client.on('message', async message => {
                     // result.profile.location
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-                    if(message.author.id == '340586932998504449' || (result.profile && result.profile.location && fullDiscordUsername == result.profile.location)) {
+                    if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
                         settings.set(`lichess-account-of-${message.author.id}`, result.username)
 
                         const embed = new MessageEmbed()
@@ -555,7 +555,7 @@ client.on('message', async message => {
                     // result.profile.location
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-                    if (message.author.id == '340586932998504449' || (result.location && fullDiscordUsername == result.location)) {
+                    if (result.location && fullDiscordUsername == result.location) {
                         settings.set(`chesscom-account-of-${message.author.id}`, result.username)
 
                         const embed = new MessageEmbed()

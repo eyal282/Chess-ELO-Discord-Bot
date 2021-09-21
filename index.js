@@ -1,3 +1,5 @@
+const mySecret = process.env['SECRET_BOT_TOKEN']
+
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -1105,7 +1107,7 @@ client.on('message', async message => {
     }
 });
 
-client.login(token);
+client.login(mySecret);
 
 async function deleteMessageAfterTime(message, time)
 {

@@ -88,7 +88,7 @@ client.on('message', async message => {
 
         if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())))
         {
-            if(message.guild.me.hasPermission('MANAGE_ROLES'))
+            if(message.guild.me.permissions.has('MANAGE_ROLES'))
             {
 				let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 

@@ -1056,11 +1056,12 @@ client.on('message', async message => {
                 return;
             }
 
+
             let argString = ""
 
             for (let i = 0; i < args.length; i++) {
 
-                argString = argString + " " + args[i]
+                argString + " " + args[i]
             }
 
             argString = argString.trim()
@@ -1070,7 +1071,7 @@ client.on('message', async message => {
                 Parser.evaluate(argString, { x: 0 })
                 Parser.evaluate(argString, { x: -1 })
             }
-            catch(error) {
+            catch (error) {
                 message.reply(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
 
                 return;

@@ -653,7 +653,7 @@ client.on("messageCreate", async message => {
             }
 			
 			if (message.mentions.users.size != 1) {
-                message.reply(`${prefix}forcelichess [username] [@user]`)
+                return message.reply(`${prefix}forcelichess [username] [@user]`)
             }
 
             let target = message.mentions.users.first()

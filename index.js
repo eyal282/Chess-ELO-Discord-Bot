@@ -402,7 +402,7 @@ client.on('message', async message => {
     let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
     if (titleRoles === undefined) {
-        ratingRoles = []
+        titleRoles = []
     }
 
     let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
@@ -490,6 +490,7 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `chessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
         result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
         result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
+        result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
 
         result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
@@ -999,7 +1000,7 @@ client.on('message', async message => {
         }
     }
 
-    else if (command == "lichessequation") {
+    else if (command == "setlichessequation") {
         if (!isBotControlAdminByMessage(message)) {
             return message.reply("Access Denied")
         }
@@ -1038,7 +1039,7 @@ client.on('message', async message => {
         }
     }
 
-    else if (command == "chessequation") {
+    else if (command == "setchessequation") {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
@@ -1123,6 +1124,13 @@ client.on('message', async message => {
             settings.delete(`guild-bot-mods-${message.guild.id}`)
             message.reply(`Successfully removed all moderator roles from this bot.`)
         }
+    }
+
+    else if (command == "privacy") {
+            
+        message.reply(`Check or Enable your DM to see privacy policy`)
+
+        message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.`).catch()
     }
 });
 

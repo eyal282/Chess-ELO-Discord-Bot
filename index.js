@@ -73,6 +73,8 @@ client.on("guildDelete", function(guild){
 client.on('message', async message => {
     if (message.author.bot) return;
 
+    if (!botHasMessagingPermissionsByMessage(message)) return;
+
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
     if (prefix === undefined) prefix = defaultPrefix
@@ -372,6 +374,8 @@ client.on('message', async message => {
 client.on('message', async message => {
     if (message.author.bot) return;
 
+    if (!botHasMessagingPermissionsByMessage(message)) return;
+    
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
     if (prefix === undefined) prefix = defaultPrefix
@@ -1206,6 +1210,20 @@ async function isBotControlAdminByMessage(message) {
         if(roleCache.has(modRoles[i]))
             return true;
     }
+
+    return false;
+}
+
+function botHasMessagingPermissionsByMessage(message)
+{
+    let hasViewPermission = channel.permissionsFor(message.guild.me)
+    .has('VIEW_CHANNEL', false);
+
+    let hasSendPermission = channel.permissionsFor(message.guild.me)
+    .has('SEND_MESSAGES', false);
+
+    if(hasViewPermission && hasSendPermission)
+        return true;
 
     return false;
 }

@@ -70,7 +70,7 @@ client.on("guildDelete", function(guild){
 });
 
 // Messages without the prefix
-client.on('message', async message => {
+client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
     if (!botHasMessagingPermissionsByMessage(message)) return;
@@ -371,7 +371,7 @@ client.on('message', async message => {
 });
 
 // Messages with the prefix
-client.on('message', async message => {
+client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
     if (!botHasMessagingPermissionsByMessage(message)) return;

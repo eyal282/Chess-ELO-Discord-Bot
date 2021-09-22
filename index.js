@@ -375,7 +375,7 @@ client.on('message', async message => {
     if (message.author.bot) return;
 
     if (!botHasMessagingPermissionsByMessage(message)) return;
-    
+
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
     if (prefix === undefined) prefix = defaultPrefix
@@ -1216,10 +1216,10 @@ async function isBotControlAdminByMessage(message) {
 
 function botHasMessagingPermissionsByMessage(message)
 {
-    let hasViewPermission = channel.permissionsFor(message.guild.me)
+    let hasViewPermission = message.channel.permissionsFor(message.guild.me)
     .has('VIEW_CHANNEL', false);
 
-    let hasSendPermission = channel.permissionsFor(message.guild.me)
+    let hasSendPermission = message.channel.permissionsFor(message.guild.me)
     .has('SEND_MESSAGES', false);
 
     if(hasViewPermission && hasSendPermission)

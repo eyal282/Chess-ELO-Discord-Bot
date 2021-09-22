@@ -82,7 +82,11 @@ client.on("messageCreate", async message => {
     if (message.content.indexOf(prefix) === 0) return;
 
     if (message.mentions.has(client.user) && message.mentions.users.size == 1) {
-        message.reply('Prefix is `' + prefix + '`')
+        message.reply('Prefix is `' + prefix + '`\nThis message will self destruct in 10 seconds.').then(msg =>
+        {
+            deleteMessageAfterTime(msg, 10000)
+        })
+        .catch(() => {})
     }
     else
     {
@@ -475,6 +479,8 @@ client.on("messageCreate", async message => {
 
         result = addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
         result = addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
+        result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
+        result = addCommandToHelp(result, prefix, `invite ---> Invite Link`)
         result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
         result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
         result = addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
@@ -490,7 +496,6 @@ client.on("messageCreate", async message => {
         result = addCommandToHelp(result, prefix, `setchessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
         result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
         result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
-        result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
 
         result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
@@ -1134,6 +1139,15 @@ client.on("messageCreate", async message => {
         message.reply(`Check or Enable your DM to see privacy policy`)
 
         message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.\nBelow is the source code of the bot that contains contact information, demonstrates why and how data is collected, along with who is given any of your data, or your server's data:\nhttps://github.com/eyal282/Chess-ELO-Discord-Bot`).catch(() => {})
+    }
+    else if (command == "invite") {
+        let embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(`[Invite the Bot](https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=268438528&scope=bot) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+
+        message.reply({ embeds: [embed] })
+
+        message.member.send({ embeds: [embed] }).catch(() => {})
     }
 });
 

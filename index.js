@@ -361,7 +361,7 @@ client.on('message', async message => {
 				{
 				  try
 				  {
-					message.member.roles.set(fullRolesArray).catch()
+					message.member.roles.set(fullRolesArray).catch(() => {})
 				  }
 				  catch {}
 				}
@@ -486,8 +486,8 @@ client.on('message', async message => {
         result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
-        result = addCommandToHelp(result, prefix, `lichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `chessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `setchessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
         result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
         result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
         result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
@@ -847,7 +847,9 @@ client.on('message', async message => {
 
             settings.delete(`guild-elo-roles-${message.guild.id}`)
             message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
-            message.member.send(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+            message.member.send(`Successfully reset all elo related roles! Command to 
+            undo:\n` + '```' + msgToSend + '```').catch(() => {})
+            
         }
     }
     else if(command == "addpuzzleelo")
@@ -925,7 +927,7 @@ client.on('message', async message => {
 
             settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
             message.reply(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
-            message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+            message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => {})
         }
     }
     else if (command == "addtitle") {
@@ -996,7 +998,7 @@ client.on('message', async message => {
 
             settings.delete(`guild-title-roles-${message.guild.id}`)
             message.reply(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
-            message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch()
+            message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => {})
         }
     }
 
@@ -1130,7 +1132,7 @@ client.on('message', async message => {
             
         message.reply(`Check or Enable your DM to see privacy policy`)
 
-        message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.\nBelow is the source code of the bot that contains contact information, demonstrates why and how data is collected, along with who is given any of your data, or your server's data:\nhttps://github.com/eyal282/Chess-ELO-Discord-Bot`).catch()
+        message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.\nBelow is the source code of the bot that contains contact information, demonstrates why and how data is collected, along with who is given any of your data, or your server's data:\nhttps://github.com/eyal282/Chess-ELO-Discord-Bot`).catch(() => {})
     }
 });
 

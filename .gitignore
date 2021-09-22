@@ -1,5 +1,8 @@
 config.json
 node_modules/
+node_modules/**/*
 data/
+data/**/*
 .vs/
+.vs/**/*
 

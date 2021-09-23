@@ -95,282 +95,7 @@ client.on("messageCreate", async message => {
 
         if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())))
         {
-            if(message.guild.me.permissions.has('MANAGE_ROLES'))
-            {
-				let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
-
-				if (ratingRoles === undefined)
-				{
-					ratingRoles = []
-				}
-		
-				let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
-		
-				if (puzzleRatingRoles === undefined)
-				{   
-					puzzleRatingRoles = []
-				}
-		
-				let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
-		
-		
-				if (titleRoles === undefined) {
-					titleRoles = []
-				}
-		
-				await message.guild.roles.fetch()
-				.then(roles => 
-				{
-					let highestBotRole = message.guild.members.resolve(client.user).roles.highest
-
-					if(highestBotRole)
-					{
-					for (let i = 0; i < ratingRoles.length; i++)
-					{
-						let role = roles.get(ratingRoles[i].id)
-
-						// if role doesn't exist or is above bot.
-						if (!role || highestBotRole.rawPosition < role.rawPosition)
-						ratingRoles.splice(i, 1)
-					}
-
-					for (let i = 0; i < puzzleRatingRoles.length; i++)
-					{
-						let role = roles.get(puzzleRatingRoles[i].id)
-
-						// if role doesn't exist or is above bot.
-						if (!role || highestBotRole.rawPosition < role.rawPosition)
-						puzzleRatingRoles.splice(i, 1)
-					}
-
-					for (let i = 0; i < titleRoles.length; i++) {
-						let role = roles.get(titleRoles[i].id)
-
-						// if role doesn't exist or is above bot.
-						if (!role || highestBotRole.rawPosition < role.rawPosition)
-						titleRoles.splice(i, 1)
-					}
-					}
-				})
-				.catch(() => null)
-
-					
-				ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-				puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
-				
-				settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
-				settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
-				settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
-		
-				let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
-		
-				if (lichessRatingEquation === undefined) {
-					settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
-					lichessRatingEquation = Constant_lichessDefaultRatingEquation
-				}
-		
-				let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
-		
-				if (chessComRatingEquation === undefined) {
-					settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
-					chessComRatingEquation = Constant_chessComDefaultRatingEquation
-				}
-		
-				try {
-					Parser.evaluate(lichessRatingEquation, { x: 1000 })
-					Parser.evaluate(lichessRatingEquation, { x: 0 })
-					Parser.evaluate(lichessRatingEquation, { x: -1 })
-		
-					Parser.evaluate(chessComRatingEquation, { x: 1000 })
-					Parser.evaluate(chessComRatingEquation, { x: 0 })
-					Parser.evaluate(chessComRatingEquation, { x: -1 })
-				}
-				catch {}
-		
-				let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
-		
-				if (modRoles === undefined) {
-					settings.set(`guild-bot-mods-${message.guild.id}`, [])
-					modRoles = []
-				}
-				settings.set(`last-updated-${message.author.id}`, Date.now())
-
-				let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
-				let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
-
-			   
-				let result
-
-				if (lichessAccount === undefined) {
-					result = null;
-				}
-				else
-				{
-					result = await fetch(`https://lichess.org/api/user/${lichessAccount}`).then(response => {
-						if (response.status == 404) { // Not Found
-							return null
-						}
-						else if (response.status == 200) { // Status OK
-							return response.json()
-						}
-						else if(response.status == 429) { // Rate Limit
-							return null
-						}
-					})
-				}
-				
-				let highestRating = -1
-				let highestPuzzleRating = -1
-				let lichessHighestRating = -1
-				let lichessPuzzleRating = -1
-				let lichessTitle = ""
-				let chessTitle = ""
-				
-				if(result != null)
-				{
-					let corresRating = -1
-					let blitzRating = -1
-					let rapidRating = -1
-					let classicalRating = -1
-
-					let puzzleRating = -1
-
-					if (result.perfs.correspondence && result.perfs.correspondence.prov === undefined) corresRating = result.perfs.correspondence.rating
-					if (result.perfs.blitz && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
-					if (result.perfs.rapid && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
-					if (result.perfs.classical && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
-
-					if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzleRating = result.perfs.puzzle.rating
-
-					lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
-					lichessPuzzleRating = puzzleRating
-
-					let value = lichessHighestRating
-
-					try {
-						value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
-					}
-
-					catch { console.log(error)}
-
-					lichessHighestRating = value
-					highestRating = lichessHighestRating
-					highestPuzzleRating = lichessPuzzleRating
-
-					if (result.title) {
-						lichessTitle = result.title
-					}
-				}
-				
-				if (chessComAccount === undefined) {
-					result = null;
-				}
-				else
-				{
-					result = await fetch(`https://api.chess.com/pub/player/${chessComAccount}/stats`).then(response => {
-						if (response.status == 404) { // Not Found
-							return null
-						}
-						else if (response.status == 200) { // Status OK
-							return response.json()
-						}
-						else if(response.status == 429) { // Rate Limit
-							return null
-						}
-					})
-				}
-				if(result != null)
-				{
-					let corresRating = -1
-					let blitzRating = -1
-					let rapidRating = -1
-
-					let puzzleRating = -1
-
-					if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
-					if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
-					if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
-
-					if (result.tactics) puzzleRating = result.tactics.highest.rating
-
-					let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
-
-					let value = chessComHighestRating
-
-					try {
-						value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
-					}
-					catch {}
-					chessComHighestRating = value
-					highestRating = Math.max(lichessHighestRating, chessComHighestRating)
-
-					if (result.title)
-						chessTitle = result.title
-				}
-
-				let highestRatingRole = null;
-				let highestPuzzleRatingRole = null;
-				let highestTitleRole = null;
-
-				let fullRolesCache = message.member.roles.cache
-
-				if (!fullRolesCache)
-					return;
-
-				let fullRolesArray = Array.from(fullRolesCache.keys());
-
-				for (let i = 0; i < ratingRoles.length; i++)
-				{
-					if (highestRating >= ratingRoles[i].rating)
-						highestRatingRole = ratingRoles[i].id;
-
-					let index = fullRolesArray.indexOf(ratingRoles[i].id)
-
-					if(index != -1)
-						fullRolesArray.splice(index, 1);
-				}
-
-				for (let i = 0; i < puzzleRatingRoles.length; i++)
-				{
-					if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
-						highestPuzzleRatingRole = puzzleRatingRoles[i].id;
-
-					let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
-
-					if(index != -1)
-						fullRolesArray.splice(index, 1);
-				}
-
-				for (let i = 0; i < titleRoles.length; i++) {
-					if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
-						highestTitleRole = titleRoles[i].id;
-
-					let index = fullRolesArray.indexOf(titleRoles[i].id)
-
-					if (index != -1)
-						fullRolesArray.splice(index, 1);
-				}
-
-				if (highestRatingRole != null)
-					fullRolesArray.push(highestRatingRole)
-
-
-				if (highestPuzzleRatingRole != null)
-					fullRolesArray.push(highestPuzzleRatingRole)
-
-				if (highestTitleRole != null)
-					fullRolesArray.push(highestTitleRole)
-
-				// Don't set if nothing was changed.
-				if (fullRolesArray != Array.from(fullRolesCache.keys()))
-				{
-				  try
-				  {
-					message.member.roles.set(fullRolesArray).catch(() => null)
-				  }
-				  catch {}
-				}
-			}
+          updateProfileDataByMessage(message, false)
         }
     }
 });
@@ -480,6 +205,7 @@ client.on("messageCreate", async message => {
 
         result = addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
         result = addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
+        result = addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
         result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
         result = addCommandToHelp(result, prefix, `invite ---> Invite Link`)
         result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
@@ -540,7 +266,10 @@ client.on("messageCreate", async message => {
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
                     if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                        settings.set(`lichess-account-of-${message.author.id}`, result.username)
+                        settings.set(`lichess-account-of-${message.author.id}`, 
+                        result.username)
+                        settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+                        updateProfileDataByMessage(message, true)
 
                         const embed = new MessageEmbed()
                             .setColor('#0099ff')
@@ -565,6 +294,8 @@ client.on("messageCreate", async message => {
         else {
 
             settings.delete(`lichess-account-of-${message.author.id}`)
+            settings.delete(`cached-lichess-account-data-of-${message.author.id}`)
+            updateProfileDataByMessage(message, true)
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -609,6 +340,8 @@ client.on("messageCreate", async message => {
 
                     if (result.location && fullDiscordUsername == result.location) {
                         settings.set(`chesscom-account-of-${message.author.id}`, result.username)
+                        settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+                        updateProfileDataByMessage(message, true)
 
                         const embed = new MessageEmbed()
                             .setColor('#0099ff')
@@ -632,6 +365,9 @@ client.on("messageCreate", async message => {
         }
         else {
             settings.delete(`chesscom-account-of-${message.author.id}`)
+            settings.delete(`cached-chesscom-account-data-of-${message.author.id}`)
+
+            updateProfileDataByMessage(message, true)
 
             const embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -639,6 +375,19 @@ client.on("messageCreate", async message => {
 
             message.reply({ embeds: [embed] })
         }
+    }
+ else if (command == "profile") {
+        //deleteMessageAfterTime(message, 2000);
+        if (ratingRoles.length == 0) {
+            return message.reply('The server has yet to setup any rating role milestones')
+        }
+
+        let lichessAccountData = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
+        let chessComAccountData = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
+
+        message.reply(`This command is under construction`)
+
+          
     }
 	else if (command == "forcelichess") {
         //deleteMessageAfterTime(message, 2000);
@@ -1134,7 +883,6 @@ client.on("messageCreate", async message => {
             message.reply(`Successfully removed all moderator roles from this bot.`)
         }
     }
-
     else if (command == "privacy") {
             
         message.reply(`Check or Enable your DM to see privacy policy`)
@@ -1252,4 +1000,301 @@ function botHasMessagingPermissionsByMessage(message)
         return true;
 
     return false;
+}
+
+async function updateProfileDataByMessage(message, useCacheOnly)
+{
+    if(!message.guild.me.permissions.has('MANAGE_ROLES'))
+        return;
+
+    let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+
+    if (ratingRoles === undefined)
+    {
+      ratingRoles = []
+    }
+
+    let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
+
+    if (puzzleRatingRoles === undefined)
+    {   
+      puzzleRatingRoles = []
+    }
+
+    let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
+
+
+    if (titleRoles === undefined) {
+      titleRoles = []
+    }
+
+    await message.guild.roles.fetch()
+    .then(roles => 
+    {
+      let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+
+      if(highestBotRole)
+      {
+      for (let i = 0; i < ratingRoles.length; i++)
+      {
+        let role = roles.get(ratingRoles[i].id)
+
+        // if role doesn't exist or is above bot.
+        if (!role || highestBotRole.rawPosition < role.rawPosition)
+        ratingRoles.splice(i, 1)
+      }
+
+      for (let i = 0; i < puzzleRatingRoles.length; i++)
+      {
+        let role = roles.get(puzzleRatingRoles[i].id)
+
+        // if role doesn't exist or is above bot.
+        if (!role || highestBotRole.rawPosition < role.rawPosition)
+        puzzleRatingRoles.splice(i, 1)
+      }
+
+      for (let i = 0; i < titleRoles.length; i++) {
+        let role = roles.get(titleRoles[i].id)
+
+        // if role doesn't exist or is above bot.
+        if (!role || highestBotRole.rawPosition < role.rawPosition)
+        titleRoles.splice(i, 1)
+      }
+      }
+    })
+    .catch(() => null)
+
+      
+    ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+    puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+    
+    settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
+    settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
+    settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
+
+    let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
+
+    if (lichessRatingEquation === undefined) {
+      settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+      lichessRatingEquation = Constant_lichessDefaultRatingEquation
+    }
+
+    let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
+
+    if (chessComRatingEquation === undefined) {
+      settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+      chessComRatingEquation = Constant_chessComDefaultRatingEquation
+    }
+
+    try {
+      Parser.evaluate(lichessRatingEquation, { x: 1000 })
+      Parser.evaluate(lichessRatingEquation, { x: 0 })
+      Parser.evaluate(lichessRatingEquation, { x: -1 })
+
+      Parser.evaluate(chessComRatingEquation, { x: 1000 })
+      Parser.evaluate(chessComRatingEquation, { x: 0 })
+      Parser.evaluate(chessComRatingEquation, { x: -1 })
+    }
+    catch {}
+
+    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+
+    if (modRoles === undefined) {
+      settings.set(`guild-bot-mods-${message.guild.id}`, [])
+      modRoles = []
+    }
+    settings.set(`last-updated-${message.author.id}`, Date.now())
+
+    let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
+    let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
+
+      
+    let result
+
+    if (lichessAccount === undefined) {
+      result = null;
+    }
+    else
+    {
+      if(useCacheOnly) 
+      {
+        result = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
+      }
+      else
+      {
+        result = await fetch(`https://lichess.org/api/user/${lichessAccount}`).then(response => {
+          if (response.status == 404) { // Not Found
+            return null
+          }
+          else if (response.status == 200) { // Status OK
+            return response.json()
+          }
+          else if(response.status == 429) { // Rate Limit
+            return null
+          }
+        })
+      }
+    }
+    
+    let highestRating = -1
+    let highestPuzzleRating = -1
+    let lichessHighestRating = -1
+    let lichessPuzzleRating = -1
+    let lichessTitle = ""
+    let chessTitle = ""
+    
+    if(result != null)
+    {
+      settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+
+      let corresRating = -1
+      let blitzRating = -1
+      let rapidRating = -1
+      let classicalRating = -1
+
+      let puzzleRating = -1
+
+      if (result.perfs.correspondence && result.perfs.correspondence.prov === undefined) corresRating = result.perfs.correspondence.rating
+      if (result.perfs.blitz && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
+      if (result.perfs.rapid && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
+      if (result.perfs.classical && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
+
+      if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzleRating = result.perfs.puzzle.rating
+
+      lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
+      lichessPuzzleRating = puzzleRating
+
+      let value = lichessHighestRating
+
+      try {
+        value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
+      }
+
+      catch { console.log(error)}
+
+      lichessHighestRating = value
+      highestRating = lichessHighestRating
+      highestPuzzleRating = lichessPuzzleRating
+
+      if (result.title) {
+        lichessTitle = result.title
+      }
+    }
+    
+    if (chessComAccount === undefined) {
+      result = null;
+    }
+    else
+    {
+      if(useCacheOnly) 
+      {
+        result = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
+      }
+      else
+      {
+        result = await fetch(`https://api.chess.com/pub/player/${chessComAccount}/stats`).then(response => {
+          if (response.status == 404) { // Not Found
+            return null
+          }
+          else if (response.status == 200) { // Status OK
+            return response.json()
+          }
+          else if(response.status == 429) { // Rate Limit
+            return null
+          }
+        })
+      }
+    }
+    if(result != null)
+    {
+      settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+      let corresRating = -1
+      let blitzRating = -1
+      let rapidRating = -1
+
+      let puzzleRating = -1
+
+      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
+      if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+      if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+
+      if (result.tactics) puzzleRating = result.tactics.highest.rating
+
+      let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
+
+      let value = chessComHighestRating
+
+      try {
+        value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
+      }
+      catch {}
+      chessComHighestRating = value
+      highestRating = Math.max(lichessHighestRating, chessComHighestRating)
+
+      if (result.title)
+        chessTitle = result.title
+    }
+
+    let highestRatingRole = null;
+    let highestPuzzleRatingRole = null;
+    let highestTitleRole = null;
+
+    let fullRolesCache = message.member.roles.cache
+
+    if (!fullRolesCache)
+      return;
+
+    let fullRolesArray = Array.from(fullRolesCache.keys());
+
+    for (let i = 0; i < ratingRoles.length; i++)
+    {
+      if (highestRating >= ratingRoles[i].rating)
+        highestRatingRole = ratingRoles[i].id;
+
+      let index = fullRolesArray.indexOf(ratingRoles[i].id)
+
+      if(index != -1)
+        fullRolesArray.splice(index, 1);
+    }
+
+    for (let i = 0; i < puzzleRatingRoles.length; i++)
+    {
+      if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
+        highestPuzzleRatingRole = puzzleRatingRoles[i].id;
+
+      let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
+
+      if(index != -1)
+        fullRolesArray.splice(index, 1);
+    }
+
+    for (let i = 0; i < titleRoles.length; i++) {
+      if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
+        highestTitleRole = titleRoles[i].id;
+
+      let index = fullRolesArray.indexOf(titleRoles[i].id)
+
+      if (index != -1)
+        fullRolesArray.splice(index, 1);
+    }
+
+    if (highestRatingRole != null)
+      fullRolesArray.push(highestRatingRole)
+
+
+    if (highestPuzzleRatingRole != null)
+      fullRolesArray.push(highestPuzzleRatingRole)
+
+    if (highestTitleRole != null)
+      fullRolesArray.push(highestTitleRole)
+
+    // Don't set if nothing was changed.
+    if (fullRolesArray != Array.from(fullRolesCache.keys()))
+    {
+      try
+      {
+      message.member.roles.set(fullRolesArray).catch(() => null)
+      }
+      catch {}
+    }
 }

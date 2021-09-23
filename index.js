@@ -208,6 +208,7 @@ client.on("messageCreate", async message => {
         result = addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
         result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
         result = addCommandToHelp(result, prefix, `invite ---> Invite Link`)
+        result = addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
         result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
         result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
         result = addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
@@ -987,6 +988,13 @@ client.on("messageCreate", async message => {
         message.reply({ embeds: [embed] })
 
         message.member.send({ embeds: [embed] }).catch(() => null)
+    }
+    else if (command == "ping") {
+        message.channel.send(`🏓Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nThis message will self destruct in 10 seconds.`).then(msg =>
+        {
+            deleteMessageAfterTime(msg, 10000)
+        })
+        .catch(() => null)
     }
 });
 

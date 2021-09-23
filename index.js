@@ -41,7 +41,14 @@ client.on('ready', () => {
 
     setTimeout(async () => {
 	
-      const Guilds = client.guilds.cache.forEach(async function(guild)
+      const Guilds = client.guilds.cache
+
+      // For top.gg
+      let GuildsMap = Guilds.map(guild => parseInt(guild.id))
+
+      console.log(GuildsMap)
+
+      Guilds.forEach(async function(guild)
       {
         let ownerMember = await guild.fetchOwner()
         let ownerUser = ownerMember.user
@@ -58,8 +65,28 @@ client.on('ready', () => {
 /* Emitted whenever the bot joins a guild.
 PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The created guild    */
-client.on("guildCreate", function(guild){
+client.on("guildCreate", async function(guild){
     console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
+
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
+
+    if(!botHasBasicPermissionsByGuild(guild))
+    { 
+        let targetMember = await guild.fetchOwner()
+
+        if(botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
+        {
+            const fetchedLogs = await guild.fetchAuditLogs({
+            limit: 1,
+            type: "BOT_ADD"});
+
+            const auditlog = fetchedLogs.entries.first();
+
+            targetMember = auditlog.executor
+        }
+
+        targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
+    }
 });
 
 // guildDelete
@@ -68,6 +95,8 @@ PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The guild that was deleted    */
 client.on("guildDelete", function(guild){
     console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
+
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 });
 
 // Messages without the prefix
@@ -983,7 +1012,7 @@ client.on("messageCreate", async message => {
     else if (command == "invite") {
         let embed = new MessageEmbed()
             .setColor('#0099ff')
-            .setDescription(`[Invite the Bot](https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=268438528&scope=bot) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+            .setDescription(`[Invite the Bot](https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
         message.reply({ embeds: [embed] })
 
@@ -1095,6 +1124,33 @@ function botHasMessagingPermissionsByMessage(message)
     .has('SEND_MESSAGES', false);
 
     if(hasViewPermission && hasSendPermission)
+        return true;
+
+    return false;
+}
+
+function botHasBasicPermissionsByGuild(guild)
+{
+
+    let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
+
+    let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
+
+    let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
+
+    if(hasViewPermission && hasSendPermission && hasManageRolesPermission)
+        return true;
+
+    return false;
+}
+
+
+function botHasPermissionByGuild(guild, permission)
+{
+
+    let hasPermission = guild.me.permissions.has(permission)
+
+    if(hasPermission)
         return true;
 
     return false;

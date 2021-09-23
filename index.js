@@ -271,7 +271,7 @@ client.on("messageCreate", async message => {
                         settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
                         updateProfileDataByMessage(message, true)
 
-                        const embed = new MessageEmbed()
+                        let embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
@@ -279,7 +279,7 @@ client.on("messageCreate", async message => {
 
                     }
                     else {
-                        const embed = new MessageEmbed()
+                        let embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
@@ -297,7 +297,7 @@ client.on("messageCreate", async message => {
             settings.delete(`cached-lichess-account-data-of-${message.author.id}`)
             updateProfileDataByMessage(message, true)
 
-            const embed = new MessageEmbed()
+            let embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Lichess Profile`)
 
@@ -340,10 +340,12 @@ client.on("messageCreate", async message => {
 
                     if (result.location && fullDiscordUsername == result.location) {
                         settings.set(`chesscom-account-of-${message.author.id}`, result.username)
-                        settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+
+                        // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we must comment the line below.
+                        //settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
                         updateProfileDataByMessage(message, true)
 
-                        const embed = new MessageEmbed()
+                        let embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
@@ -351,7 +353,7 @@ client.on("messageCreate", async message => {
 
                     }
                     else {
-                        const embed = new MessageEmbed()
+                        let embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
@@ -369,7 +371,7 @@ client.on("messageCreate", async message => {
 
             updateProfileDataByMessage(message, true)
 
-            const embed = new MessageEmbed()
+            let embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Chess.com Profile`)
 
@@ -377,15 +379,103 @@ client.on("messageCreate", async message => {
         }
     }
  else if (command == "profile") {
-        //deleteMessageAfterTime(message, 2000);
-        if (ratingRoles.length == 0) {
-            return message.reply('The server has yet to setup any rating role milestones')
-        }
+      //deleteMessageAfterTime(message, 2000);
+      if (ratingRoles.length == 0) {
+          return message.reply('The server has yet to setup any rating role milestones')
+      }
 
-        let lichessAccountData = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
-        let chessComAccountData = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
+      let lichessAccountData = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
+      let chessComAccountData = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
 
-        message.reply(`This command is under construction`)
+      // Soon chess.com steals every variable here.
+      let result = lichessAccountData
+
+      let lichessEmbed
+      let chessComEmbed
+
+      if(result)
+      {
+        let corresRating = "Unrated"
+        let blitzRating = "Unrated"
+        let rapidRating = "Unrated"
+        let classicalRating = "Unrated"
+
+
+        if (result.perfs.correspondence)
+          corresRating = result.perfs.correspondence.rating.toString() + (result.perfs.correspondence.prov === undefined ? "" : "?")
+
+        if (result.perfs.blitz)
+          blitzRating = result.perfs.blitz.rating.toString() + (result.perfs.blitz.prov === undefined ? "" : "?")
+
+        if (result.perfs.rapid)
+          rapidRating = result.perfs.rapid.rating.toString() + (result.perfs.rapid.prov === undefined ? "" : "?")
+
+        if (result.perfs.classical)
+          classicalRating = result.perfs.classical.rating.toString() + (result.perfs.classical.prov === undefined ? "" : "?")
+
+        lichessEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Lichess Stats')
+          .setURL(result.url)
+          .addFields(
+            { name: '\u200B', value: '\u200B' },
+            { name: 'Blitz Rating', value: blitzRating, inline: true },
+            { name: 'Rapid Rating', value: rapidRating, inline: true },
+            { name: 'Classical Rating', value: classicalRating, inline: true },
+            { name: 'Correspondence Rating', value: corresRating, inline: true },
+          )
+      }
+      else
+      {
+        lichessEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Lichess Stats')
+          .setDescription('Could not find stats for user.')
+      }
+
+      // Now chess.com steals every variable!
+
+      result = chessComAccountData
+
+      if(result)
+      {
+        corresRating = "Unrated"
+        blitzRating = "Unrated"
+        rapidRating = "Unrated"
+        classicalRating = "Unrated"
+
+        if (result.chess_daily)
+          corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= Constant_ProvisionalRD ? "" : "?")
+
+        if (result.chess_blitz)
+          blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= Constant_ProvisionalRD ? "" : "?")
+
+        if (result.chess_rapid)
+          rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= Constant_ProvisionalRD ? "" : "?")
+
+        let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
+
+        chessComEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Chess.com Stats')
+          .setURL(`https://www.chess.com/member/${chessComAccount}`)
+          .addFields(
+            { name: '\u200B', value: '\u200B' },
+            { name: 'Blitz Rating', value: blitzRating, inline: true },
+            { name: 'Rapid Rating', value: rapidRating, inline: true },
+            { name: 'Classical Rating', value: classicalRating, inline: true },
+            { name: 'Correspondence Rating', value: corresRating, inline: true },
+          )
+          .setFooter(`Note: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`);
+      }
+      else
+      {
+        chessComEmbed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Chess.com Stats')
+          .setDescription('Could not find any stats for user.')
+      }
+        message.reply({ embeds: [lichessEmbed, chessComEmbed] })
 
           
     }
@@ -434,7 +524,7 @@ client.on("messageCreate", async message => {
                 else {
                     settings.set(`lichess-account-of-${target.id}`, result.username)
 
-                    const embed = new MessageEmbed()
+                    let embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setDescription(`Successfully linked [Lichess Profile](${result.url}) for ${target}`)
 
@@ -493,7 +583,7 @@ client.on("messageCreate", async message => {
                 else {
                     settings.set(`chesscom-account-of-${target.id}`, result.username)
 
-                    const embed = new MessageEmbed()
+                    let embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setDescription(`Successfully linked [Chess.com Profile](${result.url}) for ${target}`)
 
@@ -574,7 +664,7 @@ client.on("messageCreate", async message => {
             msgToSend = "None."
         }
 
-        const embed = new MessageEmbed()
+        let embed = new MessageEmbed()
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
@@ -654,7 +744,7 @@ client.on("messageCreate", async message => {
             msgToSend = "None."
         }
 
-        const embed = new MessageEmbed()
+        let embed = new MessageEmbed()
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
@@ -725,7 +815,7 @@ client.on("messageCreate", async message => {
             msgToSend = "None."
         }
 
-        const embed = new MessageEmbed()
+        let embed = new MessageEmbed()
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
@@ -865,7 +955,7 @@ client.on("messageCreate", async message => {
             msgToSend = "None."
         }
 
-        const embed = new MessageEmbed()
+        let embed = new MessageEmbed()
             .setColor('#0099ff')
             .setDescription(msgToSend)
 

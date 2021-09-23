@@ -37,7 +37,7 @@ const settings = new enmap({
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
-  client.user.setActivity(` {Guilds} | Mention me to find the prefix`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 
     setTimeout(async () => {
 	
@@ -48,8 +48,9 @@ client.on('ready', () => {
         let fullDiscordUsername = ownerUser.username + "#" + ownerUser.discriminator
 
         console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
-      } 
-      );
+      });
+
+
     }, 2500);
 });
 

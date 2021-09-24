@@ -122,7 +122,7 @@ client.on("messageCreate", async message => {
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
-        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (client.guilds.cache.size == 1 && timestamp + 10 * 1000 < Date.now())))
+        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
         {
           updateProfileDataByMessage(message, false)
         }
@@ -250,9 +250,15 @@ client.on("messageCreate", async message => {
         result = addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
         result = addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `setchessequation ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `addmod ---> Adds a role as a Moderator`)
+        result = addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
         result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
+
+        if(isBotSelfHosted())
+        {
+            result = addCommandToHelp(result, prefix, `forcelichess [username] [@user]  ---> Links a user to Lichess.org, ignoring linking condition`)
+            result = addCommandToHelp(result, prefix, `forcechess [username] [@user] ---> Links a user to Chess.org, ignoring linking condition`)
+        }
 
         result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
@@ -509,7 +515,7 @@ client.on("messageCreate", async message => {
 
           
     }
-	else if (command == "forcelichess") {
+	else if (command == "forcelichess" && isBotSelfHosted()) {
         //deleteMessageAfterTime(message, 2000);
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
@@ -569,7 +575,7 @@ client.on("messageCreate", async message => {
             message.reply(`${prefix}forcelichess [username] [@user]`)
         }
     }
-    else if (command == "forcechess") {
+    else if (command == "forcechess" && isSelfHostedBot()) {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
@@ -1029,133 +1035,6 @@ client.on("messageCreate", async message => {
 
 client.login(mySecret);
 
-async function deleteMessageAfterTime(message, time)
-{
-    setTimeout(async () => {
-        try {
-            if (message.deleted === false) {
-                await message.delete()
-            }
-        }
-        catch {}
-    }, time);
-}
-
-function getRoleFromMentionString(guild, str) {
-    if (!str) return;
-
-    if (str.startsWith('<@&') && str.endsWith('>')) {
-        str = str.slice(3, -1);
-
-        if (str.startsWith('!')) {
-            str = str.slice(1);
-        }
-
-        return guild.roles.cache.get(str);
-    }
-}
-
-function addEloCommand(message, ratingRoles, role, elo) {
-    for (let i = 0; i < ratingRoles.length; i++) {
-        if (ratingRoles[i].id == role.id)
-            return `This role was already added to the bot!`
-    }
-
-    let template = { id: role.id, rating: elo };
-
-    settings.push(`guild-elo-roles-${message.guild.id}`, template)
-
-    return `Success.`
-}
-
-function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
-    for (let i = 0; i < puzzleRatingRoles.length; i++) {
-        if (puzzleRatingRoles[i].id == role.id)
-            return `This role was already added to the bot!`
-    }
-
-    let template = { id: role.id, rating: elo };
-
-    settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
-
-    return `Success.`
-}
-
-function addTitleCommand(message, titleRoles, role, title) {
-    for (let i = 0; i < titleRoles.length; i++) {
-        if (titleRoles[i].id == role.id)
-            return `This role was already added to the bot!`
-    }
-
-    let template = { id: role.id, title: title };
-
-    settings.push(`guild-title-roles-${message.guild.id}`, template)
-
-    return `Success.`
-}
-
-function addCommandToHelp(result, prefix, commandData) {
-    return result + prefix + commandData + '\n'
-}
-
-async function isBotControlAdminByMessage(message) {
-    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
-
-    if (message.member.permissions.has("ADMINISTRATOR"))
-        return true;
-
-
-    let roleCache = message.member.roles.cache
-
-    for (let i = 0; i < modRoles.length; i++) {
-        if(roleCache.has(modRoles[i]))
-            return true;
-    }
-
-    return false;
-}
-
-function botHasMessagingPermissionsByMessage(message)
-{
-    let hasViewPermission = message.channel.permissionsFor(message.guild.me)
-    .has('VIEW_CHANNEL', false);
-
-    let hasSendPermission = message.channel.permissionsFor(message.guild.me)
-    .has('SEND_MESSAGES', false);
-
-    if(hasViewPermission && hasSendPermission)
-        return true;
-
-    return false;
-}
-
-function botHasBasicPermissionsByGuild(guild)
-{
-
-    let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
-
-    let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
-
-    let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
-
-    if(hasViewPermission && hasSendPermission && hasManageRolesPermission)
-        return true;
-
-    return false;
-}
-
-
-function botHasPermissionByGuild(guild, permission)
-{
-
-    let hasPermission = guild.me.permissions.has(permission)
-
-    if(hasPermission)
-        return true;
-
-    return false;
-}
-
 async function updateProfileDataByMessage(message, useCacheOnly)
 {
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
@@ -1451,4 +1330,136 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       }
       catch {}
     }
+}
+
+async function deleteMessageAfterTime(message, time)
+{
+    setTimeout(async () => {
+        try {
+            if (message.deleted === false) {
+                await message.delete()
+            }
+        }
+        catch {}
+    }, time);
+}
+
+function getRoleFromMentionString(guild, str) {
+    if (!str) return;
+
+    if (str.startsWith('<@&') && str.endsWith('>')) {
+        str = str.slice(3, -1);
+
+        if (str.startsWith('!')) {
+            str = str.slice(1);
+        }
+
+        return guild.roles.cache.get(str);
+    }
+}
+
+function addEloCommand(message, ratingRoles, role, elo) {
+    for (let i = 0; i < ratingRoles.length; i++) {
+        if (ratingRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, rating: elo };
+
+    settings.push(`guild-elo-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
+    for (let i = 0; i < puzzleRatingRoles.length; i++) {
+        if (puzzleRatingRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, rating: elo };
+
+    settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+function addTitleCommand(message, titleRoles, role, title) {
+    for (let i = 0; i < titleRoles.length; i++) {
+        if (titleRoles[i].id == role.id)
+            return `This role was already added to the bot!`
+    }
+
+    let template = { id: role.id, title: title };
+
+    settings.push(`guild-title-roles-${message.guild.id}`, template)
+
+    return `Success.`
+}
+
+function addCommandToHelp(result, prefix, commandData) {
+    return result + prefix + commandData + '\n'
+}
+
+async function isBotControlAdminByMessage(message) {
+    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+
+    if (message.member.permissions.has("ADMINISTRATOR"))
+        return true;
+
+
+    let roleCache = message.member.roles.cache
+
+    for (let i = 0; i < modRoles.length; i++) {
+        if(roleCache.has(modRoles[i]))
+            return true;
+    }
+
+    return false;
+}
+
+function botHasMessagingPermissionsByMessage(message)
+{
+    let hasViewPermission = message.channel.permissionsFor(message.guild.me)
+    .has('VIEW_CHANNEL', false);
+
+    let hasSendPermission = message.channel.permissionsFor(message.guild.me)
+    .has('SEND_MESSAGES', false);
+
+    if(hasViewPermission && hasSendPermission)
+        return true;
+
+    return false;
+}
+
+function botHasBasicPermissionsByGuild(guild)
+{
+
+    let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
+
+    let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
+
+    let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
+
+    if(hasViewPermission && hasSendPermission && hasManageRolesPermission)
+        return true;
+
+    return false;
+}
+
+
+function botHasPermissionByGuild(guild, permission)
+{
+
+    let hasPermission = guild.me.permissions.has(permission)
+
+    if(hasPermission)
+        return true;
+
+    return false;
+}
+
+function isBotSelfHosted()
+{
+    return client.guilds.cache.size == 1
 }

@@ -48,16 +48,24 @@ client.on('ready', () => {
 
       console.log(GuildsMap)
 
-      Guilds.forEach(async function(guild)
+      let uniqueGuildOwners = []
+      
+      let GuildsArray = Array.from(Guilds.values());
+      for(let i=0;i < GuildsArray.length;i++)
       {
+        let guild = GuildsArray[i]
         let ownerMember = await guild.fetchOwner()
         let ownerUser = ownerMember.user
         let fullDiscordUsername = ownerUser.username + "#" + ownerUser.discriminator
 
+        if(!uniqueGuildOwners.includes(fullDiscordUsername))
+          uniqueGuildOwners.push(fullDiscordUsername)
+
         console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
-      });
+      }
 
-
+      console.log(uniqueGuildOwners.length)
+      
     }, 2500);
 });
 

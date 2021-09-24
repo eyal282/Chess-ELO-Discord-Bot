@@ -64,7 +64,7 @@ client.on('ready', () => {
         console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
       }
 
-      console.log(uniqueGuildOwners.length)
+      console.log(`Guilds with unique owners count: ${uniqueGuildOwners.length}`)
       
     }, 2500);
 });

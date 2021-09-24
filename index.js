@@ -1471,3 +1471,9 @@ function isBotSelfHosted()
 {
     return client.guilds.cache.size == 1
 }
+
+function isMemberEyalByMessage(message)
+{
+  return message.author.id == 340586932998504449
+
+}

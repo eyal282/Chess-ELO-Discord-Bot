@@ -1343,12 +1343,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 async function deleteMessageAfterTime(message, time)
 {
     setTimeout(async () => {
-        try {
-            if (message.deleted === false) {
-                await message.delete()
-            }
-        }
-        catch {}
+      message.delete().catch(() => null)
     }, time);
 }
 

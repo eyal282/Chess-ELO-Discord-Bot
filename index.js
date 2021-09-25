@@ -101,7 +101,6 @@ client.on("guildCreate", async function(guild){
           targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
         }
     }
-  }
 });
 
 // guildDelete

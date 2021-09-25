@@ -78,34 +78,30 @@ client.on("guildCreate", async function(guild){
 
     client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 
-    try
-    {
-      if(!botHasBasicPermissionsByGuild(guild))
-      { 
-          let targetMember = await guild.fetchOwner().catch(() => null)
+    if(!botHasBasicPermissionsByGuild(guild))
+    { 
+        let targetMember = await guild.fetchOwner().catch(() => null)
 
-          if(botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
-          {
-              const fetchedLogs = await guild.fetchAuditLogs({
-              limit: 1,
-              type: "BOT_ADD"}).catch(() => null);
+        if(botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
+        {
+            const fetchedLogs = await guild.fetchAuditLogs({
+            limit: 1,
+            type: "BOT_ADD"}).catch(() => null);
 
-              if(fetchedLogs)
-              {
-                const auditlog = fetchedLogs.entries.first();
+            if(fetchedLogs)
+            {
+              const auditlog = fetchedLogs.entries.first();
 
-                targetMember = auditlog.executor
-              }
-          }
+              targetMember = auditlog.executor
+            }
+        }
 
-          if(targetMember)
-          {
-            targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
-          }
-      }
+        if(targetMember)
+        {
+          targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
+        }
     }
-
-    catch {console.log("Error on Guild Create")}
+  }
 });
 
 // guildDelete

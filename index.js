@@ -80,20 +80,26 @@ client.on("guildCreate", async function(guild){
 
     if(!botHasBasicPermissionsByGuild(guild))
     { 
-        let targetMember = await guild.fetchOwner()
+        let targetMember = await guild.fetchOwner().catch(() => null)
 
         if(botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
         {
             const fetchedLogs = await guild.fetchAuditLogs({
             limit: 1,
-            type: "BOT_ADD"});
+            type: "BOT_ADD"}).catch(() => null);
 
-            const auditlog = fetchedLogs.entries.first();
+            if(fetchedLogs)
+            {
+              const auditlog = fetchedLogs.entries.first();
 
-            targetMember = auditlog.executor
+              targetMember = auditlog.executor
+            }
         }
 
-        targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
+        if(targetMember)
+        {
+          targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
+        }
     }
 });
 

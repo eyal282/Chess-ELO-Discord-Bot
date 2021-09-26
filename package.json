@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@replit/database": "^2.0.1",
     "better-sqlite3": "^7.4.3",
     "discord.js": "^13.1.0",
     "enmap": "^5.8.7",

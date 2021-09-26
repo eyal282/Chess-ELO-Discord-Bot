@@ -126,7 +126,7 @@ client.on("messageCreate", async message => {
 
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
-    if (prefix === undefined) prefix = defaultPrefix
+    if (prefix == undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) === 0) return;
 
@@ -141,7 +141,7 @@ client.on("messageCreate", async message => {
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
-        if ((timestamp === undefined || timestamp + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
+        if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
         {
           updateProfileDataByMessage(message, false)
         }
@@ -156,7 +156,7 @@ client.on("messageCreate", async message => {
 
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
-    if (prefix === undefined) prefix = defaultPrefix
+    if (prefix == undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) !== 0) return;
 
@@ -165,41 +165,41 @@ client.on("messageCreate", async message => {
 
     let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-    if (ratingRoles === undefined)
+    if (ratingRoles == undefined)
     {
         ratingRoles = []
     }
 
     let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
 
-    if (puzzleRatingRoles === undefined)
+    if (puzzleRatingRoles == undefined)
     {
         puzzleRatingRoles = []
     }
 
     let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
-    if (titleRoles === undefined) {
+    if (titleRoles == undefined) {
         titleRoles = []
     }
 
     let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
 
-    if (lichessRatingEquation === undefined) {
+    if (lichessRatingEquation == undefined) {
         settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
         lichessRatingEquation = Constant_lichessDefaultRatingEquation
     }
 
     let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
 
-    if (chessComRatingEquation === undefined) {
+    if (chessComRatingEquation == undefined) {
         settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
         chessComRatingEquation = Constant_chessComDefaultRatingEquation
     }
 
     let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
 
-    if (modRoles === undefined) {
+    if (modRoles == undefined) {
         settings.set(`guild-bot-mods-${message.guild.id}`, [])
         modRoles = []
     }
@@ -295,7 +295,7 @@ client.on("messageCreate", async message => {
             }
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
-            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now())) {
+            if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
                 settings.set(`last-command-${message.author.id}`, Date.now())
 
                 let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
@@ -369,7 +369,7 @@ client.on("messageCreate", async message => {
 
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
-            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
+            if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
                 settings.set(`last-command-${message.author.id}`, Date.now())
                 let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
@@ -457,16 +457,16 @@ client.on("messageCreate", async message => {
 
 
         if (result.perfs.correspondence)
-          corresRating = result.perfs.correspondence.rating.toString() + (result.perfs.correspondence.prov === undefined ? "" : "?")
+          corresRating = result.perfs.correspondence.rating.toString() + (result.perfs.correspondence.prov == undefined ? "" : "?")
 
         if (result.perfs.blitz)
-          blitzRating = result.perfs.blitz.rating.toString() + (result.perfs.blitz.prov === undefined ? "" : "?")
+          blitzRating = result.perfs.blitz.rating.toString() + (result.perfs.blitz.prov == undefined ? "" : "?")
 
         if (result.perfs.rapid)
-          rapidRating = result.perfs.rapid.rating.toString() + (result.perfs.rapid.prov === undefined ? "" : "?")
+          rapidRating = result.perfs.rapid.rating.toString() + (result.perfs.rapid.prov == undefined ? "" : "?")
 
         if (result.perfs.classical)
-          classicalRating = result.perfs.classical.rating.toString() + (result.perfs.classical.prov === undefined ? "" : "?")
+          classicalRating = result.perfs.classical.rating.toString() + (result.perfs.classical.prov == undefined ? "" : "?")
 
         lichessEmbed = new MessageEmbed()
           .setColor('#0099ff')
@@ -555,7 +555,7 @@ client.on("messageCreate", async message => {
             
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
-            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now())) {
+            if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
                 settings.set(`last-command-${message.author.id}`, Date.now())
 
                 let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
@@ -615,7 +615,7 @@ client.on("messageCreate", async message => {
 
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
-            if ((timestamp === undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
+            if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
                 settings.set(`last-command-${message.author.id}`, Date.now())
                 let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
@@ -1061,14 +1061,14 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
     let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
 
-    if (ratingRoles === undefined)
+    if (ratingRoles == undefined)
     {
       ratingRoles = []
     }
 
     let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
 
-    if (puzzleRatingRoles === undefined)
+    if (puzzleRatingRoles == undefined)
     {   
       puzzleRatingRoles = []
     }
@@ -1076,7 +1076,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
 
 
-    if (titleRoles === undefined) {
+    if (titleRoles == undefined) {
       titleRoles = []
     }
 
@@ -1126,14 +1126,14 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
     let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
 
-    if (lichessRatingEquation === undefined) {
+    if (lichessRatingEquation == undefined) {
       settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
       lichessRatingEquation = Constant_lichessDefaultRatingEquation
     }
 
     let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
 
-    if (chessComRatingEquation === undefined) {
+    if (chessComRatingEquation == undefined) {
       settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
       chessComRatingEquation = Constant_chessComDefaultRatingEquation
     }
@@ -1151,7 +1151,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
     let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
 
-    if (modRoles === undefined) {
+    if (modRoles == undefined) {
       settings.set(`guild-bot-mods-${message.guild.id}`, [])
       modRoles = []
     }
@@ -1163,7 +1163,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       
     let result
 
-    if (lichessAccount === undefined) {
+    if (lichessAccount == undefined) {
       result = null;
     }
     else
@@ -1206,12 +1206,12 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
       let puzzleRating = -1
 
-      if (result.perfs.correspondence && result.perfs.correspondence.prov === undefined) corresRating = result.perfs.correspondence.rating
-      if (result.perfs.blitz && result.perfs.blitz.prov === undefined) blitzRating = result.perfs.blitz.rating
-      if (result.perfs.rapid && result.perfs.rapid.prov === undefined) rapidRating = result.perfs.rapid.rating
-      if (result.perfs.classical && result.perfs.classical.prov === undefined) classicalRating = result.perfs.classical.rating
+      if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = result.perfs.correspondence.rating
+      if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
+      if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
+      if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
 
-      if (result.perfs.puzzle && result.perfs.puzzle.prov === undefined) puzzleRating = result.perfs.puzzle.rating
+      if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
 
       lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
       lichessPuzzleRating = puzzleRating
@@ -1233,7 +1233,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       }
     }
     
-    if (chessComAccount === undefined) {
+    if (chessComAccount == undefined) {
       result = null;
     }
     else

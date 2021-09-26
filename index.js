@@ -18,6 +18,7 @@ const Parser = require('expr-eval').Parser;
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const enmap = require('enmap');
+const Database = require("@replit/database")
 const fetch = require('node-fetch');
 
 let defaultPrefix = "!"
@@ -27,14 +28,16 @@ let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
-
+/*
 const settings = new enmap({
     name: "settings",
     autoFetch: true,
     cloneLevel: "deep",
     fetchAll: true
 });
+*/
 
+const settings = new Database()
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

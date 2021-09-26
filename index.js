@@ -36,6 +36,7 @@ const settings = new enmap({
     fetchAll: true
 });
 
+
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
@@ -100,7 +101,7 @@ client.on("guildCreate", async function(guild){
 
         if(targetMember)
         {
-          targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, MANAGE_ROLES to properly function.`).catch(() => null)
+          targetMember.send(`Bot needs the permissions of VIEW_CHANNELS, SEND_MESSAGES, READ_MESSAGE_HISTORY, MANAGE_ROLES to properly function.`).catch(() => null)
         }
     }
 });
@@ -1434,10 +1435,13 @@ function botHasMessagingPermissionsByMessage(message)
     let hasViewPermission = message.channel.permissionsFor(message.guild.me)
     .has('VIEW_CHANNEL', false);
 
+    let hasMessageHistoryPermission = message.channel.permissionsFor(message.guild.me)
+    .has('READ_MESSAGE_HISTORY')
+
     let hasSendPermission = message.channel.permissionsFor(message.guild.me)
     .has('SEND_MESSAGES', false);
 
-    if(hasViewPermission && hasSendPermission)
+    if(hasViewPermission && hasMessageHistoryPermission && hasSendPermission)
         return true;
 
     return false;
@@ -1448,11 +1452,13 @@ function botHasBasicPermissionsByGuild(guild)
 
     let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
 
+    let hasMessageHistoryPermission = guild.me.permissions.has('READ_MESSAGE_HISTORY')
+
     let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
 
     let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
 
-    if(hasViewPermission && hasSendPermission && hasManageRolesPermission)
+    if(hasViewPermission && hasSendPermission && hasManageRolesPermission && hasMessageHistoryPermission)
         return true;
 
     return false;

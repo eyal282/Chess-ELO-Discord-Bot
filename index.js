@@ -97,6 +97,7 @@ client.on("guildCreate", async function(guild){
 
               targetMember = auditlog.executor
             }
+            
         }
 
         if(targetMember)

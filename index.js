@@ -17,8 +17,8 @@ const Parser = require('expr-eval').Parser;
 
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
-const enmap = require('enmap');
-const Database = require("@replit/database")
+const Josh = require("@joshdb/core");
+const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
 
 let defaultPrefix = "!"
@@ -28,14 +28,18 @@ let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
-
-const settings = new enmap({
-    name: "settings",
-    autoFetch: true,
-    cloneLevel: "deep",
-    fetchAll: true
+const settings = new Josh({
+  name: 'Chess ELO Role',
+  provider,
+  providerOptions: {
+    collection: `settings`,
+    url: `mongodb+srv://eyal282:${process.env['SECRET_MONGO_PASSWORD']}@chess-elo-role.dpqoj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
+  }
 });
 
+settings.defer.then( () => {
+  console.log(`Connected, there are ${settings.count} rows in the database.`);
+});
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

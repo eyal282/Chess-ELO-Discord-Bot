@@ -28,16 +28,13 @@ let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
-/*
+
 const settings = new enmap({
     name: "settings",
     autoFetch: true,
     cloneLevel: "deep",
     fetchAll: true
 });
-*/
-
-const settings = new Database()
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

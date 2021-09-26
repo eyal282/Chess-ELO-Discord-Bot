@@ -1,3 +1,5 @@
+// Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
+
 const mySecret = process.env['SECRET_BOT_TOKEN']
 
 const express = require('express');

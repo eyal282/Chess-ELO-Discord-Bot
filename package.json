@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@joshdb/core": "^1.2.6",
+    "@joshdb/mongo": "^1.1.6",
     "@replit/database": "^2.0.1",
     "better-sqlite3": "^7.4.3",
     "discord.js": "^13.1.0",

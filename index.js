@@ -37,8 +37,9 @@ const settings = new Josh({
   }
 });
 
-settings.defer.then( () => {
-  console.log(`Connected, there are ${settings.count} rows in the database.`);
+settings.defer.then( async () => {
+  let size = await settings.size;
+  console.log(`Connected, there are ${size} rows in the database.`);
 });
 
 client.on('ready', () => {
@@ -189,21 +190,21 @@ client.on("messageCreate", async message => {
     let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
 
     if (lichessRatingEquation == undefined) {
-        settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+        await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
         lichessRatingEquation = Constant_lichessDefaultRatingEquation
     }
 
     let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
 
     if (chessComRatingEquation == undefined) {
-        settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+        await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
         chessComRatingEquation = Constant_chessComDefaultRatingEquation
     }
 
     let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
 
     if (modRoles == undefined) {
-        settings.set(`guild-bot-mods-${message.guild.id}`, [])
+        await settings.set(`guild-bot-mods-${message.guild.id}`, [])
         modRoles = []
     }
 
@@ -246,9 +247,9 @@ client.on("messageCreate", async message => {
     ratingRoles.sort(function (a, b) { return a.rating - b.rating });
     puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
 
-    settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
-    settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
-    settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
+    await settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
+    await settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
+    await settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
 
     if (command == "help")
     {
@@ -299,7 +300,7 @@ client.on("messageCreate", async message => {
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
             if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-                settings.set(`last-command-${message.author.id}`, Date.now())
+                await settings.set(`last-command-${message.author.id}`, Date.now())
 
                 let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
@@ -324,9 +325,9 @@ client.on("messageCreate", async message => {
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
                     if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                        settings.set(`lichess-account-of-${message.author.id}`, 
+                        await settings.set(`lichess-account-of-${message.author.id}`, 
                         result.username)
-                        settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+                        await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
                         updateProfileDataByMessage(message, true)
 
                         let embed = new MessageEmbed()
@@ -351,8 +352,8 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            settings.delete(`lichess-account-of-${message.author.id}`)
-            settings.delete(`cached-lichess-account-data-of-${message.author.id}`)
+            await settings.delete(`lichess-account-of-${message.author.id}`)
+            await settings.delete(`cached-lichess-account-data-of-${message.author.id}`)
             updateProfileDataByMessage(message, true)
 
             let embed = new MessageEmbed()
@@ -373,7 +374,7 @@ client.on("messageCreate", async message => {
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
             if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
-                settings.set(`last-command-${message.author.id}`, Date.now())
+                await settings.set(`last-command-${message.author.id}`, Date.now())
                 let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
                         return null
@@ -397,10 +398,10 @@ client.on("messageCreate", async message => {
                     let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
                     if (result.location && fullDiscordUsername == result.location) {
-                        settings.set(`chesscom-account-of-${message.author.id}`, result.username)
+                        await settings.set(`chesscom-account-of-${message.author.id}`, result.username)
 
                         // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we must comment the line below.
-                        //settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+                        //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
                         updateProfileDataByMessage(message, true)
 
                         let embed = new MessageEmbed()
@@ -424,8 +425,8 @@ client.on("messageCreate", async message => {
             }
         }
         else {
-            settings.delete(`chesscom-account-of-${message.author.id}`)
-            settings.delete(`cached-chesscom-account-data-of-${message.author.id}`)
+            await settings.delete(`chesscom-account-of-${message.author.id}`)
+            await settings.delete(`cached-chesscom-account-data-of-${message.author.id}`)
 
             updateProfileDataByMessage(message, true)
 
@@ -559,7 +560,7 @@ client.on("messageCreate", async message => {
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
             if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-                settings.set(`last-command-${message.author.id}`, Date.now())
+                await settings.set(`last-command-${message.author.id}`, Date.now())
 
                 let result = await fetch(`https://lichess.org/api/user/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
@@ -580,7 +581,7 @@ client.on("messageCreate", async message => {
                     message.reply("Rate Limit Encountered! Please try again!")
                 }
                 else {
-                    settings.set(`lichess-account-of-${target.id}`, result.username)
+                    await settings.set(`lichess-account-of-${target.id}`, result.username)
 
                     let embed = new MessageEmbed()
                         .setColor('#0099ff')
@@ -619,7 +620,7 @@ client.on("messageCreate", async message => {
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
             if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
-                settings.set(`last-command-${message.author.id}`, Date.now())
+                await settings.set(`last-command-${message.author.id}`, Date.now())
                 let result = await fetch(`https://api.chess.com/pub/player/${args[0]}`).then(response => {
                     if (response.status == 404) { // Not Found
                         return null
@@ -639,7 +640,7 @@ client.on("messageCreate", async message => {
                     message.reply("Rate Limit Encountered! Please try again!")
                 }
                 else {
-                    settings.set(`chesscom-account-of-${target.id}`, result.username)
+                    await settings.set(`chesscom-account-of-${target.id}`, result.username)
 
                     let embed = new MessageEmbed()
                         .setColor('#0099ff')
@@ -673,7 +674,7 @@ client.on("messageCreate", async message => {
             return message.reply(`To avoid double changing prefixes, use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
         }
 
-        settings.set(`guild-prefix-${message.guild.id}`, args[0])
+        await settings.set(`guild-prefix-${message.guild.id}`, args[0])
         message.reply('Prefix was successfully set to `' + args[0] + '`')
     }
     else if(command == "addelo")
@@ -687,27 +688,32 @@ client.on("messageCreate", async message => {
             return message.reply(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
         }
 
-        let msgToSend = ""
 
-
-
-        for (let i = 0; i < (args.length / 2); i++)
+        message.reply(`Adding roles...`).then(async msg =>
         {
-            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+          let msgToSend = ""
 
-            let result = 'Could not find role'
 
-            if(role)
-                result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
 
-            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-        }
+          for (let i = 0; i < (args.length / 2); i++)
+          {
+              let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
 
-        if (msgToSend == "") {
-            msgToSend = "Internal Error, Cringe :("
-        }
+              let result = 'Could not find role'
 
-        message.reply(msgToSend)
+              if(role)
+                  result = await addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+
+              msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+          }
+
+          if (msgToSend == "") {
+              msgToSend = "Internal Error, Cringe :("
+          }
+
+          msg.edit(msgToSend)
+        })
+        .catch(() => null)
     }
     else if (command == "getelo") {
         let msgToSend = ""
@@ -748,7 +754,7 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            settings.delete(`guild-elo-roles-${message.guild.id}`)
+            await settings.delete(`guild-elo-roles-${message.guild.id}`)
             message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
             message.member.send(`Successfully reset all elo related roles! Command to 
             undo:\n` + '```' + msgToSend + '```').catch(() => null)
@@ -767,27 +773,31 @@ client.on("messageCreate", async message => {
             return message.reply(`${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`)
         }
 
-        let msgToSend = ""
-
-
-
-        for (let i = 0; i < (args.length / 2); i++)
+        message.reply(`Adding roles...`).then(async msg =>
         {
-            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+            let msgToSend = ""
 
-            let result = 'Could not find role'
 
-            if(role)
-                result = addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
 
-            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-        }
+            for (let i = 0; i < (args.length / 2); i++)
+            {
+                let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
 
-        if (msgToSend == "") {
-            msgToSend = "Internal Error, Cringe :("
-        }
+                let result = 'Could not find role'
 
-        message.reply(msgToSend)
+                if(role)
+                    result = await addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+
+                msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+            }
+
+            if (msgToSend == "") {
+                msgToSend = "Internal Error, Cringe :("
+            }
+
+            msg.edit(msgToSend)
+        })
+        .catch(() => null)
     }
     else if (command == "getpuzzleelo") {
         let msgToSend = ""
@@ -828,13 +838,13 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
+            await settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
             message.reply(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
             message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
     }
     else if (command == "addtitle") {
-		let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
             return message.reply("Access Denied")
@@ -843,24 +853,29 @@ client.on("messageCreate", async message => {
             return message.reply(`${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`)
         }
 
-        let msgToSend = ""
+        message.reply(`Adding roles...`).then(async msg =>
+        {
+          let msgToSend = ""
 
-        for (let i = 0; i < (args.length / 2); i++) {
-            let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+          for (let i = 0; i < (args.length / 2); i++) {
+              let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
 
-            let result = 'Could not find role'
+              let result = 'Could not find role'
 
-            if (role)
-                result = addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+              if (role)
+                  result = await addTitleCommand(message, titleRoles, role, args[2 * i + 0])
 
-            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-        }
+              msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+          }
 
-        if (msgToSend == "") {
-            msgToSend = "Internal Error, Cringe :("
-        }
+          if (msgToSend == "") {
+              msgToSend = "Internal Error, Cringe :("
+          }
 
-        message.reply(msgToSend)
+          msg.edit(msgToSend)
+
+        })
+        .catch(() => null)
     }
     else if (command == "gettitle") {
         let msgToSend = ""
@@ -899,7 +914,7 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            settings.delete(`guild-title-roles-${message.guild.id}`)
+            await settings.delete(`guild-title-roles-${message.guild.id}`)
             message.reply(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
             message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
@@ -912,7 +927,7 @@ client.on("messageCreate", async message => {
         else {
             if (args.length == 0)
             {
-                settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+                await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
 
                 message.reply(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
 
@@ -939,7 +954,7 @@ client.on("messageCreate", async message => {
                 return;
             }
 
-            settings.set(`guild-lichess-rating-equation-${message.guild.id}`, argString)
+            await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, argString)
             message.reply(`Successfully set Lichess rating equation to: ${argString}`)
         }
     }
@@ -952,7 +967,7 @@ client.on("messageCreate", async message => {
         }
         else {
             if (args.length == 0) {
-                settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+                await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
 
                 message.reply(`Successfully reset Chess.com rating equation to default: ${Constant_chessComDefaultRatingEquation}`)
 
@@ -980,7 +995,7 @@ client.on("messageCreate", async message => {
                 return;
             }
 
-            settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, argString)
+            await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, argString)
             message.reply(`Successfully set Chess.com rating equation to: ${argString}`)
         }
     }
@@ -997,7 +1012,7 @@ client.on("messageCreate", async message => {
                 return message.reply(`$(prefix}addmod [@role]`)
             }
 
-            settings.push(`guild-bot-mods-${message.guild.id}`, role.id)
+            await settings.push(`guild-bot-mods-${message.guild.id}`, role.id)
             message.reply(`Successfully added the role as a moderator for this bot.`)
         }
     }
@@ -1027,7 +1042,7 @@ client.on("messageCreate", async message => {
         }
         else {
             
-            settings.delete(`guild-bot-mods-${message.guild.id}`)
+            await settings.delete(`guild-bot-mods-${message.guild.id}`)
             message.reply(`Successfully removed all moderator roles from this bot.`)
         }
     }
@@ -1123,21 +1138,21 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     ratingRoles.sort(function (a, b) { return a.rating - b.rating });
     puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
     
-    settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
-    settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
-    settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
+    await settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
+    await settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
+    await settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
 
     let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
 
     if (lichessRatingEquation == undefined) {
-      settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
+      await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
       lichessRatingEquation = Constant_lichessDefaultRatingEquation
     }
 
     let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
 
     if (chessComRatingEquation == undefined) {
-      settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
+      await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
       chessComRatingEquation = Constant_chessComDefaultRatingEquation
     }
 
@@ -1155,10 +1170,10 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
 
     if (modRoles == undefined) {
-      settings.set(`guild-bot-mods-${message.guild.id}`, [])
+      await settings.set(`guild-bot-mods-${message.guild.id}`, [])
       modRoles = []
     }
-    settings.set(`last-updated-${message.author.id}`, Date.now())
+    await settings.set(`last-updated-${message.author.id}`, Date.now())
 
     let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
     let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
@@ -1200,7 +1215,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     
     if(result != null)
     {
-      settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+      await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
 
       let corresRating = -1
       let blitzRating = -1
@@ -1262,7 +1277,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     }
     if(result != null)
     {
-      settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+      await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
       let corresRating = -1
       let blitzRating = -1
       let rapidRating = -1
@@ -1375,7 +1390,7 @@ function getRoleFromMentionString(guild, str) {
     }
 }
 
-function addEloCommand(message, ratingRoles, role, elo) {
+async function addEloCommand(message, ratingRoles, role, elo) {
     for (let i = 0; i < ratingRoles.length; i++) {
         if (ratingRoles[i].id == role.id)
             return `This role was already added to the bot!`
@@ -1383,12 +1398,12 @@ function addEloCommand(message, ratingRoles, role, elo) {
 
     let template = { id: role.id, rating: elo };
 
-    settings.push(`guild-elo-roles-${message.guild.id}`, template)
+    await settings.push(`guild-elo-roles-${message.guild.id}`, template)
 
     return `Success.`
 }
 
-function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
+async function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
     for (let i = 0; i < puzzleRatingRoles.length; i++) {
         if (puzzleRatingRoles[i].id == role.id)
             return `This role was already added to the bot!`
@@ -1396,12 +1411,12 @@ function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
 
     let template = { id: role.id, rating: elo };
 
-    settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
+    await settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
 
     return `Success.`
 }
 
-function addTitleCommand(message, titleRoles, role, title) {
+async function addTitleCommand(message, titleRoles, role, title) {
     for (let i = 0; i < titleRoles.length; i++) {
         if (titleRoles[i].id == role.id)
             return `This role was already added to the bot!`
@@ -1409,7 +1424,7 @@ function addTitleCommand(message, titleRoles, role, title) {
 
     let template = { id: role.id, title: title };
 
-    settings.push(`guild-title-roles-${message.guild.id}`, template)
+    await settings.push(`guild-title-roles-${message.guild.id}`, template)
 
     return `Success.`
 }
@@ -1484,10 +1499,4 @@ function botHasPermissionByGuild(guild, permission)
 function isBotSelfHosted()
 {
     return client.guilds.cache.size == 1
-}
-
-function isMemberEyalByMessage(message)
-{
-  return message.author.id == 340586932998504449
-
 }

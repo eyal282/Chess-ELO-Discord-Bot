@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/builders": "^0.6.0",
     "@joshdb/core": "^1.2.6",
     "@joshdb/mongo": "^1.1.6",
     "@replit/database": "^2.0.1",

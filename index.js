@@ -13,6 +13,7 @@ app.listen(port, () => console.log(`Example app listening at http://localhost:${
 const Discord = require('discord.js');
 const { MessageEmbed } = require('discord.js');
 const { Permissions } = require('discord.js');
+const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
@@ -41,6 +42,13 @@ settings.defer.then( async () => {
   let size = await settings.size;
   console.log(`Connected, there are ${size} rows in the database.`);
 });
+
+const { SlashCommandBuilder } = require('@discordjs/builders');
+
+const command = new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!');
+
+// Raw data that can be used to register a slash command
+const rawData = command.toJSON();
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -122,6 +130,105 @@ client.on("guildDelete", function(guild){
     client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 });
 
+// On Button Pressed
+client.on('interactionCreate', async(interaction) => {
+	if (!interaction.isButton()) return;
+
+  let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
+
+  let url = interaction.message.embeds[0].url
+
+  url = url.replace('\\', '/')
+
+
+  let splitURL = url.split('/')
+
+  let username = splitURL[splitURL.length-1]
+
+  let message = interaction.message
+
+  if(message.deleted) return;
+  
+  message.author = interaction.user // We do a little trolling
+
+
+	if(bLichess)
+  {
+    let timestamp = await settings.get(`last-command-${message.author.id}`)
+
+    if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
+        await settings.set(`last-command-${message.author.id}`, Date.now())
+
+        let result = await fetch(`https://lichess.org/api/user/${username}`).then(response => {
+            if (response.status == 404) { // Not Found
+                return null
+            }
+            else if (response.status == 429) { // Rate Limit
+                return "Rate Limit"
+            }
+            else if (response.status == 200) { // Status OK
+                return response.json()
+            }
+        })
+
+        if (result == null) {
+            message.reply("User was not found!")
+        }
+        else if (result == "Rate Limit") {
+            message.reply("Rate Limit Encountered! Please try again!")
+        }
+        else {
+            // result.profile.location
+            let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
+
+            if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+                await settings.set(`lichess-account-of-${message.author.id}`, 
+                result.username)
+                await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+                updateProfileDataByMessage(message, true)
+
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
+
+                interaction.reply({ embeds: [embed], reply: { failIfNotExists: false }})
+
+            }
+            else {
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setURL(result.url)
+                    .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+
+                    const row = new MessageActionRow()
+                      .addComponents(
+                        new MessageButton()
+                          .setCustomId('primary')
+                          .setLabel(`Retry Link for ${username}`)
+                          .setStyle('PRIMARY'),
+                      );
+
+                      interaction.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }, ephemeral: true})
+            }
+        }
+    }
+    else {
+      let embed = new MessageEmbed()
+        .setColor('#0099ff')
+        .setURL(`https://lichess.org/@/${username}`)
+        .setDescription('Rate Limit Encountered! Please try again!')
+
+        const row = new MessageActionRow()
+          .addComponents(
+            new MessageButton()
+              .setCustomId('primary')
+              .setLabel(`Retry Link for ${username}`)
+              .setStyle('PRIMARY'),
+          );
+        interaction.reply({ embeds: [embed], components: [row], ephemeral: true })
+    }
+  }
+});
 // Messages without the prefix
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
@@ -251,6 +358,8 @@ client.on("messageCreate", async message => {
     await settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
     await settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
 
+    if (message.deleted) return;
+
     if (command == "help")
     {
         let result = ""
@@ -290,12 +399,14 @@ client.on("messageCreate", async message => {
         message.reply(result)
     }
     else if (command == "lichess") {
-        //deleteMessageAfterTime(message, 2000);
+        //deleteMessageAfterTime(message, 100);
 
         if (args[0]) {
+            
+            if (message.deleted) return;
 
             if (ratingRoles.length == 0) {
-                return message.reply('The server has yet to setup any rating role milestones')
+                return message.reply({ content: 'The server has yet to setup any rating role milestones', reply: { failIfNotExists: false }})
             }
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
@@ -314,11 +425,25 @@ client.on("messageCreate", async message => {
                     }
                 })
 
+                if (message.deleted) return;
+
                 if (result == null) {
-                    message.reply("User was not found!")
+                  return message.reply({ content: 'User was not found!', reply: { failIfNotExists: false }})
                 }
                 else if (result == "Rate Limit") {
-                    message.reply("Rate Limit Encountered! Please try again!")
+                     let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setURL(`https://lichess.org/@/${username}`)
+                      .setDescription('Rate Limit Encountered! Please try again!')
+
+                      const row = new MessageActionRow()
+                        .addComponents(
+                          new MessageButton()
+                            .setCustomId('primary')
+                            .setLabel(`Retry Link for ${args[0]}`)
+                            .setStyle('PRIMARY'),
+                        );
+                      message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
                 }
                 else {
                     // result.profile.location
@@ -334,20 +459,41 @@ client.on("messageCreate", async message => {
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                        message.reply({ embeds: [embed] })
+                        message.reply({ embeds: [embed], reply: { failIfNotExists: false }})
 
                     }
                     else {
                         let embed = new MessageEmbed()
                             .setColor('#0099ff')
+                            .setURL(result.url)
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
-                        message.reply({ embeds: [embed] })
+                            const row = new MessageActionRow()
+                              .addComponents(
+                                new MessageButton()
+                                  .setCustomId('primary')
+                                  .setLabel(`Retry Link for ${args[0]}`)
+                                  .setStyle('PRIMARY'),
+                              );
+
+                              message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
                     }
                 }
             }
             else {
-                message.reply("Rate Limit Encountered! Please try again!")
+              let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setURL(`https://lichess.org/@/${args[0]}`)
+                .setDescription('Rate Limit Encountered! Please try again!')
+
+                const row = new MessageActionRow()
+                  .addComponents(
+                    new MessageButton()
+                      .setCustomId('primary')
+                      .setLabel(`Retry Link for ${args[0]}`)
+                      .setStyle('PRIMARY'),
+                  );
+                message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
             }
         }
         else {
@@ -360,12 +506,14 @@ client.on("messageCreate", async message => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Lichess Profile`)
 
-            message.reply({ embeds: [embed] })
+            message.reply({ embeds: [embed], reply: { failIfNotExists: false } })
 
         }
     }
     else if (command == "chess") {
-        //deleteMessageAfterTime(message, 2000);
+
+        if (message.deleted) return;
+
         if (ratingRoles.length == 0) {
             return message.reply('The server has yet to setup any rating role milestones')
         }
@@ -386,6 +534,8 @@ client.on("messageCreate", async message => {
                         return response.json()
                     }
                 })
+
+                if (message.deleted) return;
 
                 if (result == null) {
                     message.reply("User was not found!")
@@ -439,6 +589,8 @@ client.on("messageCreate", async message => {
     }
  else if (command == "profile") {
       //deleteMessageAfterTime(message, 2000);
+      if (message.deleted) return;
+
       if (ratingRoles.length == 0) {
           return message.reply('The server has yet to setup any rating role milestones')
       }

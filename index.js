@@ -147,8 +147,6 @@ client.on('interactionCreate', async(interaction) => {
 
   let message = interaction.message
 
-  if(message.deleted || interaction.deleted) return;
-
   message.author = interaction.user // We do a little trolling
 
 
@@ -171,13 +169,24 @@ client.on('interactionCreate', async(interaction) => {
             }
         })
 
-        if(message.deleted || interaction.deleted) return;
-
         if (result == null) {
-            message.reply("User was not found!")
+                                message.reply({content: `Username was not found!`, failIfNotExists: false})
         }
         else if (result == "Rate Limit") {
-            message.reply("Rate Limit Encountered! Please try again!")
+            let embed = new MessageEmbed()
+              .setColor('#0099ff')
+              .setURL(`https://lichess.org/@/${username}`)
+              .setDescription('Rate Limit Encountered! Please try again!')
+
+              const row = new MessageActionRow()
+                .addComponents(
+                  new MessageButton()
+                    .setCustomId('primary')
+                    .setURL(`https://lichess.org/@/${username}`)
+                    .setLabel(`Retry Link for ${username}`)
+                    .setStyle('PRIMARY'),
+                );
+              interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
         }
         else {
             // result.profile.location
@@ -193,7 +202,7 @@ client.on('interactionCreate', async(interaction) => {
                     .setColor('#0099ff')
                     .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                interaction.reply({ embeds: [embed]})
+                interaction.reply({ embeds: [embed], failIfNotExists: false})
 
             }
             else {
@@ -210,7 +219,7 @@ client.on('interactionCreate', async(interaction) => {
                           .setStyle('PRIMARY'),
                       );
 
-                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true})
+                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false})
             }
         }
     }
@@ -227,8 +236,99 @@ client.on('interactionCreate', async(interaction) => {
               .setLabel(`Retry Link for ${username}`)
               .setStyle('PRIMARY'),
           );
-        interaction.reply({ embeds: [embed], components: [row], ephemeral: true })
+        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
     }
+  }
+  // If not lichess
+  else
+  {
+      let timestamp = await settings.get(`last-command-${message.author.id}`)
+
+      if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
+          await settings.set(`last-command-${message.author.id}`, Date.now())
+          let result = await fetch(`https://api.chess.com/pub/player/${username}`).then(response => {
+              if (response.status == 404) { // Not Found
+                  return null
+              }
+              else if (response.status == 429) { // Rate Limit
+                  return "Rate Limit"
+              }
+              else if (response.status == 200) { // Status OK
+                  return response.json()
+              }
+          })
+
+
+          if (result == null) {
+            return message.reply({ content: 'User was not found!', failIfNotExists: false })
+          }
+          else if (result == "Rate Limit") {
+                let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setURL(`https://www.chess.com/member/${username}`)
+                .setDescription('Rate Limit Encountered! Please try again!')
+
+                const row = new MessageActionRow()
+                  .addComponents(
+                    new MessageButton()
+                      .setCustomId('primary')
+                      .setLabel(`Retry Link for ${username}`)
+                      .setStyle('PRIMARY'),
+                  );
+                message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+          }
+          else {
+              // result.profile.location
+              let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
+
+              if (result.location && fullDiscordUsername == result.location) {
+                  await settings.set(`chesscom-account-of-${message.author.id}`, result.username)
+
+                  // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we must comment the line below.
+                  //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+                  updateProfileDataByMessage(message, true)
+
+                  let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
+
+
+                    message.reply({ embeds: [embed], failIfNotExists: false })
+
+              }
+              else {
+                  let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setURL(`https://www.chess.com/member/${username}`)
+                      .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
+
+                        const row = new MessageActionRow()
+                        .addComponents(
+                          new MessageButton()
+                            .setCustomId('primary')
+                            .setLabel(`Retry Link for ${username}`)
+                            .setStyle('PRIMARY'),
+                        );
+
+                        message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+              }
+          }
+      }
+      else {
+          let embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setURL(`https://www.chess.com/member/${username}`)
+            .setDescription('Rate Limit Encountered! Please try again!')
+
+            const row = new MessageActionRow()
+              .addComponents(
+                new MessageButton()
+                  .setCustomId('primary')
+                  .setLabel(`Retry Link for ${username}`)
+                  .setStyle('PRIMARY'),
+              );
+            message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+      }
   }
 });
 // Messages without the prefix
@@ -360,8 +460,6 @@ client.on("messageCreate", async message => {
     await settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
     await settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
 
-    if (message.deleted) return;
-
     if (command == "help")
     {
         let result = ""
@@ -398,17 +496,16 @@ client.on("messageCreate", async message => {
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
         result = result + "Note: Due to Chess.com limits, only puzzle rating of Lichess is calculated at all.\n"
         result = result + "Title List: `GM` `WGM` `IM` `WIM` `FM` `WFM` `NM` `CM` `WCM` `WNM` `LM` `BOT`\n"
-        message.reply(result)
+        message.reply({content: result, failIfNotExists: false})
     }
     else if (command == "lichess") {
         //deleteMessageAfterTime(message, 100);
 
         if (args[0]) {
             
-            if (message.deleted) return;
 
             if (ratingRoles.length == 0) {
-                return message.reply({ content: 'The server has yet to setup any rating role milestones', reply: { failIfNotExists: false }})
+                return message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
             }
             let timestamp = await settings.get(`last-command-${message.author.id}`)
 
@@ -427,15 +524,13 @@ client.on("messageCreate", async message => {
                     }
                 })
 
-                if (message.deleted) return;
-
                 if (result == null) {
-                  return message.reply({ content: 'User was not found!', reply: { failIfNotExists: false }})
+                  return message.reply({ content: 'User was not found!', failIfNotExists: false })
                 }
                 else if (result == "Rate Limit") {
                      let embed = new MessageEmbed()
                       .setColor('#0099ff')
-                      .setURL(`https://lichess.org/@/${username}`)
+                      .setURL(`https://lichess.org/@/${args[0]}`)
                       .setDescription('Rate Limit Encountered! Please try again!')
 
                       const row = new MessageActionRow()
@@ -445,7 +540,7 @@ client.on("messageCreate", async message => {
                             .setLabel(`Retry Link for ${args[0]}`)
                             .setStyle('PRIMARY'),
                         );
-                      message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
+                      message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
                 }
                 else {
                     // result.profile.location
@@ -461,7 +556,7 @@ client.on("messageCreate", async message => {
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                        message.reply({ embeds: [embed], reply: { failIfNotExists: false }})
+                        message.reply({ embeds: [embed], failIfNotExists: false })
 
                     }
                     else {
@@ -478,7 +573,7 @@ client.on("messageCreate", async message => {
                                   .setStyle('PRIMARY'),
                               );
 
-                              message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
+                              message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
                     }
                 }
             }
@@ -495,7 +590,7 @@ client.on("messageCreate", async message => {
                       .setLabel(`Retry Link for ${args[0]}`)
                       .setStyle('PRIMARY'),
                   );
-                message.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }})
+                message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
             }
         }
         else {
@@ -508,16 +603,14 @@ client.on("messageCreate", async message => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Lichess Profile`)
 
-            message.reply({ embeds: [embed], reply: { failIfNotExists: false } })
+            message.reply({ embeds: [embed], failIfNotExists: false })
 
         }
     }
     else if (command == "chess") {
 
-        if (message.deleted) return;
-
         if (ratingRoles.length == 0) {
-            return message.reply('The server has yet to setup any rating role milestones')
+            return message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
         }
         if (args[0]) {
 
@@ -537,13 +630,24 @@ client.on("messageCreate", async message => {
                     }
                 })
 
-                if (message.deleted) return;
 
                 if (result == null) {
-                    message.reply("User was not found!")
+                  return message.reply({ content: 'User was not found!', failIfNotExists: false })
                 }
                 else if (result == "Rate Limit") {
-                    message.reply("Rate Limit Encountered! Please try again!")
+                     let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setURL(`https://www.chess.com/member/${args[0]}`)
+                      .setDescription('Rate Limit Encountered! Please try again!')
+
+                      const row = new MessageActionRow()
+                        .addComponents(
+                          new MessageButton()
+                            .setCustomId('primary')
+                            .setLabel(`Retry Link for ${args[0]}`)
+                            .setStyle('PRIMARY'),
+                        );
+                      message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
                 }
                 else {
                     // result.profile.location
@@ -560,20 +664,42 @@ client.on("messageCreate", async message => {
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
-                        message.reply({ embeds: [embed] })
+
+                         message.reply({ embeds: [embed], failIfNotExists: false })
 
                     }
                     else {
                         let embed = new MessageEmbed()
                             .setColor('#0099ff')
+                            .setURL(`https://www.chess.com/member/${args[0]}`)
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
-                        message.reply({ embeds: [embed] })
+                             const row = new MessageActionRow()
+                              .addComponents(
+                                new MessageButton()
+                                  .setCustomId('primary')
+                                  .setLabel(`Retry Link for ${args[0]}`)
+                                  .setStyle('PRIMARY'),
+                              );
+
+                              message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
                     }
                 }
             }
             else {
-                message.reply("Rate Limit Encountered! Please try again!")
+              let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setURL(`https://www.chess.com/member/${args[0]}`)
+                .setDescription('Rate Limit Encountered! Please try again!')
+
+                const row = new MessageActionRow()
+                  .addComponents(
+                    new MessageButton()
+                      .setCustomId('primary')
+                      .setLabel(`Retry Link for ${args[0]}`)
+                      .setStyle('PRIMARY'),
+                  );
+                message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
             }
         }
         else {
@@ -586,15 +712,14 @@ client.on("messageCreate", async message => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Chess.com Profile`)
 
-            message.reply({ embeds: [embed] })
+            message.reply({ embeds: [embed], failIfNotExists: false })
         }
     }
  else if (command == "profile") {
       //deleteMessageAfterTime(message, 2000);
-      if (message.deleted) return;
 
       if (ratingRoles.length == 0) {
-          return message.reply('The server has yet to setup any rating role milestones')
+          return message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
       }
 
       let lichessAccountData = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
@@ -688,7 +813,7 @@ client.on("messageCreate", async message => {
           .setTitle('Chess.com Stats')
           .setDescription('Could not find any stats for user.')
       }
-        message.reply({ embeds: [lichessEmbed, chessComEmbed] })
+        message.reply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false })
 
           
     }
@@ -697,16 +822,16 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         if (args[0]) {
 
             if (ratingRoles.length == 0) {
-                return message.reply('The server has yet to setup any rating role milestones')
+                return message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
             }
 			
 			if (message.mentions.users.size != 1) {
-                return message.reply(`${prefix}forcelichess [username] [@user]`)
+                return message.reply({ content: `${prefix}forcelichess [username] [@user]`, failIfNotExists: false })
             }
 
             let target = message.mentions.users.first()
@@ -729,10 +854,10 @@ client.on("messageCreate", async message => {
                 })
 
                 if (result == null) {
-                    message.reply("User was not found!")
+                    message.reply({content: `Username was not found!`, failIfNotExists: false})
                 }
                 else if (result == "Rate Limit") {
-                    message.reply("Rate Limit Encountered! Please try again!")
+                    message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
                 }
                 else {
                     await settings.set(`lichess-account-of-${target.id}`, result.username)
@@ -741,32 +866,32 @@ client.on("messageCreate", async message => {
                         .setColor('#0099ff')
                         .setDescription(`Successfully linked [Lichess Profile](${result.url}) for ${target}`)
 
-                    message.reply({ embeds: [embed] })
+                    message.reply({ embeds: [embed], failIfNotExists: false })
                 }
             }
             else {
-                message.reply("Rate Limit Encountered! Please try again!")
+                message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
             }
         }
         else {
-            message.reply(`${prefix}forcelichess [username] [@user]`)
+            message.reply({content: `${prefix}forcelichess [username] [@user]`, failIfNotExists: false})
         }
     }
     else if (command == "forcechess" && isSelfHostedBot()) {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
 		
         if (args[0]) {
 
             if (ratingRoles.length == 0) {
-                return message.reply('The server has yet to setup any rating role milestones')
+                return message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
             }
 			
 			if (message.mentions.users.size != 1) {
-                message.reply(`${prefix}forcechess [username] [@user]`)
+              message.reply({content: `${prefix}forcechess [username] [@user]`, failIfNotExists: false})
             }
 
             let target = message.mentions.users.first()
@@ -788,10 +913,10 @@ client.on("messageCreate", async message => {
                 })
 
                 if (result == null) {
-                    message.reply("User was not found!")
+                    message.reply({content: `Username was not found!`, failIfNotExists: false})
                 }
                 else if (result == "Rate Limit") {
-                    message.reply("Rate Limit Encountered! Please try again!")
+                    message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
                 }
                 else {
                     await settings.set(`chesscom-account-of-${target.id}`, result.username)
@@ -800,15 +925,15 @@ client.on("messageCreate", async message => {
                         .setColor('#0099ff')
                         .setDescription(`Successfully linked [Chess.com Profile](${result.url}) for ${target}`)
 
-                    message.reply({ embeds: [embed] })
+                    message.reply({ embeds: [embed], failIfNotExists: false })
                 }
             }
             else {
-                message.reply("Rate Limit Encountered! Please try again!")
+                message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
             }
         }
         else {
-            message.reply(`${prefix}forcelichess [username] [@user]`)
+            message.reply({content: `${prefix}forcechess [username] [@user]`, failIfNotExists: false})
         }
     }
     else if (command == "prefix")
@@ -816,34 +941,34 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
 
         else if (args[0].length > 5)
         {
-            return message.reply("Prefix cannot exceed 5 characters!")
+            return message.reply({content: `Prefix cannot exceed 5 characters!`, failIfNotExists: false})
         }
 
         else if (!message.mentions.has(client.user) || message.mentions.users.size != 1) {
-            return message.reply(`To avoid double changing prefixes, use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
+            return message.reply({content: `To avoid double changing prefixes, you must use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```', failIfNotExists: false})
         }
 
         await settings.set(`guild-prefix-${message.guild.id}`, args[0])
-        message.reply('Prefix was successfully set to `' + args[0] + '`')
+        return message.reply({content: 'Prefix was successfully set to `' + args[0] + '`', failIfNotExists: false})
     }
     else if(command == "addelo")
     {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            return message.reply(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
+            return message.reply({content: `${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`, failIfNotExists: false})
         }
 
 
-        message.reply(`Adding roles...`).then(async msg =>
+        message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
         {
           let msgToSend = ""
 
@@ -865,7 +990,7 @@ client.on("messageCreate", async message => {
               msgToSend = "Internal Error, Cringe :("
           }
 
-          msg.edit(msgToSend)
+          msg.edit(msgToSend).catch(() => null)
         })
         .catch(() => null)
     }
@@ -886,7 +1011,7 @@ client.on("messageCreate", async message => {
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
-        message.reply({ embeds: [embed] })
+        message.reply({ embeds: [embed], failIfNotExists: false })
 
     }
 
@@ -894,7 +1019,7 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
 
         let msgToSend = `${prefix}addelo `
@@ -904,12 +1029,15 @@ client.on("messageCreate", async message => {
         }
 
         if (msgToSend == `${prefix}addelo `) {
-            message.reply(`There were no role milestones to delete.`)
+          
+            return message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
         }
         else {
 
             await settings.delete(`guild-elo-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.reply({content: `Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
+
+            
             message.member.send(`Successfully reset all elo related roles! Command to 
             undo:\n` + '```' + msgToSend + '```').catch(() => null)
             
@@ -917,17 +1045,17 @@ client.on("messageCreate", async message => {
     }
     else if(command == "addpuzzleelo")
     {
-		let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin)
-		{
-            return message.reply("Access Denied")
+		    {
+            return replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            return message.reply(`${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`)
+            return message.reply({content: `${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`, failIfNotExists: false})
         }
 
-        message.reply(`Adding roles...`).then(async msg =>
+        message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
         {
             let msgToSend = ""
 
@@ -949,7 +1077,7 @@ client.on("messageCreate", async message => {
                 msgToSend = "Internal Error, Cringe :("
             }
 
-            msg.edit(msgToSend)
+            msg.edit(msgToSend).catch(() => null)
         })
         .catch(() => null)
     }
@@ -970,7 +1098,7 @@ client.on("messageCreate", async message => {
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
-        message.reply({ embeds: [embed] })
+        message.reply({ embeds: [embed], failIfNotExists: false })
 
     }
 
@@ -978,7 +1106,7 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
 
         let msgToSend = `${prefix}addpuzzleelo `
@@ -988,12 +1116,13 @@ client.on("messageCreate", async message => {
         }
 
         if (msgToSend == `${prefix}addpuzzleelo `) {
-            message.reply(`There were no role milestones to delete.`)
+            return message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
         }
         else {
 
             await settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+
+            message.reply({content: `Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
             message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
     }
@@ -1001,13 +1130,13 @@ client.on("messageCreate", async message => {
 	    	let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            return message.reply(`${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`)
+            message.reply({content: `${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`, failIfNotExists: false})
         }
 
-        message.reply(`Adding roles...`).then(async msg =>
+        message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
         {
           let msgToSend = ""
 
@@ -1026,7 +1155,7 @@ client.on("messageCreate", async message => {
               msgToSend = "Internal Error, Cringe :("
           }
 
-          msg.edit(msgToSend)
+          msg.edit(msgToSend).catch(() => null)
 
         })
         .catch(() => null)
@@ -1046,7 +1175,7 @@ client.on("messageCreate", async message => {
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
-        message.reply({ embeds: [embed] })
+        message.reply({ embeds: [embed], failIfNotExists: false })
 
     }
 
@@ -1054,7 +1183,7 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
 
         let msgToSend = `${prefix}addtitle `
@@ -1064,26 +1193,27 @@ client.on("messageCreate", async message => {
         }
 
         if (msgToSend == `${prefix}addtitle `) {
-            message.reply(`There were no role milestones to delete.`)
+            return message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
         }
         else {
 
             await settings.delete(`guild-title-roles-${message.guild.id}`)
-            message.reply(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
+
+            message.reply({content: `Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
             message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
     }
 
     else if (command == "setlichessequation") {
         if (!isBotControlAdminByMessage(message)) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else {
             if (args.length == 0)
             {
                 await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
 
-                message.reply(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+                message.reply({content: `Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`, failIfNotExists: false})
 
                 return;
             }
@@ -1103,7 +1233,9 @@ client.on("messageCreate", async message => {
                 Parser.evaluate(argString, { x: -1 })
             }
             catch (error) {
-                message.reply(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                message.reply({content: `Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`, failIfNotExists: false})
+
+                message.reply({content: `Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`, failIfNotExists: false})
 
                 return;
             }
@@ -1117,7 +1249,7 @@ client.on("messageCreate", async message => {
 		let isAdmin = await isBotControlAdminByMessage(message)
 		
         if (!isAdmin) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else {
             if (args.length == 0) {
@@ -1144,19 +1276,19 @@ client.on("messageCreate", async message => {
                 Parser.evaluate(argString, { x: -1 })
             }
             catch (error) {
-                message.reply(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                message.reply({content: `Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`, failIfNotExists: false})
 
                 return;
             }
 
             await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, argString)
-            message.reply(`Successfully set Chess.com rating equation to: ${argString}`)
+            message.reply({content: `Successfully set Chess.com rating equation to: ${argString}`, failIfNotExists: false})
         }
     }
 
     else if (command == "addmod") {
         if (!message.member.permissions.has("ADMINISTRATOR")) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else {
             let role = getRoleFromMentionString(message.guild, args[0])
@@ -1167,7 +1299,8 @@ client.on("messageCreate", async message => {
             }
 
             await settings.push(`guild-bot-mods-${message.guild.id}`, role.id)
-            message.reply(`Successfully added the role as a moderator for this bot.`)
+
+            message.reply({content: `Successfully added the role as a moderator for this bot.`, failIfNotExists: false})
         }
     }
 
@@ -1186,23 +1319,24 @@ client.on("messageCreate", async message => {
             .setColor('#0099ff')
             .setDescription(msgToSend)
 
-        message.reply({ embeds: [embed] })
+        message.reply({ embeds: [embed], failIfNotExists: false })
 
     }
 
     else if (command == "resetmod" || command == "resetmods") {
         if (!message.member.permissions.has("ADMINISTRATOR")) {
-            return message.reply("Access Denied")
+            return replyAccessDeniedByMessage(message)
         }
         else {
             
             await settings.delete(`guild-bot-mods-${message.guild.id}`)
-            message.reply(`Successfully removed all moderator roles from this bot.`)
+
+            message.reply({content: `Successfully removed all moderator roles from this bot.`, failIfNotExists: false})
         }
     }
     else if (command == "privacy") {
             
-        message.reply(`Check or Enable your DM to see privacy policy`)
+        message.reply({content: `Check or Enable your DM to see privacy policy`, failIfNotExists: false})
 
         message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.\nBelow is the source code of the bot that contains contact information, demonstrates why and how data is collected, along with who is given any of your data, or your server's data:\nhttps://github.com/eyal282/Chess-ELO-Discord-Bot`).catch(() => null)
     }
@@ -1211,7 +1345,7 @@ client.on("messageCreate", async message => {
             .setColor('#0099ff')
             .setDescription(`[Invite the Bot](https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
-        message.reply({ embeds: [embed] })
+        message.reply({ embeds: [embed], failIfNotExists: false })
 
         message.member.send({ embeds: [embed] }).catch(() => null)
     }
@@ -1648,6 +1782,11 @@ function botHasPermissionByGuild(guild, permission)
         return true;
 
     return false;
+}
+
+function replyAccessDeniedByMessage(message)
+{
+  return message.reply({ content: `Access Denied`, failIfNotExists: false })
 }
 
 function isBotSelfHosted()

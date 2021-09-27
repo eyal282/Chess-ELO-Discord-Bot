@@ -132,7 +132,7 @@ client.on("guildDelete", function(guild){
 
 // On Button Pressed
 client.on('interactionCreate', async(interaction) => {
-	if (!interaction.isButton()) return;
+	if (!interaction.isButton() || interaction.user.id != interaction.customId) return;
 
   let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
 
@@ -144,6 +144,7 @@ client.on('interactionCreate', async(interaction) => {
   let splitURL = url.split('/')
 
   let username = splitURL[splitURL.length-1]
+
 
   let message = interaction.message
 
@@ -181,7 +182,7 @@ client.on('interactionCreate', async(interaction) => {
               const row = new MessageActionRow()
                 .addComponents(
                   new MessageButton()
-                    .setCustomId('primary')
+                    .setCustomId(interaction.user.id)
                     .setURL(`https://lichess.org/@/${username}`)
                     .setLabel(`Retry Link for ${username}`)
                     .setStyle('PRIMARY'),
@@ -214,7 +215,7 @@ client.on('interactionCreate', async(interaction) => {
                     const row = new MessageActionRow()
                       .addComponents(
                         new MessageButton()
-                          .setCustomId('primary')
+                          .setCustomId(interaction.user.id)
                           .setLabel(`Retry Link for ${username}`)
                           .setStyle('PRIMARY'),
                       );
@@ -232,7 +233,7 @@ client.on('interactionCreate', async(interaction) => {
         const row = new MessageActionRow()
           .addComponents(
             new MessageButton()
-              .setCustomId('primary')
+              .setCustomId(interaction.user.id)
               .setLabel(`Retry Link for ${username}`)
               .setStyle('PRIMARY'),
           );
@@ -271,7 +272,7 @@ client.on('interactionCreate', async(interaction) => {
                 const row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
-                      .setCustomId('primary')
+                      .setCustomId(message.author.id)
                       .setLabel(`Retry Link for ${username}`)
                       .setStyle('PRIMARY'),
                   );
@@ -305,7 +306,7 @@ client.on('interactionCreate', async(interaction) => {
                         const row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
-                            .setCustomId('primary')
+                            .setCustomId(message.author.id)
                             .setLabel(`Retry Link for ${username}`)
                             .setStyle('PRIMARY'),
                         );
@@ -323,7 +324,7 @@ client.on('interactionCreate', async(interaction) => {
             const row = new MessageActionRow()
               .addComponents(
                 new MessageButton()
-                  .setCustomId('primary')
+                  .setCustomId(message.author.id)
                   .setLabel(`Retry Link for ${username}`)
                   .setStyle('PRIMARY'),
               );
@@ -536,7 +537,7 @@ client.on("messageCreate", async message => {
                       const row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
-                            .setCustomId('primary')
+                            .setCustomId(message.author.id)
                             .setLabel(`Retry Link for ${args[0]}`)
                             .setStyle('PRIMARY'),
                         );
@@ -568,7 +569,7 @@ client.on("messageCreate", async message => {
                             const row = new MessageActionRow()
                               .addComponents(
                                 new MessageButton()
-                                  .setCustomId('primary')
+                                  .setCustomId(message.author.id)
                                   .setLabel(`Retry Link for ${args[0]}`)
                                   .setStyle('PRIMARY'),
                               );
@@ -586,7 +587,7 @@ client.on("messageCreate", async message => {
                 const row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
-                      .setCustomId('primary')
+                      .setCustomId(message.author.id)
                       .setLabel(`Retry Link for ${args[0]}`)
                       .setStyle('PRIMARY'),
                   );
@@ -643,7 +644,7 @@ client.on("messageCreate", async message => {
                       const row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
-                            .setCustomId('primary')
+                            .setCustomId(message.author.id)
                             .setLabel(`Retry Link for ${args[0]}`)
                             .setStyle('PRIMARY'),
                         );
@@ -677,7 +678,7 @@ client.on("messageCreate", async message => {
                              const row = new MessageActionRow()
                               .addComponents(
                                 new MessageButton()
-                                  .setCustomId('primary')
+                                  .setCustomId(message.author.id)
                                   .setLabel(`Retry Link for ${args[0]}`)
                                   .setStyle('PRIMARY'),
                               );
@@ -695,7 +696,7 @@ client.on("messageCreate", async message => {
                 const row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
-                      .setCustomId('primary')
+                      .setCustomId(message.author.id)
                       .setLabel(`Retry Link for ${args[0]}`)
                       .setStyle('PRIMARY'),
                   );

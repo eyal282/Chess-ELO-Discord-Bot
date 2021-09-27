@@ -147,8 +147,8 @@ client.on('interactionCreate', async(interaction) => {
 
   let message = interaction.message
 
-  if(message.deleted) return;
-  
+  if(message.deleted || interaction.deleted) return;
+
   message.author = interaction.user // We do a little trolling
 
 
@@ -171,6 +171,8 @@ client.on('interactionCreate', async(interaction) => {
             }
         })
 
+        if(message.deleted || interaction.deleted) return;
+
         if (result == null) {
             message.reply("User was not found!")
         }
@@ -191,7 +193,7 @@ client.on('interactionCreate', async(interaction) => {
                     .setColor('#0099ff')
                     .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                interaction.reply({ embeds: [embed], reply: { failIfNotExists: false }})
+                interaction.reply({ embeds: [embed]})
 
             }
             else {
@@ -208,7 +210,7 @@ client.on('interactionCreate', async(interaction) => {
                           .setStyle('PRIMARY'),
                       );
 
-                      interaction.reply({ embeds: [embed], components: [row], reply: { failIfNotExists: false }, ephemeral: true})
+                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true})
             }
         }
     }

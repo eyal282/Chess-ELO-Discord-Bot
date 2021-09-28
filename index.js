@@ -839,7 +839,7 @@ client.on("messageCreate", async message => {
    }
   	else if (command == "forcelichess" && isBotSelfHosted()) {
         //deleteMessageAfterTime(message, 2000);
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -901,7 +901,7 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == "forcechess" && isSelfHostedBot()) {
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -964,7 +964,7 @@ client.on("messageCreate", async message => {
     }
     else if (command == "prefix")
     {
-		let isAdmin = await isBotControlAdminByMessage(message)
+		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -986,7 +986,7 @@ client.on("messageCreate", async message => {
     }
     else if(command == "addelo")
     {
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1010,7 +1010,15 @@ client.on("messageCreate", async message => {
                 let result = 'Could not find role'
 
                 if(role)
-                    result = await addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+                {
+                    result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+                }
+
+                if(result == undefined)
+                  result = "This role was already added to the bot!"
+
+                else
+                  ratingRoles.push(result)
 
                 msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
             }
@@ -1046,7 +1054,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resetelo") {
-		let isAdmin = await isBotControlAdminByMessage(message)
+		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1065,7 +1073,7 @@ client.on("messageCreate", async message => {
           }
           else {
 
-              queue[`guild-elo-roles-${message.guild.id}`] = undefined
+              ratingRoles = undefined
               
               message.reply({content: `Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
 
@@ -1078,7 +1086,7 @@ client.on("messageCreate", async message => {
     }
     else if(command == "addpuzzleelo")
     {
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin)
 		    {
@@ -1102,7 +1110,15 @@ client.on("messageCreate", async message => {
                   let result = 'Could not find role'
 
                   if(role)
-                      result = await addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+                  {
+                      result = addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+                  }
+
+                  if(result == undefined)
+                    result = "This role was already added to the bot!"
+
+                  else
+                    puzzleRatingRoles.push(result)
 
                   msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
               }
@@ -1138,7 +1154,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resetpuzzleelo") {
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1155,14 +1171,14 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            queue[`guild-puzzle-elo-roles-${message.guild.id}`] = undefined
+            puzzleRatingRoles = undefined
 
             message.reply({content: `Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
             message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
     }
     else if (command == "addtitle") {
-	    	let isAdmin = await isBotControlAdminByMessage(message)
+	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1183,8 +1199,16 @@ client.on("messageCreate", async message => {
 
                 let result = 'Could not find role'
 
-                if (role)
-                    result = await addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+                if(role)
+                {
+                    result = addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+                }
+
+                if(result == undefined)
+                  result = "This role was already added to the bot!"
+
+                else
+                  titleRoles.push(result)            
 
                 msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
             }
@@ -1219,7 +1243,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resettitle" || command == "resettitles") {
-		let isAdmin = await isBotControlAdminByMessage(message)
+		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1238,7 +1262,7 @@ client.on("messageCreate", async message => {
           }
           else {
 
-              queue[`guild-title-roles-${message.guild.id}`] = undefined
+              titleRoles = undefined
 
               message.reply({content: `Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
               message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
@@ -1247,7 +1271,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "setlichessequation") {
-        if (!isBotControlAdminByMessage(message)) {
+        if (!isBotControlAdminByMessage(message, modRoles)) {
             replyAccessDeniedByMessage(message)
         }
         else {
@@ -1288,7 +1312,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "setchessequation") {
-		let isAdmin = await isBotControlAdminByMessage(message)
+		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
             replyAccessDeniedByMessage(message)
@@ -1373,7 +1397,7 @@ client.on("messageCreate", async message => {
         }
         else {
             
-            queue[`guild-bot-mods-${message.guild.id}`] = undefined
+            modRoles = undefined
 
             message.reply({content: `Successfully removed all moderator roles from this bot.`, failIfNotExists: false})
         }
@@ -1407,6 +1431,7 @@ client.on("messageCreate", async message => {
     queue[`guild-title-roles-${message.guild.id}`] = titleRoles
     queue[`guild-bot-mods-${message.guild.id}`] = modRoles
 
+    console.log(ratingRoles, queue[`guild-elo-roles-${message.guild.id}`])
     await settings.setMany(queue, true)
 });
 
@@ -1730,43 +1755,37 @@ function getRoleFromMentionString(guild, str) {
     }
 }
 
-async function addEloCommand(message, ratingRoles, role, elo) {
+function addEloCommand(message, ratingRoles, role, elo) {
     for (let i = 0; i < ratingRoles.length; i++) {
         if (ratingRoles[i].id == role.id)
-            return `This role was already added to the bot!`
+            return undefined
     }
 
     let template = { id: role.id, rating: elo };
 
-    await settings.push(`guild-elo-roles-${message.guild.id}`, template)
-
-    return `Success.`
+    return template
 }
 
-async function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
+function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
     for (let i = 0; i < puzzleRatingRoles.length; i++) {
         if (puzzleRatingRoles[i].id == role.id)
-            return `This role was already added to the bot!`
+            return undefined
     }
 
     let template = { id: role.id, rating: elo };
 
-    await settings.push(`guild-puzzle-elo-roles-${message.guild.id}`, template)
-
-    return `Success.`
+    return template
 }
 
-async function addTitleCommand(message, titleRoles, role, title) {
+function addTitleCommand(message, titleRoles, role, title) {
     for (let i = 0; i < titleRoles.length; i++) {
         if (titleRoles[i].id == role.id)
-            return `This role was already added to the bot!`
+            return undefined
     }
 
     let template = { id: role.id, title: title };
 
-    await settings.push(`guild-title-roles-${message.guild.id}`, template)
-
-    return `Success.`
+    return template
 }
 
 function addCommandToHelp(result, prefix, commandData) {

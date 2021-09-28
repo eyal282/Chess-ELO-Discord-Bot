@@ -1,5 +1,7 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
 
+// To do tomorrow: check every single bug from the massive optimization I made...
+
 const mySecret = process.env['SECRET_BOT_TOKEN']
 
 const express = require('express');
@@ -997,7 +999,7 @@ client.on("messageCreate", async message => {
         else
         {
 
-          message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
           {
             let msgToSend = ""
 
@@ -1030,6 +1032,7 @@ client.on("messageCreate", async message => {
                 msgToSend = "Internal Error, Cringe :("
             }
 
+            console.log(ratingRoles)
             msg.edit(msgToSend).catch(() => null)
           })
           .catch(() => null)
@@ -1100,7 +1103,7 @@ client.on("messageCreate", async message => {
         }
         else
         {
-          message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
           {
               let msgToSend = ""
 
@@ -1196,7 +1199,7 @@ client.on("messageCreate", async message => {
         {
 
 
-          message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
           {
             let msgToSend = ""
 

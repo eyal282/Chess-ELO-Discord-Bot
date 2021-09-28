@@ -466,9 +466,10 @@ client.on("messageCreate", async message => {
 
     let queue = {}
 
-    queue[`guild-elo-roles-${message.guild.id}`] = ratingRoles
-    queue[`guild-puzzle-elo-roles-${message.guild.id}`] = puzzleRatingRoles
-    queue[`guild-title-roles-${message.guild.id}`] = titleRoles
+    // Add them to the queue in the end in case they get changed
+    //queue[`guild-elo-roles-${message.guild.id}`] = ratingRoles
+    //queue[`guild-puzzle-elo-roles-${message.guild.id}`] = puzzleRatingRoles
+    //queue[`guild-title-roles-${message.guild.id}`] = titleRoles
 
     // Queue is set at the end, we already sorted anyawys.
 
@@ -561,9 +562,8 @@ client.on("messageCreate", async message => {
                       let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
                       if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                          await settings.set(`lichess-account-of-${message.author.id}`, 
-                          result.username)
-                          await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+                          queue[`lichess-account-of-${message.author.id}`] = result.username
+                          queue[`cached-lichess-account-data-of-${message.author.id}`] = result
                           updateProfileDataByMessage(message, true)
 
                           let embed = new MessageEmbed()
@@ -610,8 +610,9 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            await settings.delete(`lichess-account-of-${message.author.id}`)
-            await settings.delete(`cached-lichess-account-data-of-${message.author.id}`)
+            queue[`lichess-account-of-${message.author.id}`] = undefined
+            queue[`cached-lichess-account-data-of-${message.author.id}`] = undefined
+
             updateProfileDataByMessage(message, true)
 
             let embed = new MessageEmbed()
@@ -718,8 +719,8 @@ client.on("messageCreate", async message => {
             }
         }
         else {
-            await settings.delete(`chesscom-account-of-${message.author.id}`)
-            await settings.delete(`cached-chesscom-account-data-of-${message.author.id}`)
+            queue[`chesscom-account-of-${message.author.id}`] = undefined
+            queue[`cached-chesscom-account-data-of-${message.author.id}`] = undefined
 
             updateProfileDataByMessage(message, true)
 
@@ -1063,7 +1064,8 @@ client.on("messageCreate", async message => {
           }
           else {
 
-              await settings.delete(`guild-elo-roles-${message.guild.id}`)
+              queue[`guild-elo-roles-${message.guild.id}`] = undefined
+              
               message.reply({content: `Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
 
               
@@ -1152,7 +1154,7 @@ client.on("messageCreate", async message => {
         }
         else {
 
-            await settings.delete(`guild-puzzle-elo-roles-${message.guild.id}`)
+            queue[`guild-puzzle-elo-roles-${message.guild.id}`] = undefined
 
             message.reply({content: `Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
             message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
@@ -1235,7 +1237,7 @@ client.on("messageCreate", async message => {
           }
           else {
 
-              await settings.delete(`guild-title-roles-${message.guild.id}`)
+              queue[`guild-title-roles-${message.guild.id}`] = undefined
 
               message.reply({content: `Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
               message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
@@ -1338,7 +1340,7 @@ client.on("messageCreate", async message => {
             }
             else
             {
-              await settings.push(`guild-bot-mods-${message.guild.id}`, role.id)
+              queue[`guild-bot-mods-${message.guild.id}`].push(role.id)
 
               message.reply({content: `Successfully added the role as a moderator for this bot.`, failIfNotExists: false})
             }
@@ -1370,7 +1372,7 @@ client.on("messageCreate", async message => {
         }
         else {
             
-            await settings.delete(`guild-bot-mods-${message.guild.id}`)
+            queue[`guild-bot-mods-${message.guild.id}`] = undefined
 
             message.reply({content: `Successfully removed all moderator roles from this bot.`, failIfNotExists: false})
         }
@@ -1397,6 +1399,11 @@ client.on("messageCreate", async message => {
         })
         .catch(() => null)
     }
+
+
+    queue[`guild-elo-roles-${message.guild.id}`] = ratingRoles
+    queue[`guild-puzzle-elo-roles-${message.guild.id}`] = puzzleRatingRoles
+    queue[`guild-title-roles-${message.guild.id}`] = titleRoles
 
     await settings.setMany(queue, true)
 });

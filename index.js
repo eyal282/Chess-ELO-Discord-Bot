@@ -1018,7 +1018,10 @@ client.on("messageCreate", async message => {
                   result = "This role was already added to the bot!"
 
                 else
-                  ratingRoles.push(result)
+                {
+                  ratingRoles.push(result)            
+                  result = "Success."
+                }
 
                 msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
             }
@@ -1118,7 +1121,10 @@ client.on("messageCreate", async message => {
                     result = "This role was already added to the bot!"
 
                   else
-                    puzzleRatingRoles.push(result)
+                  {
+                    puzzleRatingRoles.push(result)            
+                    result = "Success."
+                  }
 
                   msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
               }
@@ -1208,7 +1214,10 @@ client.on("messageCreate", async message => {
                   result = "This role was already added to the bot!"
 
                 else
+                {
                   titleRoles.push(result)            
+                  result = "Success."
+                }
 
                 msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
             }

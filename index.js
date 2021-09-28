@@ -1364,7 +1364,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "addmod") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!message.member.permissions.has("MANAGE_GUILD", true)) {
             replyAccessDeniedByMessage(message)
         }
         else {
@@ -1403,7 +1403,7 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resetmod" || command == "resetmods") {
-        if (!message.member.permissions.has("ADMINISTRATOR")) {
+        if (!message.member.permissions.has("MANAGE_GUILD", true)) {
             replyAccessDeniedByMessage(message)
         }
         else {
@@ -1803,7 +1803,7 @@ function addCommandToHelp(result, prefix, commandData) {
 }
 
 async function isBotControlAdminByMessage(message, modRoles) {
-    if (message.member.permissions.has("ADMINISTRATOR"))
+    if (message.member.permissions.has("MANAGE_GUILD", true))
         return true;
 
 

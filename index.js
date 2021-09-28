@@ -1032,7 +1032,6 @@ client.on("messageCreate", async message => {
                 msgToSend = "Internal Error, Cringe :("
             }
 
-            console.log(ratingRoles)
             msg.edit(msgToSend).catch(() => null)
           })
           .catch(() => null)
@@ -1443,7 +1442,6 @@ client.on("messageCreate", async message => {
     queue[`guild-title-roles-${message.guild.id}`] = titleRoles
     queue[`guild-bot-mods-${message.guild.id}`] = modRoles
 
-    console.log(ratingRoles, queue[`guild-elo-roles-${message.guild.id}`])
     await settings.setMany(queue, true)
 });
 

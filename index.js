@@ -22,6 +22,7 @@ const Parser = require('expr-eval').Parser;
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 
+
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");

@@ -161,7 +161,7 @@ client.on('interactionCreate', async(interaction) => {
       `guild-lichess-rating-equation-${message.guild.id}`,
       `guild-chesscom-rating-equation-${message.guild.id}`,
       `last-command-${message.author.id}`,
-      `lichess-account-of-${message.author.id}`
+      `lichess-account-of-${message.author.id}`,
       `chesscom-account-of-${message.author.id}`,
       `cached-lichess-account-data-of-${message.author.id}`,
       `cached-chesscom-account-data-of-${message.author.id}`,
@@ -392,7 +392,7 @@ client.on("messageCreate", async message => {
       `guild-lichess-rating-equation-${message.guild.id}`,
       `guild-chesscom-rating-equation-${message.guild.id}`,
       `last-command-${message.author.id}`,
-      `lichess-account-of-${message.author.id}`
+      `lichess-account-of-${message.author.id}`,
       `chesscom-account-of-${message.author.id}`,
       `cached-lichess-account-data-of-${message.author.id}`,
       `cached-chesscom-account-data-of-${message.author.id}`,

@@ -136,6 +136,8 @@ client.on("guildDelete", function(guild){
 client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton() || interaction.user.id != interaction.customId) return;
 
+  let queue = []
+
   let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
 
   let url = interaction.message.embeds[0].url
@@ -276,7 +278,7 @@ client.on('interactionCreate', async(interaction) => {
 
 
           if (result == null) {
-            return message.reply({ content: 'User was not found!', failIfNotExists: false })
+              message.reply({ content: 'User was not found!', failIfNotExists: false })
           }
           else if (result == "Rate Limit") {
                 let embed = new MessageEmbed()
@@ -346,6 +348,8 @@ client.on('interactionCreate', async(interaction) => {
             message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
       }
   }
+
+  await settings.setMany(queue, true)
 });
 // Messages without the prefix
 client.on("messageCreate", async message => {

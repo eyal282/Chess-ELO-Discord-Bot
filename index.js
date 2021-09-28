@@ -13,12 +13,15 @@ app.get('/', (req, res) => res.send('Hello World!'));
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
 
 const Discord = require('discord.js');
-const { MessageEmbed } = require('discord.js');
+const Canvas = require('canvas');
+const { MessageEmbed, MessageAttachment } = require('discord.js');
 const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 
+Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
+
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
 const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
@@ -224,10 +227,11 @@ client.on('interactionCreate', async(interaction) => {
 
             }
             else {
+                let attachment = await buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
+
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setURL(result.url)
-                    .setImage('https://i.ibb.co/4SmH8f2/Screenshot-88.png')
                     .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
                     const row = new MessageActionRow()
@@ -238,7 +242,7 @@ client.on('interactionCreate', async(interaction) => {
                           .setStyle('PRIMARY'),
                       );
 
-                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false})
+                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
             }
         }
     }
@@ -316,10 +320,11 @@ client.on('interactionCreate', async(interaction) => {
 
               }
               else {
+                  let attachment = await buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
+
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setURL(`https://www.chess.com/member/${username}`)
-                      .setImage(`https://i.ibb.co/8rTvD3R/Screenshot-89.png`)
                       .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
                         const row = new MessageActionRow()
@@ -330,7 +335,7 @@ client.on('interactionCreate', async(interaction) => {
                             .setStyle('PRIMARY'),
                         );
 
-                        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+                        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
               }
           }
       }
@@ -600,10 +605,11 @@ client.on("messageCreate", async message => {
 
                       }
                       else {
+                          let attachment = await buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
+
                           let embed = new MessageEmbed()
                               .setColor('#0099ff')
                               .setURL(result.url)
-                              .setImage('https://i.ibb.co/4SmH8f2/Screenshot-88.png')
                               .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
                               const row = new MessageActionRow()
@@ -614,7 +620,7 @@ client.on("messageCreate", async message => {
                                     .setStyle('PRIMARY'),
                                 );
 
-                                message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+                                message.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
                       }
                   }
               }
@@ -712,9 +718,12 @@ client.on("messageCreate", async message => {
 
                     }
                     else {
+ 
+                        let attachment = await buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
+
+                      
                         let embed = new MessageEmbed()
                             .setColor('#0099ff')
-                            .setImage(`https://i.ibb.co/8rTvD3R/Screenshot-89.png`)
                             .setURL(`https://www.chess.com/member/${args[0]}`)
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
@@ -726,7 +735,7 @@ client.on("messageCreate", async message => {
                                   .setStyle('PRIMARY'),
                               );
 
-                              message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+                              message.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
                     }
                 }
             }
@@ -1906,4 +1915,48 @@ function replyAccessDeniedByMessage(message)
 function isBotSelfHosted()
 {
     return client.guilds.cache.size == 1
+}
+
+async function buildCanvasForLichess(discordUsername)
+{
+  const canvas = Canvas.createCanvas(1302, 729);
+
+  const context = canvas.getContext('2d');
+
+  const background = await Canvas.loadImage('https://i.ibb.co/y5brqF1/Screenshot-93.png');
+
+  // This uses the canvas dimensions to stretch the image onto the entire canvas
+  context.drawImage(background, 0, 0, canvas.width, canvas.height);
+  
+  context.font = '14px arial';
+	// Select the style that will be used to fill the text in
+	context.fillStyle = '#ffffff';
+
+  context.fillText(discordUsername, 795, 256);
+  // Use the helpful Attachment class structure to process the file for you
+  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+
+  return attachment
+}
+
+async function buildCanvasForChessCom(discordUsername)
+{
+  const canvas = Canvas.createCanvas(1071, 817);
+
+  const context = canvas.getContext('2d');
+
+  const background = await Canvas.loadImage('https://i.ibb.co/Xb5rtWh/Screenshot-90.png');
+
+  // This uses the canvas dimensions to stretch the image onto the entire canvas
+  context.drawImage(background, 0, 0, canvas.width, canvas.height);
+  
+  context.font = '12px arial';
+	// Select the style that will be used to fill the text in
+	context.fillStyle = '#ffffff';
+
+  context.fillText(discordUsername, 543, 520);
+  // Use the helpful Attachment class structure to process the file for you
+  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+
+  return attachment
 }

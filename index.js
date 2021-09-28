@@ -242,7 +242,7 @@ client.on('interactionCreate', async(interaction) => {
                           .setStyle('PRIMARY'),
                       );
 
-                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
+                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment]})
             }
         }
     }
@@ -1954,7 +1954,7 @@ async function buildCanvasForChessCom(discordUsername)
 	// Select the style that will be used to fill the text in
 	context.fillStyle = '#ffffff';
 
-  context.fillText(discordUsername, 543, 520);
+  context.fillText(discordUsername, 541, 520);
   // Use the helpful Attachment class structure to process the file for you
   let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
 

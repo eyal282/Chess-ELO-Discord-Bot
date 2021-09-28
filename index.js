@@ -373,11 +373,12 @@ client.on("messageCreate", async message => {
       `guild-elo-roles-${message.guild.id}`,
       `guild-puzzle-elo-roles-${message.guild.id}`,
       `guild-title-roles-${message.guild.id}`,
+      `guild-bot-mods-${message.guild.id}`,
       `guild-lichess-rating-equation-${message.guild.id}`,
       `guild-chesscom-rating-equation-${message.guild.id}`,
       `last-command-${message.author.id}`
     ])
-
+  
     let prefix = manyMuch[`guild-prefix-${message.guild.id}`]
 
     if (prefix == undefined) prefix = defaultPrefix
@@ -1340,7 +1341,7 @@ client.on("messageCreate", async message => {
             }
             else
             {
-              queue[`guild-bot-mods-${message.guild.id}`].push(role.id)
+              modRoles.push(role.id)
 
               message.reply({content: `Successfully added the role as a moderator for this bot.`, failIfNotExists: false})
             }
@@ -1404,6 +1405,7 @@ client.on("messageCreate", async message => {
     queue[`guild-elo-roles-${message.guild.id}`] = ratingRoles
     queue[`guild-puzzle-elo-roles-${message.guild.id}`] = puzzleRatingRoles
     queue[`guild-title-roles-${message.guild.id}`] = titleRoles
+    queue[`guild-bot-mods-${message.guild.id}`] = modRoles
 
     await settings.setMany(queue, true)
 });
@@ -1771,9 +1773,7 @@ function addCommandToHelp(result, prefix, commandData) {
     return result + prefix + commandData + '\n'
 }
 
-async function isBotControlAdminByMessage(message) {
-    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
-
+async function isBotControlAdminByMessage(message, modRoles) {
     if (message.member.permissions.has("ADMINISTRATOR"))
         return true;
 

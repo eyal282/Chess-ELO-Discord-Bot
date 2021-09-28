@@ -192,7 +192,10 @@ client.on('interactionCreate', async(interaction) => {
         })
 
         if (result == null) {
-                                message.reply({content: `Username was not found!`, failIfNotExists: false})
+                                let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Username was not found!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
         }
         else if (result == "Rate Limit") {
             let embed = new MessageEmbed()
@@ -283,7 +286,10 @@ client.on('interactionCreate', async(interaction) => {
 
 
           if (result == null) {
-              interaction.reply({ content: 'User was not found!', failIfNotExists: false })
+            let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`User was not found!'`)
+              interaction.reply({ embeds: [embed], failIfNotExists: false })
           }
           else if (result == "Rate Limit") {
                 let embed = new MessageEmbed()
@@ -371,7 +377,10 @@ client.on("messageCreate", async message => {
     if (message.content.indexOf(prefix) === 0) return;
 
     if (message.mentions.has(client.user) && message.mentions.users.size == 1) {
-        message.reply('Prefix is `' + prefix + '`\nThis message will self destruct in 10 seconds.').then(msg =>
+        let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription('Prefix is `' + prefix + '`\nThis message will self destruct in 10 seconds.')
+        message.reply({embeds: [embed]}).then(msg =>
         {
             deleteMessageAfterTime(msg, 10000)
         })
@@ -540,7 +549,10 @@ client.on("messageCreate", async message => {
         result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
         result = result + "Note: Due to Chess.com limits, only puzzle rating of Lichess is calculated at all.\n"
         result = result + "Title List: `GM` `WGM` `IM` `WIM` `FM` `WFM` `NM` `CM` `WCM` `WNM` `LM` `BOT`\n"
-        message.reply({content: result, failIfNotExists: false})
+        let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(result)
+        message.reply({embeds: [embed], failIfNotExists: false})
     }
     else if (command == "lichess") {
         //deleteMessageAfterTime(message, 100);
@@ -549,7 +561,10 @@ client.on("messageCreate", async message => {
             
 
             if (ratingRoles.length == 0) {
-                message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
+              let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription('The server has yet to setup any rating role milestones')
+                message.reply({ embeds: [embed], failIfNotExists: false })
             }
             else
             {
@@ -571,7 +586,10 @@ client.on("messageCreate", async message => {
                   })
 
                   if (result == null) {
-                    message.reply({ content: 'User was not found!', failIfNotExists: false })
+                    let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setDescription('User was not found!')
+                    message.reply({ embeds: [embed], failIfNotExists: false })
                   }
                   else if (result == "Rate Limit") {
                       let embed = new MessageEmbed()
@@ -659,7 +677,10 @@ client.on("messageCreate", async message => {
     else if (command == "chess") {
 
         if (ratingRoles.length == 0) {
-            message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
+            let embed = new MessageEmbed()
+                  .setColor('#0099ff')
+                  .setDescription('The server has yet to setup any rating role milestones')
+            message.reply({ embeds: [embed], failIfNotExists: false })
         }
         else if (args[0]) {
 
@@ -681,7 +702,10 @@ client.on("messageCreate", async message => {
 
 
                 if (result == null) {
-                  message.reply({ content: 'User was not found!', failIfNotExists: false })
+                  let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setDescription('User was not found!')
+                  message.reply({ embeds: [embed], failIfNotExists: false })
                 }
                 else if (result == "Rate Limit") {
                      let embed = new MessageEmbed()
@@ -772,7 +796,10 @@ client.on("messageCreate", async message => {
       //deleteMessageAfterTime(message, 2000);
 
       if (ratingRoles.length == 0) {
-          message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('The server has yet to setup any rating role milestones')
+          message.reply({ embeds: [embed], failIfNotExists: false })
       }
       else
       {
@@ -883,11 +910,17 @@ client.on("messageCreate", async message => {
         else if (args[0]) {
 
             if (ratingRoles.length == 0) {
-                message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('The server has yet to setup any rating role milestones')
+              message.reply({ embeds: [embed], failIfNotExists: false })
             }
 			
 		      	else if (message.mentions.users.size != 1) {
-                message.reply({ content: `${prefix}forcelichess [username] [@user]`, failIfNotExists: false })
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`${prefix}forcelichess [username] [@user]`)
+                message.reply({ embeds: [embed], failIfNotExists: false })
             }
             else
             {
@@ -912,10 +945,16 @@ client.on("messageCreate", async message => {
                   })
 
                   if (result == null) {
-                      message.reply({content: `Username was not found!`, failIfNotExists: false})
+                      let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Username was not found!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
                   }
                   else if (result == "Rate Limit") {
-                      message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
+                    let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Rate Limit Encountered! Please try again!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
                   }
                   else {
                       queue[`lichess-account-of-${target.id}`] = result.username
@@ -928,12 +967,18 @@ client.on("messageCreate", async message => {
                   }
               }
               else {
-                  message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
+                let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Rate Limit Encountered! Please try again!`)
+                  message.reply({embeds: [embed], failIfNotExists: false})
               }
             }
         }
         else {
-            message.reply({content: `${prefix}forcelichess [username] [@user]`, failIfNotExists: false})
+           let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`${prefix}forcelichess [username] [@user]`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
     }
     else if (command == "forcechess" && isSelfHostedBot()) {
@@ -946,11 +991,17 @@ client.on("messageCreate", async message => {
         else if (args[0]) {
 
             if (ratingRoles.length == 0) {
-                message.reply({ content: 'The server has yet to setup any rating role milestones', failIfNotExists: false })
+              let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription('The server has yet to setup any rating role milestones')
+                message.reply({ embeds: [embed], failIfNotExists: false })
             }
 			
 	      		else if (message.mentions.users.size != 1) {
-              message.reply({content: `${prefix}forcechess [username] [@user]`, failIfNotExists: false})
+              let embed = new MessageEmbed()
+                      .setColor('#0099ff')
+                      .setDescription(`${prefix}forcechess [username] [@user]`)
+              message.reply({embeds: [embed], failIfNotExists: false})
             }
             else
             {
@@ -974,10 +1025,16 @@ client.on("messageCreate", async message => {
                   })
 
                   if (result == null) {
-                      message.reply({content: `Username was not found!`, failIfNotExists: false})
+                      let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Username was not found!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
                   }
                   else if (result == "Rate Limit") {
-                      message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
+                    let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Rate Limit Encountered! Please try again!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
                   }
                   else {
                       queue[`chesscom-account-of-${target.id}`] = result.username
@@ -990,12 +1047,18 @@ client.on("messageCreate", async message => {
                   }
               }
               else {
-                  message.reply({content: `Rate Limit Encountered! Please try again!`, failIfNotExists: false})
+                  let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Rate Limit Encountered! Please try again!`)
+                      message.reply({embeds: [embed], failIfNotExists: false})
               }
             }
         }
         else {
-            message.reply({content: `${prefix}forcechess [username] [@user]`, failIfNotExists: false})
+          let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`${prefix}forcechess [username] [@user]`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
     }
     else if (command == "prefix")
@@ -1008,16 +1071,25 @@ client.on("messageCreate", async message => {
 
         else if (args[0].length > 5)
         {
-            message.reply({content: `Prefix cannot exceed 5 characters!`, failIfNotExists: false})
+          let embed = new MessageEmbed()
+                        .setColor('#0099ff')
+                        .setDescription(`Prefix cannot exceed 5 characters!`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
 
         else if (!message.mentions.has(client.user) || message.mentions.users.size != 1) {
-            message.reply({content: `To avoid double changing prefixes, you must use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```', failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`To avoid double changing prefixes, you must use this command instead:\n` + '```' + `${ prefix }prefix ${ args[0]} <@${ client.user.id }>` + '```')
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
         else
         {
           queue[`guild-prefix-${message.guild.id}`] = args[0]
-          message.reply({content: 'Prefix was successfully set to `' + args[0] + '`', failIfNotExists: false})
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription('Prefix was successfully set to `' + args[0] + '`')
+          message.reply({embeds: [embed], failIfNotExists: false})
         }
     }
     else if(command == "addelo")
@@ -1028,12 +1100,17 @@ client.on("messageCreate", async message => {
             replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            message.reply({content: `${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`, failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`${prefix}addelo [elo] [@role] (elo2) [@role2] ... ...`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
         else
         {
-
-          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Adding Roles...`)
+          await message.reply({embeds: [embed], failIfNotExists: false}).then(async msg =>
           {
             let msgToSend = ""
 
@@ -1107,16 +1184,20 @@ client.on("messageCreate", async message => {
           }
 
           if (msgToSend == `${prefix}addelo `) {
-            
-              message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`There were no role milestones to delete.`)
+              message.reply({embeds: [embed], failIfNotExists: false})
           }
           else {
 
               ratingRoles = undefined
               
-              message.reply({content: `Successfully reset all elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
+              let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Successfully reset all elo related roles! Command to undo:\n\`${msgToSend}\``)
+              message.reply({embeds: [embed], failIfNotExists: false})
 
-              
               message.member.send(`Successfully reset all elo related roles! Command to 
               undo:\n` + '```' + msgToSend + '```').catch(() => null)
               
@@ -1132,11 +1213,17 @@ client.on("messageCreate", async message => {
             replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            message.reply({content: `${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`, failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`${prefix}addpuzzleelo [elo] [@role] (elo2) [@role2] ... ...`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
         else
         {
-          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Adding Roles...`)
+          await message.reply({embeds: [embed], failIfNotExists: false}).then(async msg =>
           {
               let msgToSend = ""
 
@@ -1209,13 +1296,19 @@ client.on("messageCreate", async message => {
         }
 
         if (msgToSend == `${prefix}addpuzzleelo `) {
-            message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`There were no role milestones to delete.`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
         else {
 
             puzzleRatingRoles = undefined
 
-            message.reply({content: `Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```')
+            message.reply({embeds: [embed], failIfNotExists: false})
             message.member.send(`Successfully reset all puzzle elo related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
         }
     }
@@ -1226,13 +1319,19 @@ client.on("messageCreate", async message => {
             replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
-            message.reply({content: `${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`, failIfNotExists: false})
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`${prefix}addtitle [title] [@role] (title2) [@role2] ... ...`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
         else
         {
 
 
-          await message.reply({content: `Adding Roles...`, failIfNotExists: false}).then(async msg =>
+          let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Adding Roles...`)
+          await message.reply({embeds: [embed], failIfNotExists: false}).then(async msg =>
           {
             let msgToSend = ""
 
@@ -1303,13 +1402,19 @@ client.on("messageCreate", async message => {
           }
 
           if (msgToSend == `${prefix}addtitle `) {
-              message.reply({content: `There were no role milestones to delete.`, failIfNotExists: false})
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`There were no role milestones to delete.`)
+              message.reply({embeds: [embed], failIfNotExists: false})
           }
           else {
 
               titleRoles = undefined
 
-              message.reply({content: `Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```', failIfNotExists: false})
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```')
+              message.reply({embeds: [embed], failIfNotExists: false})
               message.member.send(`Successfully reset all title related roles! Command to undo:\n` + '```' + msgToSend + '```').catch(() => null)
           }
       }
@@ -1324,7 +1429,10 @@ client.on("messageCreate", async message => {
             {
                 queue[`guild-lichess-rating-equation-${message.guild.id}`] = undefined
 
-                message.reply({content: `Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`, failIfNotExists: false})
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+                message.reply({embeds: [embed], failIfNotExists: false})
             }
             else
             {
@@ -1343,9 +1451,15 @@ client.on("messageCreate", async message => {
                   Parser.evaluate(argString, { x: -1 })
               }
               catch (error) {
-                  message.reply({content: `Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`, failIfNotExists: false})
+                  let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                  message.reply({embeds: [embed], failIfNotExists: false})
 
-                  message.reply({content: `Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`, failIfNotExists: false})
+                  embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+                  message.reply({embeds: [embed], failIfNotExists: false})
 
                   return;
               }
@@ -1386,13 +1500,19 @@ client.on("messageCreate", async message => {
                   Parser.evaluate(argString, { x: -1 })
               }
               catch (error) {
-                  message.reply({content: `Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`, failIfNotExists: false})
+                  let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                  message.reply({embeds: [embed], failIfNotExists: false})
 
                   return;
               }
 
               queue[`guild-chesscom-rating-equation-${message.guild.id}`] = argString
-              message.reply({content: `Successfully set Chess.com rating equation to: ${argString}`, failIfNotExists: false})
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully set Chess.com rating equation to: ${argString}`)
+              message.reply({embeds: [embed], failIfNotExists: false})
             }
         }
     }
@@ -1412,7 +1532,10 @@ client.on("messageCreate", async message => {
             {
               modRoles.push(role.id)
 
-              message.reply({content: `Successfully added the role as a moderator for this bot.`, failIfNotExists: false})
+              let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully added the role as a moderator for this bot.`)
+              message.reply({embeds: [embed], failIfNotExists: false})
             }
         }
     }
@@ -1444,12 +1567,17 @@ client.on("messageCreate", async message => {
             
             modRoles = undefined
 
-            message.reply({content: `Successfully removed all moderator roles from this bot.`, failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully removed all moderator roles from this bot.`)
+            message.reply({embeds: [embed], failIfNotExists: false})
         }
     }
     else if (command == "privacy") {
-            
-        message.reply({content: `Check or Enable your DM to see privacy policy`, failIfNotExists: false})
+            let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Check or Enable your DM to see privacy policy`)
+        message.reply({embeds: [embed], failIfNotExists: false})
 
         message.member.send(`The privacy policy may be changed at any time without any warning prior or after the change.\n Data collected that cannot be deleted:\n1. Your Discord account's unique ID, linked to a timestamp of the last time you contacted any external API that I do not own (for now, the API of Chess.com and Lichess.org)\n2. Your Discord Account's unique ID, linked to default data assigned to them by the bot for optimization purposes.\n3. Any server's Guild ID that ever added the bot, linked to default data assigned to them by the bot for optimization purposes.\nData collected that can be deleted:\n1. Your Discord account's unique ID, linked to your account on Lichess.org and Chess.com. This data is saved after you successfully link your account to any of them. The only way to delete the data is unlinking the accounts, which is done by executing the same command used to link, but providing no arguments to the commands.\n2. Any data a server running the bot manually input with any command that contains the word "add" or "set", and can be manually deleted using either the available "reset" commands, or the related "set" command without any arguments.\nBelow is the source code of the bot that contains contact information, demonstrates why and how data is collected, along with who is given any of your data, or your server's data:\nhttps://github.com/eyal282/Chess-ELO-Discord-Bot`).catch(() => null)
     }
@@ -1463,7 +1591,10 @@ client.on("messageCreate", async message => {
         message.member.send({ embeds: [embed] }).catch(() => null)
     }
     else if (command == "ping") {
-        message.channel.send(`🏓Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nThis message will self destruct in 10 seconds.`).then(msg =>
+      let embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`🏓Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nThis message will self destruct in 10 seconds.`)
+        message.channel.send({embeds: [embed]}).then(msg =>
         {
             deleteMessageAfterTime(msg, 10000)
         })
@@ -1909,7 +2040,10 @@ function botHasPermissionByGuild(guild, permission)
 
 function replyAccessDeniedByMessage(message)
 {
-  return message.reply({ content: `Access Denied`, failIfNotExists: false })
+  let embed = new MessageEmbed()
+      .setColor('#0099ff')
+      .setDescription(`Access Denied`)
+  return message.reply({embeds: [embed], failIfNotExists: false })
 }
 
 function isBotSelfHosted()

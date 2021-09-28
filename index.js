@@ -279,7 +279,7 @@ client.on('interactionCreate', async(interaction) => {
 
 
           if (result == null) {
-              message.reply({ content: 'User was not found!', failIfNotExists: false })
+              interaction.reply({ content: 'User was not found!', failIfNotExists: false })
           }
           else if (result == "Rate Limit") {
                 let embed = new MessageEmbed()
@@ -294,7 +294,7 @@ client.on('interactionCreate', async(interaction) => {
                       .setLabel(`Retry Link for ${username}`)
                       .setStyle('PRIMARY'),
                   );
-                message.reply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
+                interaction.reply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
           }
           else {
               // result.profile.location
@@ -312,7 +312,7 @@ client.on('interactionCreate', async(interaction) => {
                       .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
 
-                    message.reply({ embeds: [embed], failIfNotExists: false })
+                    interaction.reply({ embeds: [embed], failIfNotExists: false })
 
               }
               else {
@@ -330,7 +330,7 @@ client.on('interactionCreate', async(interaction) => {
                             .setStyle('PRIMARY'),
                         );
 
-                        message.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+                        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
               }
           }
       }
@@ -347,7 +347,7 @@ client.on('interactionCreate', async(interaction) => {
                   .setLabel(`Retry Link for ${username}`)
                   .setStyle('PRIMARY'),
               );
-            message.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+            interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
       }
   }
 

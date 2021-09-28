@@ -152,13 +152,27 @@ client.on('interactionCreate', async(interaction) => {
 
   message.author = interaction.user // We do a little trolling
 
+    let manyMuch = await settings.getMany([
+      `guild-prefix-${message.guild.id}`,
+      `guild-elo-roles-${message.guild.id}`,
+      `guild-puzzle-elo-roles-${message.guild.id}`,
+      `guild-title-roles-${message.guild.id}`,
+      `guild-bot-mods-${message.guild.id}`,
+      `guild-lichess-rating-equation-${message.guild.id}`,
+      `guild-chesscom-rating-equation-${message.guild.id}`,
+      `last-command-${message.author.id}`,
+      `lichess-account-of-${message.author.id}`
+      `chesscom-account-of-${message.author.id}`,
+      `cached-lichess-account-data-of-${message.author.id}`,
+      `cached-chesscom-account-data-of-${message.author.id}`,
+    ])
 
 	if(bLichess)
   {
-    let timestamp = await settings.get(`last-command-${message.author.id}`)
+    let timestamp = manyMuch[`last-command-${message.author.id}`]
 
     if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-        await settings.set(`last-command-${message.author.id}`, Date.now())
+        queue[`last-command-${message.author.id}`] = Date.now()
 
         let result = await fetch(`https://lichess.org/api/user/${username}`).then(response => {
             if (response.status == 404) { // Not Found
@@ -196,9 +210,8 @@ client.on('interactionCreate', async(interaction) => {
             let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
             if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                await settings.set(`lichess-account-of-${message.author.id}`, 
-                result.username)
-                await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+                queue[`lichess-account-of-${message.author.id}`] = result.username
+                queue[`cached-lichess-account-data-of-${message.author.id}`] = result
                 updateProfileDataByMessage(message, true)
 
                 let embed = new MessageEmbed()
@@ -245,10 +258,10 @@ client.on('interactionCreate', async(interaction) => {
   // If not lichess
   else
   {
-      let timestamp = await settings.get(`last-command-${message.author.id}`)
+      let timestamp = manyMuch[`last-command-${message.author.id}`]
 
       if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-          await settings.set(`last-command-${message.author.id}`, Date.now())
+          queue[`last-command-${message.author.id}`] = Date.now()
           let result = await fetch(`https://api.chess.com/pub/player/${username}`).then(response => {
               if (response.status == 404) { // Not Found
                   return null
@@ -285,9 +298,9 @@ client.on('interactionCreate', async(interaction) => {
               let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
               if (result.location && fullDiscordUsername == result.location) {
-                  await settings.set(`chesscom-account-of-${message.author.id}`, result.username)
+                  queue[`chesscom-account-of-${message.author.id}`] = result.username
 
-                  // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we must comment the line below.
+                  // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
                   //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
                   updateProfileDataByMessage(message, true)
 
@@ -378,7 +391,11 @@ client.on("messageCreate", async message => {
       `guild-bot-mods-${message.guild.id}`,
       `guild-lichess-rating-equation-${message.guild.id}`,
       `guild-chesscom-rating-equation-${message.guild.id}`,
-      `last-command-${message.author.id}`
+      `last-command-${message.author.id}`,
+      `lichess-account-of-${message.author.id}`
+      `chesscom-account-of-${message.author.id}`,
+      `cached-lichess-account-data-of-${message.author.id}`,
+      `cached-chesscom-account-data-of-${message.author.id}`,
     ])
   
     let prefix = manyMuch[`guild-prefix-${message.guild.id}`]
@@ -525,7 +542,7 @@ client.on("messageCreate", async message => {
             }
             else
             {
-              let timestamp = await settings.get(`last-command-${message.author.id}`)
+              let timestamp = manyMuch[`last-command-${message.author.id}`]
 
               if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
                   queue[`last-command-${message.author.id}`] = Date.now()
@@ -633,7 +650,7 @@ client.on("messageCreate", async message => {
         }
         else if (args[0]) {
 
-            let timestamp = await settings.get(`last-command-${message.author.id}`)
+            let timestamp = manyMuch[`last-command-${message.author.id}`]
 
             if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
                 queue[`last-command-${message.author.id}`] = Date.now()
@@ -675,7 +692,7 @@ client.on("messageCreate", async message => {
                     if (result.location && fullDiscordUsername == result.location) {
                         queue[`chesscom-account-of-${message.author.id}`] = result.username
 
-                        // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we must comment the line below.
+                        // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
                         //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
                         updateProfileDataByMessage(message, true)
 
@@ -743,8 +760,8 @@ client.on("messageCreate", async message => {
       else
       {
 
-        let lichessAccountData = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
-        let chessComAccountData = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
+        let lichessAccountData = manyMuch[`cached-lichess-account-data-of-${message.author.id}`]
+        let chessComAccountData = manyMuch[`cached-chesscom-account-data-of-${message.author.id}`]
 
         // Soon chess.com steals every variable here.
         let result = lichessAccountData
@@ -812,7 +829,7 @@ client.on("messageCreate", async message => {
           if (result.chess_rapid)
             rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= Constant_ProvisionalRD ? "" : "?")
 
-          let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
+          let chessComAccount = manyMuch[`chesscom-account-of-${message.author.id}`]
 
           chessComEmbed = new MessageEmbed()
             .setColor('#0099ff')
@@ -860,7 +877,7 @@ client.on("messageCreate", async message => {
 
               let target = message.mentions.users.first()
               
-              let timestamp = await settings.get(`last-command-${message.author.id}`)
+              let timestamp = manyMuch[`last-command-${message.author.id}`]
 
               if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
                   queue[`last-command-${message.author.id}`] = Date.now()
@@ -923,7 +940,7 @@ client.on("messageCreate", async message => {
 
               let target = message.mentions.users.first()
 
-              let timestamp = await settings.get(`last-command-${message.author.id}`)
+              let timestamp = manyMuch[`last-command-${message.author.id}`]
 
               if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now()) && ratingRoles.length > 0) {
                   queue[`last-command-${message.author.id}`] = Date.now()
@@ -1452,25 +1469,59 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
         return;
 
-    let ratingRoles = await settings.get(`guild-elo-roles-${message.guild.id}`)
+     let manyMuch = await settings.getMany([
+      `guild-prefix-${message.guild.id}`,
+      `guild-elo-roles-${message.guild.id}`,
+      `guild-puzzle-elo-roles-${message.guild.id}`,
+      `guild-title-roles-${message.guild.id}`,
+      `guild-bot-mods-${message.guild.id}`,
+      `guild-lichess-rating-equation-${message.guild.id}`,
+      `guild-chesscom-rating-equation-${message.guild.id}`,
+      `last-command-${message.author.id}`,
+      `lichess-account-of-${message.author.id}`,
+      `chesscom-account-of-${message.author.id}`,
+      `cached-lichess-account-data-of-${message.author.id}`,
+      `cached-chesscom-account-data-of-${message.author.id}`,
+    ])
+    
+    let queue = []
+
+    let ratingRoles = manyMuch[`guild-elo-roles-${message.guild.id}`]
 
     if (ratingRoles == undefined)
     {
-      ratingRoles = []
+        ratingRoles = []
     }
 
-    let puzzleRatingRoles = await settings.get(`guild-puzzle-elo-roles-${message.guild.id}`)
+    let puzzleRatingRoles = manyMuch[`guild-puzzle-elo-roles-${message.guild.id}`]
 
     if (puzzleRatingRoles == undefined)
-    {   
-      puzzleRatingRoles = []
+    {
+        puzzleRatingRoles = []
     }
 
-    let titleRoles = await settings.get(`guild-title-roles-${message.guild.id}`)
-
+    let titleRoles = manyMuch[`guild-title-roles-${message.guild.id}`]
 
     if (titleRoles == undefined) {
-      titleRoles = []
+        titleRoles = []
+    }
+
+    let lichessRatingEquation = manyMuch[`guild-lichess-rating-equation-${message.guild.id}`]
+
+    if (lichessRatingEquation == undefined) {
+        lichessRatingEquation = Constant_lichessDefaultRatingEquation
+    }
+
+    let chessComRatingEquation = manyMuch[`guild-chesscom-rating-equation-${message.guild.id}`]
+
+    if (chessComRatingEquation == undefined) {
+        chessComRatingEquation = Constant_chessComDefaultRatingEquation
+    }
+
+    let modRoles = manyMuch[`guild-bot-mods-${message.guild.id}`]
+
+    if (modRoles == undefined) {
+        modRoles = []
     }
 
     await message.guild.roles.fetch()
@@ -1480,31 +1531,31 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
       if(highestBotRole)
       {
-      for (let i = 0; i < ratingRoles.length; i++)
-      {
-        let role = roles.get(ratingRoles[i].id)
+        for (let i = 0; i < ratingRoles.length; i++)
+        {
+          let role = roles.get(ratingRoles[i].id)
 
-        // if role doesn't exist or is above bot.
-        if (!role || highestBotRole.rawPosition < role.rawPosition)
-        ratingRoles.splice(i, 1)
-      }
+          // if role doesn't exist or is above bot.
+          if (!role || highestBotRole.rawPosition < role.rawPosition)
+          ratingRoles.splice(i, 1)
+        }
 
-      for (let i = 0; i < puzzleRatingRoles.length; i++)
-      {
-        let role = roles.get(puzzleRatingRoles[i].id)
+        for (let i = 0; i < puzzleRatingRoles.length; i++)
+        {
+          let role = roles.get(puzzleRatingRoles[i].id)
 
-        // if role doesn't exist or is above bot.
-        if (!role || highestBotRole.rawPosition < role.rawPosition)
-        puzzleRatingRoles.splice(i, 1)
-      }
+          // if role doesn't exist or is above bot.
+          if (!role || highestBotRole.rawPosition < role.rawPosition)
+          puzzleRatingRoles.splice(i, 1)
+        }
 
-      for (let i = 0; i < titleRoles.length; i++) {
-        let role = roles.get(titleRoles[i].id)
+        for (let i = 0; i < titleRoles.length; i++) {
+          let role = roles.get(titleRoles[i].id)
 
-        // if role doesn't exist or is above bot.
-        if (!role || highestBotRole.rawPosition < role.rawPosition)
-        titleRoles.splice(i, 1)
-      }
+          // if role doesn't exist or is above bot.
+          if (!role || highestBotRole.rawPosition < role.rawPosition)
+          titleRoles.splice(i, 1)
+        }
       }
     })
     .catch(() => null)
@@ -1512,24 +1563,6 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       
     ratingRoles.sort(function (a, b) { return a.rating - b.rating });
     puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
-    
-    await settings.set(`guild-elo-roles-${message.guild.id}`, ratingRoles)
-    await settings.set(`guild-puzzle-elo-roles-${message.guild.id}`, puzzleRatingRoles)
-    await settings.set(`guild-title-roles-${message.guild.id}`, titleRoles)
-
-    let lichessRatingEquation = await settings.get(`guild-lichess-rating-equation-${message.guild.id}`)
-
-    if (lichessRatingEquation == undefined) {
-      await settings.set(`guild-lichess-rating-equation-${message.guild.id}`, Constant_lichessDefaultRatingEquation)
-      lichessRatingEquation = Constant_lichessDefaultRatingEquation
-    }
-
-    let chessComRatingEquation = await settings.get(`guild-chesscom-rating-equation-${message.guild.id}`)
-
-    if (chessComRatingEquation == undefined) {
-      await settings.set(`guild-chesscom-rating-equation-${message.guild.id}`, Constant_chessComDefaultRatingEquation)
-      chessComRatingEquation = Constant_chessComDefaultRatingEquation
-    }
 
     try {
       Parser.evaluate(lichessRatingEquation, { x: 1000 })
@@ -1542,17 +1575,10 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     }
     catch {}
 
-    let modRoles = await settings.get(`guild-bot-mods-${message.guild.id}`)
+    queue[`last-updated-${message.author.id}`] = Date.now()
 
-    if (modRoles == undefined) {
-      await settings.set(`guild-bot-mods-${message.guild.id}`, [])
-      modRoles = []
-    }
-    await settings.set(`last-updated-${message.author.id}`, Date.now())
-
-    let lichessAccount = await settings.get(`lichess-account-of-${message.author.id}`)
-    let chessComAccount = await settings.get(`chesscom-account-of-${message.author.id}`)
-
+    let lichessAccount = manyMuch[`lichess-account-of-${message.author.id}`]
+    let chessComAccount = manyMuch[`chesscom-account-of-${message.author.id}`]
       
     let result
 
@@ -1563,7 +1589,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     {
       if(useCacheOnly) 
       {
-        result = await settings.get(`cached-lichess-account-data-of-${message.author.id}`)
+        result = manyMuch[`cached-lichess-account-data-of-${message.author.id}`]
       }
       else
       {
@@ -1590,7 +1616,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     
     if(result != null)
     {
-      await settings.set(`cached-lichess-account-data-of-${message.author.id}`, result)
+      queue[`cached-lichess-account-data-of-${message.author.id}`] = result
 
       let corresRating = -1
       let blitzRating = -1
@@ -1633,7 +1659,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     {
       if(useCacheOnly) 
       {
-        result = await settings.get(`cached-chesscom-account-data-of-${message.author.id}`)
+        result = manyMuch[`cached-chesscom-account-data-of-${message.author.id}`]
       }
       else
       {
@@ -1652,7 +1678,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     }
     if(result != null)
     {
-      await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
+      queue[`cached-chesscom-account-data-of-${message.author.id}`] = result
       let corresRating = -1
       let blitzRating = -1
       let rapidRating = -1
@@ -1686,62 +1712,63 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 
     let fullRolesCache = message.member.roles.cache
 
-    if (!fullRolesCache)
-      return;
-
-    let fullRolesArray = Array.from(fullRolesCache.keys());
-
-    for (let i = 0; i < ratingRoles.length; i++)
+    if (fullRolesCache)
     {
-      if (highestRating >= ratingRoles[i].rating)
-        highestRatingRole = ratingRoles[i].id;
+      let fullRolesArray = Array.from(fullRolesCache.keys());
 
-      let index = fullRolesArray.indexOf(ratingRoles[i].id)
-
-      if(index != -1)
-        fullRolesArray.splice(index, 1);
-    }
-
-    for (let i = 0; i < puzzleRatingRoles.length; i++)
-    {
-      if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
-        highestPuzzleRatingRole = puzzleRatingRoles[i].id;
-
-      let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
-
-      if(index != -1)
-        fullRolesArray.splice(index, 1);
-    }
-
-    for (let i = 0; i < titleRoles.length; i++) {
-      if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
-        highestTitleRole = titleRoles[i].id;
-
-      let index = fullRolesArray.indexOf(titleRoles[i].id)
-
-      if (index != -1)
-        fullRolesArray.splice(index, 1);
-    }
-
-    if (highestRatingRole != null)
-      fullRolesArray.push(highestRatingRole)
-
-
-    if (highestPuzzleRatingRole != null)
-      fullRolesArray.push(highestPuzzleRatingRole)
-
-    if (highestTitleRole != null)
-      fullRolesArray.push(highestTitleRole)
-
-    // Don't set if nothing was changed.
-    if (fullRolesArray != Array.from(fullRolesCache.keys()))
-    {
-      try
+      for (let i = 0; i < ratingRoles.length; i++)
       {
-      message.member.roles.set(fullRolesArray).catch(() => null)
+        if (highestRating >= ratingRoles[i].rating)
+          highestRatingRole = ratingRoles[i].id;
+
+        let index = fullRolesArray.indexOf(ratingRoles[i].id)
+
+        if(index != -1)
+          fullRolesArray.splice(index, 1);
       }
-      catch {}
+
+      for (let i = 0; i < puzzleRatingRoles.length; i++)
+      {
+        if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
+          highestPuzzleRatingRole = puzzleRatingRoles[i].id;
+
+        let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
+
+        if(index != -1)
+          fullRolesArray.splice(index, 1);
+      }
+
+      for (let i = 0; i < titleRoles.length; i++) {
+        if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
+          highestTitleRole = titleRoles[i].id;
+
+        let index = fullRolesArray.indexOf(titleRoles[i].id)
+
+        if (index != -1)
+          fullRolesArray.splice(index, 1);
+      }
+
+      if (highestRatingRole != null)
+        fullRolesArray.push(highestRatingRole)
+
+
+      if (highestPuzzleRatingRole != null)
+        fullRolesArray.push(highestPuzzleRatingRole)
+
+      if (highestTitleRole != null)
+        fullRolesArray.push(highestTitleRole)
+
+      // Don't set if nothing was changed.
+      if (fullRolesArray != Array.from(fullRolesCache.keys()))
+      {
+        try
+        {
+          message.member.roles.set(fullRolesArray).catch(() => null)
+        }
+        catch {}
+      }
     }
+    await settings.setMany(queue, true)
 }
 
 async function deleteMessageAfterTime(message, time)

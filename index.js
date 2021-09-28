@@ -227,6 +227,7 @@ client.on('interactionCreate', async(interaction) => {
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setURL(result.url)
+                    .setImage('https://i.ibb.co/4SmH8f2/Screenshot-88.png')
                     .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
                     const row = new MessageActionRow()
@@ -293,7 +294,7 @@ client.on('interactionCreate', async(interaction) => {
                       .setLabel(`Retry Link for ${username}`)
                       .setStyle('PRIMARY'),
                   );
-                message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+                message.reply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
           }
           else {
               // result.profile.location
@@ -318,6 +319,7 @@ client.on('interactionCreate', async(interaction) => {
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setURL(`https://www.chess.com/member/${username}`)
+                      .setImage(`https://i.ibb.co/8rTvD3R/Screenshot-89.png`)
                       .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
                         const row = new MessageActionRow()
@@ -328,7 +330,7 @@ client.on('interactionCreate', async(interaction) => {
                             .setStyle('PRIMARY'),
                         );
 
-                        message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+                        message.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
               }
           }
       }
@@ -345,7 +347,7 @@ client.on('interactionCreate', async(interaction) => {
                   .setLabel(`Retry Link for ${username}`)
                   .setStyle('PRIMARY'),
               );
-            message.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+            message.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
       }
   }
 
@@ -601,6 +603,7 @@ client.on("messageCreate", async message => {
                           let embed = new MessageEmbed()
                               .setColor('#0099ff')
                               .setURL(result.url)
+                              .setImage('https://i.ibb.co/4SmH8f2/Screenshot-88.png')
                               .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
                               const row = new MessageActionRow()
@@ -711,6 +714,7 @@ client.on("messageCreate", async message => {
                     else {
                         let embed = new MessageEmbed()
                             .setColor('#0099ff')
+                            .setImage(`https://i.ibb.co/8rTvD3R/Screenshot-89.png`)
                             .setURL(`https://www.chess.com/member/${args[0]}`)
                             .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 

@@ -22,7 +22,7 @@ module.exports = {
     ),
     async execute(client, interaction, settings) {
 
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles] = jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles] = await jsGay.getCriticalData(interaction)
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
       let msgToSend = ""

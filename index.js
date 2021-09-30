@@ -1,8 +1,10 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
 
-// To do tomorrow: check every single bug from the massive optimization I made...
 
-const mySecret = process.env['SECRET_BOT_TOKEN']
+const jsGay = require('./util.js')
+
+const token = process.env["SECRET_BOT_TOKEN"]
+const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 
 const express = require('express');
 const app = express();
@@ -12,7 +14,9 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
 
+
 const Discord = require('discord.js');
+const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { MessageEmbed, MessageAttachment } = require('discord.js');
 const { Permissions } = require('discord.js');
@@ -24,6 +28,7 @@ Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 
 
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
+
 const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
@@ -35,14 +40,7 @@ let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
-const settings = new Josh({
-  name: 'Chess ELO Role',
-  provider,
-  providerOptions: {
-    collection: `settings`,
-    url: `mongodb+srv://eyal282:${process.env['SECRET_MONGO_PASSWORD']}@chess-elo-role.dpqoj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
-  }
-});
+let settings = jsGay.settings
 
 settings.defer.then( async () => {
   let size = await settings.size;
@@ -55,6 +53,33 @@ const command = new SlashCommandBuilder().setName('ping').setDescription('Replie
 
 // Raw data that can be used to register a slash command
 const rawData = command.toJSON();
+
+const fs = require('fs');
+
+client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+	client.commands.set(command.data.name, command);
+}
+
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
+
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+	try {
+		await command.execute(client, interaction, settings);
+	} catch (error) {
+		console.error(error);
+		return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
+});
+
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -100,11 +125,11 @@ client.on("guildCreate", async function(guild){
 
     client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 
-    if(!botHasBasicPermissionsByGuild(guild))
+    if(!jsGay.botHasBasicPermissionsByGuild(guild))
     { 
         let targetMember = await guild.fetchOwner().catch(() => null)
 
-        if(botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
+        if(jsGay.botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
         {
             const fetchedLogs = await guild.fetchAuditLogs({
             limit: 1,
@@ -221,7 +246,7 @@ client.on('interactionCreate', async(interaction) => {
             if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
                 queue[`lichess-account-of-${message.author.id}`] = result.username
                 queue[`cached-lichess-account-data-of-${message.author.id}`] = result
-                updateProfileDataByMessage(message, true)
+                jsGay.updateProfileDataByMessage(message, true)
 
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
@@ -231,7 +256,7 @@ client.on('interactionCreate', async(interaction) => {
 
             }
             else {
-                let attachment = await buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
+                let attachment = await jsGay.buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
 
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
@@ -316,7 +341,7 @@ client.on('interactionCreate', async(interaction) => {
 
                   // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
                   //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
-                  updateProfileDataByMessage(message, true)
+                  jsGay.updateProfileDataByMessage(message, true)
 
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
@@ -327,7 +352,7 @@ client.on('interactionCreate', async(interaction) => {
 
               }
               else {
-                  let attachment = await buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
+                  let attachment = await jsGay.buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
 
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
@@ -369,7 +394,7 @@ client.on('interactionCreate', async(interaction) => {
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
-    if (!botHasMessagingPermissionsByMessage(message)) return;
+    if (!jsGay.botHasMessagingPermissionsByMessage(message)) return;
 
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
@@ -383,7 +408,7 @@ client.on("messageCreate", async message => {
                 .setDescription('Prefix is `' + prefix + '`\nThis message will self destruct in 10 seconds.')
         message.reply({embeds: [embed]}).then(msg =>
         {
-            deleteMessageAfterTime(msg, 10000)
+            jsGay.deleteMessageAfterTime(msg, 10000)
         })
         .catch(() => null)
     }
@@ -391,9 +416,9 @@ client.on("messageCreate", async message => {
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
-        if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
+        if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
         {
-          updateProfileDataByMessage(message, false)
+          jsGay.updateProfileDataByMessage(message, false)
         }
     }
 });
@@ -402,7 +427,7 @@ client.on("messageCreate", async message => {
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
-    if (!botHasMessagingPermissionsByMessage(message)) return;
+    if (!jsGay.botHasMessagingPermissionsByMessage(message)) return;
 
     let manyMuch = await settings.getMany([
       `guild-prefix-${message.guild.id}`,
@@ -518,32 +543,32 @@ client.on("messageCreate", async message => {
     {
         let result = ""
 
-        result = addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
-        result = addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
-        result = addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
-        result = addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
-        result = addCommandToHelp(result, prefix, `invite ---> Invite Link`)
-        result = addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
-        result = addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
-        result = addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
-        result = addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
-        result = addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
-        result = addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
-        result = addCommandToHelp(result, prefix, `getpuzzleelo ---> Prints all puzzle role milestones`)
-        result = addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
-        result = addCommandToHelp(result, prefix, `getmod ---> Prints all the bot's moderators`)
-        result = addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
-        result = addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
-        result = addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
-        result = addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
-        result = addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
-        result = addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
+        result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
+        result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
+        result = jsGay.addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
+        result = jsGay.addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
+        result = jsGay.addCommandToHelp(result, prefix, `invite ---> Invite Link`)
+        result = jsGay.addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
+        result = jsGay.addCommandToHelp(result, prefix, `prefix [prefix] ---> Changes the bot's prefix, must mention the bot doing so`)
+        result = jsGay.addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
+        result = jsGay.addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
+        result = jsGay.addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
+        result = jsGay.addCommandToHelp(result, prefix, `getelo ---> Prints all role milestones`)
+        result = jsGay.addCommandToHelp(result, prefix, `getpuzzleelo ---> Prints all puzzle role milestones`)
+        result = jsGay.addCommandToHelp(result, prefix, `gettitle ---> Prints all titles that gain a role`)
+        result = jsGay.addCommandToHelp(result, prefix, `getmod ---> Prints all the bot's moderators`)
+        result = jsGay.addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
+        result = jsGay.addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
+        result = jsGay.addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
+        result = jsGay.addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
+        result = jsGay.addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = jsGay.addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
+        result = jsGay.addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
 
-        if(isBotSelfHosted())
+        if(jsGay.isBotSelfHosted())
         {
-            result = addCommandToHelp(result, prefix, `forcelichess [username] [@user]  ---> Links a user to Lichess.org, ignoring linking condition`)
-            result = addCommandToHelp(result, prefix, `forcechess [username] [@user] ---> Links a user to Chess.org, ignoring linking condition`)
+            result = jsGay.addCommandToHelp(result, prefix, `forcelichess [username] [@user]  ---> Links a user to Lichess.org, ignoring linking condition`)
+            result = jsGay.addCommandToHelp(result, prefix, `forcechess [username] [@user] ---> Links a user to Chess.org, ignoring linking condition`)
         }
 
         result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
@@ -556,7 +581,7 @@ client.on("messageCreate", async message => {
         message.reply({embeds: [embed], failIfNotExists: false})
     }
     else if (command == "lichess") {
-        //deleteMessageAfterTime(message, 100);
+        //jsGay.deleteMessageAfterTime(message, 100);
 
         if (args[0]) {
             
@@ -614,7 +639,7 @@ client.on("messageCreate", async message => {
                       if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
                           queue[`lichess-account-of-${message.author.id}`] = result.username
                           queue[`cached-lichess-account-data-of-${message.author.id}`] = result
-                          updateProfileDataByMessage(message, true)
+                          jsGay.updateProfileDataByMessage(message, true)
 
                           let embed = new MessageEmbed()
                               .setColor('#0099ff')
@@ -624,7 +649,7 @@ client.on("messageCreate", async message => {
 
                       }
                       else {
-                          let attachment = await buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
+                          let attachment = await jsGay.buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
 
                           let embed = new MessageEmbed()
                               .setColor('#0099ff')
@@ -665,7 +690,7 @@ client.on("messageCreate", async message => {
             queue[`lichess-account-of-${message.author.id}`] = undefined
             queue[`cached-lichess-account-data-of-${message.author.id}`] = undefined
 
-            updateProfileDataByMessage(message, true)
+            jsGay.updateProfileDataByMessage(message, true)
 
             let embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -732,7 +757,7 @@ client.on("messageCreate", async message => {
 
                         // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
                         //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
-                        updateProfileDataByMessage(message, true)
+                        jsGay.updateProfileDataByMessage(message, true)
 
                         let embed = new MessageEmbed()
                             .setColor('#0099ff')
@@ -744,7 +769,7 @@ client.on("messageCreate", async message => {
                     }
                     else {
  
-                        let attachment = await buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
+                        let attachment = await jsGay.buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
 
                       
                         let embed = new MessageEmbed()
@@ -784,7 +809,7 @@ client.on("messageCreate", async message => {
             queue[`chesscom-account-of-${message.author.id}`] = undefined
             queue[`cached-chesscom-account-data-of-${message.author.id}`] = undefined
 
-            updateProfileDataByMessage(message, true)
+            jsGay.updateProfileDataByMessage(message, true)
 
             let embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -794,7 +819,7 @@ client.on("messageCreate", async message => {
         }
     }
  else if (command == "profile") {
-      //deleteMessageAfterTime(message, 2000);
+      //jsGay.deleteMessageAfterTime(message, 2000);
 
       if (ratingRoles.length == 0) {
           let embed = new MessageEmbed()
@@ -901,12 +926,12 @@ client.on("messageCreate", async message => {
             
       }
    }
-  	else if (command == "forcelichess" && isBotSelfHosted()) {
-        //deleteMessageAfterTime(message, 2000);
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+  	else if (command == "forcelichess" && jsGay.isBotSelfHosted()) {
+        //jsGay.deleteMessageAfterTime(message, 2000);
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else if (args[0]) {
 
@@ -983,10 +1008,10 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == "forcechess" && isSelfHostedBot()) {
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
 		
         else if (args[0]) {
@@ -1064,10 +1089,10 @@ client.on("messageCreate", async message => {
     }
     else if (command == "prefix")
     {
-		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+		let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
 
         else if (args[0].length > 5)
@@ -1095,10 +1120,10 @@ client.on("messageCreate", async message => {
     }
     else if(command == "addelo")
     {
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
             let embed = new MessageEmbed()
@@ -1119,13 +1144,13 @@ client.on("messageCreate", async message => {
 
             for (let i = 0; i < (args.length / 2); i++)
             {
-                let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+                let role = jsGay.getRoleFromMentionString(message.guild, args[2 * i + 1])
 
                 let result = 'Could not find role'
 
                 if(role)
                 {
-                    result = addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+                    result = jsGay.addEloCommand(message, ratingRoles, role, args[2 * i + 0])
                 }
 
                 if(result == undefined)
@@ -1171,10 +1196,10 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resetelo") {
-		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+		let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else
         {
@@ -1207,11 +1232,11 @@ client.on("messageCreate", async message => {
     }
     else if(command == "addpuzzleelo")
     {
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin)
 		    {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
             let embed = new MessageEmbed()
@@ -1232,13 +1257,13 @@ client.on("messageCreate", async message => {
 
               for (let i = 0; i < (args.length / 2); i++)
               {
-                  let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+                  let role = jsGay.getRoleFromMentionString(message.guild, args[2 * i + 1])
 
                   let result = 'Could not find role'
 
                   if(role)
                   {
-                      result = addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+                      result = jsGay.addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
                   }
 
                   if(result == undefined)
@@ -1284,10 +1309,10 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resetpuzzleelo") {
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
 
         let msgToSend = `${prefix}addpuzzleelo `
@@ -1314,10 +1339,10 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == "addtitle") {
-	    	let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+	    	let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else if (args.length == 0 || args.length % 2 != 0) {
           let embed = new MessageEmbed()
@@ -1337,13 +1362,13 @@ client.on("messageCreate", async message => {
             let msgToSend = ""
 
             for (let i = 0; i < (args.length / 2); i++) {
-                let role = getRoleFromMentionString(message.guild, args[2 * i + 1])
+                let role = jsGay.getRoleFromMentionString(message.guild, args[2 * i + 1])
 
                 let result = 'Could not find role'
 
                 if(role)
                 {
-                    result = addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+                    result = jsGay.addTitleCommand(message, titleRoles, role, args[2 * i + 0])
                 }
 
                 if(result == undefined)
@@ -1388,10 +1413,10 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "resettitle" || command == "resettitles") {
-		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+		let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else
         {
@@ -1422,8 +1447,8 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "setlichessequation") {
-        if (!isBotControlAdminByMessage(message, modRoles)) {
-            replyAccessDeniedByMessage(message)
+        if (!jsGay.isBotControlAdminByMessage(message, modRoles)) {
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else {
             if (args.length == 0)
@@ -1472,10 +1497,10 @@ client.on("messageCreate", async message => {
     }
 
     else if (command == "setchessequation") {
-		let isAdmin = await isBotControlAdminByMessage(message, modRoles)
+		let isAdmin = await jsGay.isBotControlAdminByMessage(message, modRoles)
 		
         if (!isAdmin) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else {
             if (args.length == 0) {
@@ -1520,10 +1545,10 @@ client.on("messageCreate", async message => {
 
     else if (command == "addmod") {
         if (!message.member.permissions.has("MANAGE_GUILD", true)) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else {
-            let role = getRoleFromMentionString(message.guild, args[0])
+            let role = jsGay.getRoleFromMentionString(message.guild, args[0])
 
             if (!role)
             {
@@ -1562,7 +1587,7 @@ client.on("messageCreate", async message => {
 
     else if (command == "resetmod" || command == "resetmods") {
         if (!message.member.permissions.has("MANAGE_GUILD", true)) {
-            replyAccessDeniedByMessage(message)
+            jsGay.replyAccessDeniedByMessage(message)
         }
         else {
             
@@ -1585,7 +1610,7 @@ client.on("messageCreate", async message => {
     else if (command == "invite") {
         let embed = new MessageEmbed()
             .setColor('#0099ff')
-            .setDescription(`[Invite the Bot](https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+            .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
         message.reply({ embeds: [embed], failIfNotExists: false })
 
@@ -1597,7 +1622,7 @@ client.on("messageCreate", async message => {
                 .setDescription(`🏓Latency is ${Date.now() - message.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nThis message will self destruct in 10 seconds.`)
         message.channel.send({embeds: [embed]}).then(msg =>
         {
-            deleteMessageAfterTime(msg, 10000)
+            jsGay.deleteMessageAfterTime(msg, 10000)
         })
         .catch(() => null)
     }
@@ -1611,487 +1636,27 @@ client.on("messageCreate", async message => {
     await settings.setMany(queue, true)
 });
 
-client.login(mySecret);
+client.login(token);
 
-async function updateProfileDataByMessage(message, useCacheOnly)
+function deploySlashCommands()
 {
-    if(!message.guild.me.permissions.has('MANAGE_ROLES'))
-        return;
+  const { REST } = require('@discordjs/rest');
+  const { Routes } = require('discord-api-types/v9');
+  const { clientId, guildId } = require('./config.json');
 
-     let manyMuch = await settings.getMany([
-      `guild-prefix-${message.guild.id}`,
-      `guild-elo-roles-${message.guild.id}`,
-      `guild-puzzle-elo-roles-${message.guild.id}`,
-      `guild-title-roles-${message.guild.id}`,
-      `guild-bot-mods-${message.guild.id}`,
-      `guild-lichess-rating-equation-${message.guild.id}`,
-      `guild-chesscom-rating-equation-${message.guild.id}`,
-      `last-command-${message.author.id}`,
-      `lichess-account-of-${message.author.id}`,
-      `chesscom-account-of-${message.author.id}`,
-      `cached-lichess-account-data-of-${message.author.id}`,
-      `cached-chesscom-account-data-of-${message.author.id}`,
-    ])
-    
-    let queue = []
+  const commands = [];
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
-    let ratingRoles = manyMuch[`guild-elo-roles-${message.guild.id}`]
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
 
-    if (ratingRoles == undefined)
-    {
-        ratingRoles = []
-    }
+  const rest = new REST({ version: '9' }).setToken(token);
 
-    let puzzleRatingRoles = manyMuch[`guild-puzzle-elo-roles-${message.guild.id}`]
-
-    if (puzzleRatingRoles == undefined)
-    {
-        puzzleRatingRoles = []
-    }
-
-    let titleRoles = manyMuch[`guild-title-roles-${message.guild.id}`]
-
-    if (titleRoles == undefined) {
-        titleRoles = []
-    }
-
-    let lichessRatingEquation = manyMuch[`guild-lichess-rating-equation-${message.guild.id}`]
-
-    if (lichessRatingEquation == undefined) {
-        lichessRatingEquation = Constant_lichessDefaultRatingEquation
-    }
-
-    let chessComRatingEquation = manyMuch[`guild-chesscom-rating-equation-${message.guild.id}`]
-
-    if (chessComRatingEquation == undefined) {
-        chessComRatingEquation = Constant_chessComDefaultRatingEquation
-    }
-
-    let modRoles = manyMuch[`guild-bot-mods-${message.guild.id}`]
-
-    if (modRoles == undefined) {
-        modRoles = []
-    }
-
-    await message.guild.roles.fetch()
-    .then(roles => 
-    {
-      let highestBotRole = message.guild.members.resolve(client.user).roles.highest
-
-      if(highestBotRole)
-      {
-        for (let i = 0; i < ratingRoles.length; i++)
-        {
-          let role = roles.get(ratingRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          ratingRoles.splice(i, 1)
-        }
-
-        for (let i = 0; i < puzzleRatingRoles.length; i++)
-        {
-          let role = roles.get(puzzleRatingRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          puzzleRatingRoles.splice(i, 1)
-        }
-
-        for (let i = 0; i < titleRoles.length; i++) {
-          let role = roles.get(titleRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          titleRoles.splice(i, 1)
-        }
-      }
-    })
-    .catch(() => null)
-
-      
-    ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-    puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
-
-    try {
-      Parser.evaluate(lichessRatingEquation, { x: 1000 })
-      Parser.evaluate(lichessRatingEquation, { x: 0 })
-      Parser.evaluate(lichessRatingEquation, { x: -1 })
-
-      Parser.evaluate(chessComRatingEquation, { x: 1000 })
-      Parser.evaluate(chessComRatingEquation, { x: 0 })
-      Parser.evaluate(chessComRatingEquation, { x: -1 })
-    }
-    catch {}
-
-    queue[`last-updated-${message.author.id}`] = Date.now()
-
-    let lichessAccount = manyMuch[`lichess-account-of-${message.author.id}`]
-    let chessComAccount = manyMuch[`chesscom-account-of-${message.author.id}`]
-      
-    let result
-
-    if (lichessAccount == undefined) {
-      result = null;
-    }
-    else
-    {
-      if(useCacheOnly) 
-      {
-        result = manyMuch[`cached-lichess-account-data-of-${message.author.id}`]
-      }
-      else
-      {
-        result = await fetch(`https://lichess.org/api/user/${lichessAccount}`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-      }
-    }
-    
-    let highestRating = -1
-    let highestPuzzleRating = -1
-    let lichessHighestRating = -1
-    let lichessPuzzleRating = -1
-    let lichessTitle = ""
-    let chessTitle = ""
-    
-    if(result != null)
-    {
-      queue[`cached-lichess-account-data-of-${message.author.id}`] = result
-
-      let corresRating = -1
-      let blitzRating = -1
-      let rapidRating = -1
-      let classicalRating = -1
-
-      let puzzleRating = -1
-
-      if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = result.perfs.correspondence.rating
-      if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
-      if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
-      if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
-
-      if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
-
-      lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
-      lichessPuzzleRating = puzzleRating
-
-      let value = lichessHighestRating
-
-      try {
-        value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
-      }
-
-      catch { console.log(error)}
-
-      lichessHighestRating = value
-      highestRating = lichessHighestRating
-      highestPuzzleRating = lichessPuzzleRating
-
-      if (result.title) {
-        lichessTitle = result.title
-      }
-    }
-    
-    if (chessComAccount == undefined) {
-      result = null;
-    }
-    else
-    {
-      if(useCacheOnly) 
-      {
-        result = manyMuch[`cached-chesscom-account-data-of-${message.author.id}`]
-      }
-      else
-      {
-        result = await fetch(`https://api.chess.com/pub/player/${chessComAccount}/stats`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-      }
-    }
-    if(result != null)
-    {
-      queue[`cached-chesscom-account-data-of-${message.author.id}`] = result
-      let corresRating = -1
-      let blitzRating = -1
-      let rapidRating = -1
-
-      let puzzleRating = -1
-
-      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
-      if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
-      if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
-
-      if (result.tactics) puzzleRating = result.tactics.highest.rating
-
-      let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
-
-      let value = chessComHighestRating
-
-      try {
-        value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
-      }
-      catch {}
-      chessComHighestRating = value
-      highestRating = Math.max(lichessHighestRating, chessComHighestRating)
-
-      if (result.title)
-        chessTitle = result.title
-    }
-
-    let highestRatingRole = null;
-    let highestPuzzleRatingRole = null;
-    let highestTitleRole = null;
-
-    let fullRolesCache = message.member.roles.cache
-
-    if (fullRolesCache)
-    {
-      let fullRolesArray = Array.from(fullRolesCache.keys());
-
-      for (let i = 0; i < ratingRoles.length; i++)
-      {
-        if (highestRating >= ratingRoles[i].rating)
-          highestRatingRole = ratingRoles[i].id;
-
-        let index = fullRolesArray.indexOf(ratingRoles[i].id)
-
-        if(index != -1)
-          fullRolesArray.splice(index, 1);
-      }
-
-      for (let i = 0; i < puzzleRatingRoles.length; i++)
-      {
-        if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
-          highestPuzzleRatingRole = puzzleRatingRoles[i].id;
-
-        let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
-
-        if(index != -1)
-          fullRolesArray.splice(index, 1);
-      }
-
-      for (let i = 0; i < titleRoles.length; i++) {
-        if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
-          highestTitleRole = titleRoles[i].id;
-
-        let index = fullRolesArray.indexOf(titleRoles[i].id)
-
-        if (index != -1)
-          fullRolesArray.splice(index, 1);
-      }
-
-      if (highestRatingRole != null)
-        fullRolesArray.push(highestRatingRole)
-
-
-      if (highestPuzzleRatingRole != null)
-        fullRolesArray.push(highestPuzzleRatingRole)
-
-      if (highestTitleRole != null)
-        fullRolesArray.push(highestTitleRole)
-
-      // Don't set if nothing was changed.
-      if (fullRolesArray != Array.from(fullRolesCache.keys()))
-      {
-        try
-        {
-          message.member.roles.set(fullRolesArray).catch(() => null)
-        }
-        catch {}
-      }
-    }
-    await settings.setMany(queue, true)
+  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
+    .then(() => console.log('Successfully registered application commands.'))
+    .catch(console.error);
 }
 
-async function deleteMessageAfterTime(message, time)
-{
-    setTimeout(async () => {
-      message.delete().catch(() => null)
-    }, time);
-}
-
-function getRoleFromMentionString(guild, str) {
-    if (!str) return;
-
-    if (str.startsWith('<@&') && str.endsWith('>')) {
-        str = str.slice(3, -1);
-
-        if (str.startsWith('!')) {
-            str = str.slice(1);
-        }
-
-        return guild.roles.cache.get(str);
-    }
-}
-
-function addEloCommand(message, ratingRoles, role, elo) {
-    for (let i = 0; i < ratingRoles.length; i++) {
-        if (ratingRoles[i].id == role.id)
-            return undefined
-    }
-
-    let template = { id: role.id, rating: elo };
-
-    return template
-}
-
-function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
-    for (let i = 0; i < puzzleRatingRoles.length; i++) {
-        if (puzzleRatingRoles[i].id == role.id)
-            return undefined
-    }
-
-    let template = { id: role.id, rating: elo };
-
-    return template
-}
-
-function addTitleCommand(message, titleRoles, role, title) {
-    for (let i = 0; i < titleRoles.length; i++) {
-        if (titleRoles[i].id == role.id)
-            return undefined
-    }
-
-    let template = { id: role.id, title: title };
-
-    return template
-}
-
-function addCommandToHelp(result, prefix, commandData) {
-    return result + prefix + commandData + '\n'
-}
-
-async function isBotControlAdminByMessage(message, modRoles) {
-    if (message.member.permissions.has("MANAGE_GUILD", true))
-        return true;
-
-
-    let roleCache = message.member.roles.cache
-
-    for (let i = 0; i < modRoles.length; i++) {
-        if(roleCache.has(modRoles[i]))
-            return true;
-    }
-
-    return false;
-}
-
-function botHasMessagingPermissionsByMessage(message)
-{
-    let hasViewPermission = message.channel.permissionsFor(message.guild.me)
-    .has('VIEW_CHANNEL', false);
-
-    let hasMessageHistoryPermission = message.channel.permissionsFor(message.guild.me)
-    .has('READ_MESSAGE_HISTORY')
-
-    let hasSendPermission = message.channel.permissionsFor(message.guild.me)
-    .has('SEND_MESSAGES', false);
-
-    if(hasViewPermission && hasMessageHistoryPermission && hasSendPermission)
-        return true;
-
-    return false;
-}
-
-function botHasBasicPermissionsByGuild(guild)
-{
-
-    let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
-
-    let hasMessageHistoryPermission = guild.me.permissions.has('READ_MESSAGE_HISTORY')
-
-    let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
-
-    let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
-
-    if(hasViewPermission && hasSendPermission && hasManageRolesPermission && hasMessageHistoryPermission)
-        return true;
-
-    return false;
-}
-
-
-function botHasPermissionByGuild(guild, permission)
-{
-
-    let hasPermission = guild.me.permissions.has(permission)
-
-    if(hasPermission)
-        return true;
-
-    return false;
-}
-
-function replyAccessDeniedByMessage(message)
-{
-  let embed = new MessageEmbed()
-      .setColor('#0099ff')
-      .setDescription(`Access Denied`)
-  return message.reply({embeds: [embed], failIfNotExists: false })
-}
-
-function isBotSelfHosted()
-{
-    return client.guilds.cache.size == 1
-}
-
-async function buildCanvasForLichess(discordUsername)
-{
-  const canvas = Canvas.createCanvas(1302, 729);
-
-  const context = canvas.getContext('2d');
-
-  const background = await Canvas.loadImage('https://i.ibb.co/y5brqF1/Screenshot-93.png');
-
-  // This uses the canvas dimensions to stretch the image onto the entire canvas
-  context.drawImage(background, 0, 0, canvas.width, canvas.height);
-  
-  context.font = '14px arial';
-	// Select the style that will be used to fill the text in
-	context.fillStyle = '#ffffff';
-
-  context.fillText(discordUsername, 795, 256);
-  // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
-
-  return attachment
-}
-
-async function buildCanvasForChessCom(discordUsername)
-{
-  const canvas = Canvas.createCanvas(1071, 817);
-
-  const context = canvas.getContext('2d');
-
-  const background = await Canvas.loadImage('https://i.ibb.co/Xb5rtWh/Screenshot-90.png');
-
-  // This uses the canvas dimensions to stretch the image onto the entire canvas
-  context.drawImage(background, 0, 0, canvas.width, canvas.height);
-  
-  context.font = '12px arial';
-	// Select the style that will be used to fill the text in
-	context.fillStyle = '#ffffff';
-
-  context.fillText(discordUsername, 541, 520);
-  // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
-
-  return attachment
-}
+module.exports = { client }

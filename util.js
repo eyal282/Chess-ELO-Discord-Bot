@@ -897,7 +897,9 @@ async function getCriticalData(interaction)
         modRoles = []
     }
 
-    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles]
+    let timestamp = manyMuch[`last-command-${interaction.user.id}`]
+
+    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp]
 
     
 }

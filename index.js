@@ -71,7 +71,8 @@ client.on('interactionCreate', async interaction => {
 
 	if (!command) return;
 
-	try {
+	try
+  {
 		await command.execute(client, interaction, settings);
 	} catch (error) {
 		console.error(error);

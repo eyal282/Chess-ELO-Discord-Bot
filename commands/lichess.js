@@ -69,103 +69,94 @@ module.exports = {
 
       if (userName)
       {
-          if (ratingRoles.length == 0) {
-            let embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setDescription('The server has yet to setup any rating role milestones')
-              interaction.reply({ embeds: [embed], failIfNotExists: false })
-          }
-          else
-          {
-            let timestamp = manyMuch[`last-command-${interaction.user.id}`]
+          let timestamp = manyMuch[`last-command-${interaction.user.id}`]
 
-            if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-                queue[`last-command-${interaction.user.id}`] = Date.now()
+          if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
+              queue[`last-command-${interaction.user.id}`] = Date.now()
 
-                let result = await fetch(`https://lichess.org/api/user/${userName}`).then(response => {
-                    if (response.status == 404) { // Not Found
-                        return null
-                    }
-                    else if (response.status == 429) { // Rate Limit
-                        return "Rate Limit"
-                    }
-                    else if (response.status == 200) { // Status OK
-                        return response.json()
-                    }
-                })
+              let result = await fetch(`https://lichess.org/api/user/${userName}`).then(response => {
+                  if (response.status == 404) { // Not Found
+                      return null
+                  }
+                  else if (response.status == 429) { // Rate Limit
+                      return "Rate Limit"
+                  }
+                  else if (response.status == 200) { // Status OK
+                      return response.json()
+                  }
+              })
 
-                if (result == null) {
+              if (result == null) {
+                let embed = new MessageEmbed()
+                  .setColor('#0099ff')
+                  .setDescription('User was not found!')
+                interaction.reply({ embeds: [embed], failIfNotExists: false,ephemeral: true })
+              }
+              else if (result == "Rate Limit") {
                   let embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setDescription('User was not found!')
-                  interaction.reply({ embeds: [embed], failIfNotExists: false,ephemeral: true })
-                }
-                else if (result == "Rate Limit") {
-                    let embed = new MessageEmbed()
-                      .setColor('#0099ff')
-                      .setURL(`https://lichess.org/@/${userName}`)
-                      .setDescription('Rate Limit Encountered! Please try again!')
+                    .setURL(`https://lichess.org/@/${userName}`)
+                    .setDescription('Rate Limit Encountered! Please try again!')
 
-                      const row = new MessageActionRow()
-                        .addComponents(
-                          new MessageButton()
-                            .setCustomId(interaction.user.id)
-                            .setLabel(`Retry Link for ${userName}`)
-                            .setStyle('PRIMARY'),
-                        );
-                      interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false })
-                }
-                else {
-                    // result.profile.location
-                    let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
+                    const row = new MessageActionRow()
+                      .addComponents(
+                        new MessageButton()
+                          .setCustomId(interaction.user.id)
+                          .setLabel(`Retry Link for ${userName}`)
+                          .setStyle('PRIMARY'),
+                      );
+                    interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false })
+              }
+              else {
+                  // result.profile.location
+                  let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
-                    if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
-                        queue[`lichess-account-of-${interaction.user.id}`] = result.username
-                        queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
-                        jsGay.updateProfileDataByInteraction(interaction, true)
+                  if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+                      queue[`lichess-account-of-${interaction.user.id}`] = result.username
+                      queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
+                      jsGay.updateProfileDataByInteraction(interaction, true)
 
-                        let embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
+                      let embed = new MessageEmbed()
+                          .setColor('#0099ff')
+                          .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                        interaction.reply({ embeds: [embed], failIfNotExists: false })
+                      interaction.reply({ embeds: [embed], failIfNotExists: false })
 
-                    }
-                    else {
-                        let attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
+                  }
+                  else {
+                      let attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
 
-                        let embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setURL(result.url)
-                            .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+                      let embed = new MessageEmbed()
+                          .setColor('#0099ff')
+                          .setURL(result.url)
+                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
-                            const row = new MessageActionRow()
-                              .addComponents(
-                                new MessageButton()
-                                  .setCustomId(interaction.user.id)
-                                  .setLabel(`Retry Link for ${userName}`)
-                                  .setStyle('PRIMARY'),
-                              );
+                          const row = new MessageActionRow()
+                            .addComponents(
+                              new MessageButton()
+                                .setCustomId(interaction.user.id)
+                                .setLabel(`Retry Link for ${userName}`)
+                                .setStyle('PRIMARY'),
+                            );
 
-                              interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
-                    }
-                }
-            }
-            else {
-              let embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setURL(`https://lichess.org/@/${userName}`)
-                .setDescription('Rate Limit Encountered! Please try again!')
+                            interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
+                  }
+              }
+          }
+          else {
+            let embed = new MessageEmbed()
+              .setColor('#0099ff')
+              .setURL(`https://lichess.org/@/${userName}`)
+              .setDescription('Rate Limit Encountered! Please try again!')
 
-                const row = new MessageActionRow()
-                  .addComponents(
-                    new MessageButton()
-                      .setCustomId(interaction.user.id)
-                      .setLabel(`Retry Link for ${userName}`)
-                      .setStyle('PRIMARY'),
-                  );
-                interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
-            }
+              const row = new MessageActionRow()
+                .addComponents(
+                  new MessageButton()
+                    .setCustomId(interaction.user.id)
+                    .setLabel(`Retry Link for ${userName}`)
+                    .setStyle('PRIMARY'),
+                );
+              interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
           }
       }
       else

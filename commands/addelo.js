@@ -14,7 +14,7 @@ const jsGay = require('../util.js')
 
 let slashCommand = new SlashCommandBuilder()
 		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot. Each pair is seperated by SHIFT + ENTER')
+		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
 
     .addStringOption((option) =>
       option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated\n0 @Under 600\n600 @600~800\n800 @800~1000').setRequired(true))
@@ -24,11 +24,8 @@ module.exports =
 {
 	data: slashCommand,
   async execute(client, interaction, settings)
-  {
-      let args = interaction.options.getString('arguments').trim().split('<@&');
-
-
-      console.log(args)
+  {  
+      console.log(interaction.options.getString('arguments'))
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp] = await jsGay.getCriticalData(interaction)
 
@@ -86,4 +83,18 @@ module.exports =
         .catch(() => null)
       }
   }
+}
+
+function splitBy(text, delimiter) {
+    var delimiterPATTERN = "(" + delimiter + ")",
+        delimiterRE = new RegExp(delimiterPATTERN, "g");
+
+    return text.split(delimiterRE).reduce(function (chunks, item) {
+        if (item.match(delimiterRE)) {
+            chunks[chunks.length - 1] += item;
+        } else {
+            chunks.push(item.trim());
+        }
+        return chunks;
+    }, []);
 }

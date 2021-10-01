@@ -88,6 +88,7 @@ module.exports =
                   .setDescription(`Adding Roles...`)
 
         await interaction.reply({embeds: [embed], failIfNotExists: false})
+<<<<<<< HEAD
 
 
 
@@ -111,11 +112,37 @@ module.exports =
             if(result == undefined)
               result = "This role was already added to the bot!"
 
+=======
+
+
+
+        const msg = await interaction.fetchReply();
+
+        let msgToSend = ""
+
+
+
+        for (let i = 0; i < (args.length / 2); i++)
+        {
+            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
+
+            let result = 'Could not find role'
+
+            if(role)
+            {
+                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0])
+            }
+
+            if(result == undefined)
+              result = "This role was already added to the bot!"
+
+>>>>>>> origin/replit
             else
             {
               ratingRoles.push(result)            
               result = "Success."
             }
+<<<<<<< HEAD
 
             msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
         }
@@ -130,6 +157,20 @@ module.exports =
         msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
 
 
+=======
+
+            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "Internal Error, Cringe :("
+        }
+
+          embed = new MessageEmbed()
+                  .setColor('#0099ff')
+                  .setDescription(msgToSend)
+        msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
+>>>>>>> origin/replit
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles

@@ -25,10 +25,51 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings)
   {  
-      console.log(interaction.options.getString('arguments'))
+      let args = interaction.options.getString('arguments').trim().split(/ +/g)
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp] = await jsGay.getCriticalData(interaction)
+      
+ await interaction.guild.roles.fetch()
+      .then(roles => 
+          {
+              let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
+              if(highestBotRole)
+              {
+                  for (let i = 0; i < ratingRoles.length; i++)
+                  {
+                      let role = roles.get(ratingRoles[i].id)
+
+                      // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                          ratingRoles.splice(i, 1)
+                  }
+
+                  for (let i = 0; i < puzzleRatingRoles.length; i++)
+                  {
+                      let role = roles.get(puzzleRatingRoles[i].id)
+
+        // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+        puzzleRatingRoles.splice(i, 1)
+                  }
+
+                  for (let i = 0; i < titleRoles.length; i++) {
+                      let role = roles.get(titleRoles[i].id)
+
+                      // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                      titleRoles.splice(i, 1)
+                  }
+              }
+          })
+      .catch(() => null)
+
+      ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+      puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+
+      let queue = {}
+      
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
   
       if (!isAdmin) {
@@ -45,43 +86,58 @@ module.exports =
         let embed = new MessageEmbed()
                   .setColor('#0099ff')
                   .setDescription(`Adding Roles...`)
-        await interaction.reply({embeds: [embed], failIfNotExists: false}).then(async msg =>
+
+        await interaction.reply({embeds: [embed], failIfNotExists: false})
+
+
+
+        const msg = await interaction.fetchReply();
+
+        let msgToSend = ""
+
+
+
+        for (let i = 0; i < (args.length / 2); i++)
         {
-          let msgToSend = ""
+            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
+
+            let result = 'Could not find role'
+
+            if(role)
+            {
+                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0])
+            }
+
+            if(result == undefined)
+              result = "This role was already added to the bot!"
+
+            else
+            {
+              ratingRoles.push(result)            
+              result = "Success."
+            }
+
+            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
+        }
+
+        if (msgToSend == "") {
+            msgToSend = "Internal Error, Cringe :("
+        }
+
+          embed = new MessageEmbed()
+                  .setColor('#0099ff')
+                  .setDescription(msgToSend)
+        msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
 
 
-
-          for (let i = 0; i < (args.length / 2); i++)
-          {
-              let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
-
-              let result = 'Could not find role'
-
-              if(role)
-              {
-                  result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0])
-              }
-
-              if(result == undefined)
-                result = "This role was already added to the bot!"
-
-              else
-              {
-                ratingRoles.push(result)            
-                result = "Success."
-              }
-
-              msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-          }
-
-          if (msgToSend == "") {
-              msgToSend = "Internal Error, Cringe :("
-          }
-
-          msg.edit(msgToSend).catch(() => null)
-        })
-        .catch(() => null)
       }
+
+      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+      await settings.setMany(queue, true)
   }
 }
 

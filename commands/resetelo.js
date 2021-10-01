@@ -67,10 +67,10 @@ module.exports = {
         }
         else
         {
-          let msgToSend = `/addelo arguments: `
+          let msgToSend = `/addelo arguments:`
 
           for (let i = 0; i < ratingRoles.length; i++) {
-              msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + ">\n"
+              msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
           }
           
           msgToSend = msgToSend + "\t"

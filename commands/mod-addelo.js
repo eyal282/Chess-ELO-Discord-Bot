@@ -17,7 +17,7 @@ let slashCommand = new SlashCommandBuilder()
 		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
 
     .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated\n0 @Under 600\n600 @600~800\n800 @800~1000').setRequired(true))
+      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
 
 
 module.exports =
@@ -25,13 +25,15 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings)
   {  
-      let args = interaction.options.getString('arguments').trim().split(/ +/g)
+      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp] = await jsGay.getCriticalData(interaction)
       
- await interaction.guild.roles.fetch()
+      let guildRoles
+      await interaction.guild.roles.fetch()
       .then(roles => 
           {
+              guildRoles = roles
               let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
               if(highestBotRole)
@@ -84,13 +86,10 @@ module.exports =
       else
       {
         let embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(`Adding Roles...`)
+            .setColor('#0099ff')
+            .setDescription(`Adding Roles...`)
 
         await interaction.reply({embeds: [embed], failIfNotExists: false})
-<<<<<<< HEAD
-
-
 
         const msg = await interaction.fetchReply();
 
@@ -106,71 +105,27 @@ module.exports =
 
             if(role)
             {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0])
+                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
             }
 
             if(result == undefined)
               result = "This role was already added to the bot!"
 
-=======
-
-
-
-        const msg = await interaction.fetchReply();
-
-        let msgToSend = ""
-
-
-
-        for (let i = 0; i < (args.length / 2); i++)
-        {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
-
-            let result = 'Could not find role'
-
-            if(role)
-            {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0])
-            }
-
-            if(result == undefined)
-              result = "This role was already added to the bot!"
-
->>>>>>> origin/replit
+            else if(result == -1)
+              result = "This role is above the bot's highest role!"
+              
             else
             {
               ratingRoles.push(result)            
               result = "Success."
             }
-<<<<<<< HEAD
 
-            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
         }
+        embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(msgToSend)
 
-        if (msgToSend == "") {
-            msgToSend = "Internal Error, Cringe :("
-        }
-
-          embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(msgToSend)
         msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
-
-
-=======
-
-            msgToSend = msgToSend + (i + 1).toString() + ". " + result + " \n"
-        }
-
-        if (msgToSend == "") {
-            msgToSend = "Internal Error, Cringe :("
-        }
-
-          embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(msgToSend)
-        msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
->>>>>>> origin/replit
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles

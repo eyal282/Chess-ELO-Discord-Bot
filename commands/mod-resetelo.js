@@ -67,15 +67,16 @@ module.exports = {
         }
         else
         {
-          let msgToSend = `/addelo arguments:`
+          let msgToSend = '/addelo arguments:`'
 
           for (let i = 0; i < ratingRoles.length; i++) {
               msgToSend = msgToSend + ratingRoles[i].rating + " <@&" + ratingRoles[i].id + "> "
           }
           
-          msgToSend = msgToSend + "\t"
+        
+          msgToSend = msgToSend.trim() + "`"
 
-          if (msgToSend.length < 20) {
+          if (!msgToSend.includes('<@')) {
               let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setDescription(`There were no role milestones to delete.`)
@@ -87,11 +88,11 @@ module.exports = {
               
               let embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully reset all elo related roles! Command to undo:\n\`${msgToSend}\``)
+                .setDescription(`Successfully reset all elo related roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``)
+
               interaction.reply({embeds: [embed], failIfNotExists: false})
 
-              interaction.member.send(`Successfully reset all elo related roles! Command to 
-              undo:\n` + '```' + msgToSend + '```').catch(() => null)
+              interaction.member.send({embeds: [embed], failIfNotExists: false}).catch(() => null)
               
           }
         }

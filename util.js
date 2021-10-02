@@ -664,41 +664,59 @@ function getRoleFromMentionString(guild, str) {
     }
 }
 
-function addEloCommand(message, ratingRoles, role, elo) {
+function addEloCommand(message, ratingRoles, role, elo, guildRoles) {
     for (let i = 0; i < ratingRoles.length; i++) {
         if (ratingRoles[i].id == role.id)
             return undefined
     }
 
+    let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+    let guildRole = guildRoles.get(role.id)
+
+    if(highestBotRole.rawPosition < guildRole.rawPosition)
+      return -1
+
     let template = { id: role.id, rating: elo };
 
     return template
 }
 
-function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo) {
+function addPuzzleEloCommand(message, puzzleRatingRoles, role, elo, guildRoles) {
     for (let i = 0; i < puzzleRatingRoles.length; i++) {
         if (puzzleRatingRoles[i].id == role.id)
             return undefined
     }
 
+    let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+    let guildRole = guildRoles.get(role.id)
+
+    if(highestBotRole.rawPosition < guildRole.rawPosition)
+      return -1
+
     let template = { id: role.id, rating: elo };
 
     return template
 }
 
-function addTitleCommand(message, titleRoles, role, title) {
+function addTitleCommand(message, titleRoles, role, title, guildRoles) {
     for (let i = 0; i < titleRoles.length; i++) {
         if (titleRoles[i].id == role.id)
             return undefined
     }
 
+    let highestBotRole = message.guild.members.resolve(client.user).roles.highest
+    let guildRole = guildRoles.get(role.id)
+
+    if(highestBotRole.rawPosition < guildRole.rawPosition)
+      return -1
+    
     let template = { id: role.id, title: title };
 
     return template
 }
 
 function addCommandToHelp(result, prefix, commandData) {
-    return result + prefix + commandData + '\n'
+    return result + prefix + commandData + '\n\n'
 }
 
 async function isBotControlAdminByMessage(message, modRoles) {
@@ -903,4 +921,7 @@ async function getCriticalData(interaction)
 
     
 }
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getCriticalData, settings }
+
+client.login(token)
+
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getCriticalData, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }

@@ -27,7 +27,7 @@ Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
 
 
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
+const client = jsGay.client
 
 const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
@@ -76,7 +76,12 @@ client.on('interactionCreate', async interaction => {
 		await command.execute(client, interaction, settings);
 	} catch (error) {
 		console.error(error);
-		return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true }).catch( async() =>
+    {
+      const msg = await interaction.fetchReply();
+      msg.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+    }
+    );
 	}
 });
 
@@ -492,9 +497,13 @@ client.on("messageCreate", async message => {
         modRoles = []
     }
 
+    let guildRoles
+    
     await message.guild.roles.fetch()
     .then(roles => 
         {
+            guildRoles = roles
+            
             let highestBotRole = message.guild.members.resolve(client.user).roles.highest
 
             if(highestBotRole)
@@ -1151,7 +1160,7 @@ client.on("messageCreate", async message => {
 
                 if(role)
                 {
-                    result = jsGay.addEloCommand(message, ratingRoles, role, args[2 * i + 0])
+                    result = jsGay.addEloCommand(message, ratingRoles, role, args[2 * i + 0], guildRoles)
                 }
 
                 if(result == undefined)
@@ -1264,7 +1273,7 @@ client.on("messageCreate", async message => {
 
                   if(role)
                   {
-                      result = jsGay.addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0])
+                      result = jsGay.addPuzzleEloCommand(message, puzzleRatingRoles, role, args[2 * i + 0], guildRoles)
                   }
 
                   if(result == undefined)
@@ -1369,7 +1378,7 @@ client.on("messageCreate", async message => {
 
                 if(role)
                 {
-                    result = jsGay.addTitleCommand(message, titleRoles, role, args[2 * i + 0])
+                    result = jsGay.addTitleCommand(message, titleRoles, role, args[2 * i + 0], guildRoles)
                 }
 
                 if(result == undefined)
@@ -1636,8 +1645,6 @@ client.on("messageCreate", async message => {
 
     await settings.setMany(queue, true)
 });
-
-client.login(token);
 
 function deploySlashCommands()
 {

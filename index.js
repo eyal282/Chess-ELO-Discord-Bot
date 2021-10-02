@@ -552,7 +552,6 @@ client.on("messageCreate", async message => {
     if (command == "help")
     {
         let result = ""
-
         result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
         result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
         result = jsGay.addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
@@ -1610,7 +1609,7 @@ client.on("messageCreate", async message => {
         }
     }
     else if (command == "privacy") {
-            let embed = new MessageEmbed()
+        let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setDescription(`Check or Enable your DM to see privacy policy`)
         message.reply({embeds: [embed], failIfNotExists: false})

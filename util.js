@@ -917,11 +917,23 @@ async function getCriticalData(interaction)
 
     let timestamp = manyMuch[`last-command-${interaction.user.id}`]
 
-    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp]
+
+    let lichessAccount = manyMuch[`lichess-account-of-${interaction.user.id}`]
+    let chessComAccount = manyMuch[`chesscom-account-of-${interaction.user.id}`]
+
+    let lichessAccountData = manyMuch[`cached-lichess-account-data-of-${interaction.user.id}`]
+    let chessComAccountData = manyMuch[`cached-chesscom-account-data-of-${interaction.user.id}`]
+    
+    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData]
 
     
 }
 
+function getUserFullDiscordName(user)
+{
+  return user.username + "#" + user.discriminator
+  
+}
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getCriticalData, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }

@@ -22,7 +22,7 @@ module.exports = {
     ),
     async execute(client, interaction, settings) {
 
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp] = await jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 
       await interaction.guild.roles.fetch()
       .then(roles => 
@@ -69,8 +69,6 @@ module.exports = {
 
       if (userName)
       {
-          let timestamp = manyMuch[`last-command-${interaction.user.id}`]
-
           if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
               queue[`last-command-${interaction.user.id}`] = Date.now()
 
@@ -90,7 +88,7 @@ module.exports = {
                 let embed = new MessageEmbed()
                   .setColor('#0099ff')
                   .setDescription('User was not found!')
-                interaction.reply({ embeds: [embed], failIfNotExists: false,ephemeral: true })
+                interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
               }
               else if (result == "Rate Limit") {
                   let embed = new MessageEmbed()

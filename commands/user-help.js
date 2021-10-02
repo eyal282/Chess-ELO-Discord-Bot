@@ -21,8 +21,9 @@ module.exports = {
       option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
     async execute(client, interaction, settings) {
-
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles] = await jsGay.getCriticalData(interaction)
+      
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
+      
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
       let result = ""

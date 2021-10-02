@@ -14,34 +14,22 @@ const jsGay = require('../util.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('getelo')
-		.setDescription('List of ELO Roles.')
+		.setName('invite')
+		.setDescription('Invite the bot')
 
     .addBooleanOption((option) =>
       option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
     async execute(client, interaction, settings) {
 
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
-      
       let ephemeral = interaction.options.getBoolean('ephemeral');
-
-      let msgToSend = ""
-
-      for (let i = 0; i < ratingRoles.length; i++)
-      {
-          msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n "
-      }
-
-      if (msgToSend == "")
-      {
-          msgToSend = "None."
-      }
 
       let embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(msgToSend)
+          .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
-      interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
+      interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
+
+      interaction.member.send({ embeds: [embed] }).catch(() => null)
 	},
 };

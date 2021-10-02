@@ -12,28 +12,21 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let slashCommand = new SlashCommandBuilder()
-		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('setlichessequation')
+		.setDescription('Sets Lichess formula to inflate rating')
 
     .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
+      option.setName('formula').setDescription(`Formula of rating inflation. Ignore to reset. Default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
+    ),
+    async execute(client, interaction, settings) {
 
-
-module.exports =
-{
-	data: slashCommand,
-  async execute(client, interaction, settings)
-  {  
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
-      
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
-      let guildRoles
       await interaction.guild.roles.fetch()
       .then(roles => 
           {
-              guildRoles = roles
               let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
               if(highestBotRole)
@@ -71,61 +64,50 @@ module.exports =
       puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
 
       let queue = {}
-      
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
   
       if (!isAdmin) {
-          jsGay.replyAccessDeniedByMessage(interaction)
-      }
-      else if (args.length == 0 || args.length % 2 != 0) {
-          let embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(`/addelo [elo] [@role] (elo2) [@role2] ... ...`)
-          interaction.reply({embeds: [embed], failIfNotExists: false})
+          jsGay.replyAccessDeniedByInteraction(interaction)
       }
       else
       {
-        let embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setDescription(`Adding Roles...`)
+            let formula = interaction.options.getString('formula');
 
-        await interaction.reply({embeds: [embed], failIfNotExists: false})
-
-        const msg = await interaction.fetchReply();
-
-        let msgToSend = ""
-
-
-
-        for (let i = 0; i < (args.length / 2); i++)
-        {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
-
-            let result = 'Could not find role'
-
-            if(role)
+            if (!formula)
             {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
+                queue[`guild-lichess-rating-equation-${interaction.guild.id}`] = undefined
+
+                let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
+                interaction.reply({embeds: [embed], failIfNotExists: false})
             }
-
-            if(result == undefined)
-              result = "This role was already added to the bot!"
-
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
             else
-            {
-              ratingRoles.push(result)            
-              result = "Success."
+            {  
+              formula = formula.trim()
+
+              try {
+                  Parser.evaluate(formula, { x: 1000 })
+                  Parser.evaluate(formula, { x: 0 })
+                  Parser.evaluate(formula, { x: -1 })
+              }
+              catch (error) {
+                  let embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                  interaction.reply({embeds: [embed], failIfNotExists: false})
+
+                  embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
+                  interaction.reply({embeds: [embed], failIfNotExists: false})
+
+                  return;
+              }
+
+              queue[`guild-lichess-rating-equation-${interaction.guild.id}`] = formula
+              interaction.reply(`Successfully set Lichess rating equation to: ${formula}`)
             }
-
-        }
-        embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(msgToSend)
-
-        msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
@@ -134,19 +116,5 @@ module.exports =
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
       await settings.setMany(queue, true)
-  }
-}
-
-function splitBy(text, delimiter) {
-    var delimiterPATTERN = "(" + delimiter + ")",
-        delimiterRE = new RegExp(delimiterPATTERN, "g");
-
-    return text.split(delimiterRE).reduce(function (chunks, item) {
-        if (item.match(delimiterRE)) {
-            chunks[chunks.length - 1] += item;
-        } else {
-            chunks.push(item.trim());
-        }
-        return chunks;
-    }, []);
-}
+    }
+};

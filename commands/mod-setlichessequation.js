@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setlichessequation')
@@ -77,10 +81,9 @@ module.exports = {
             {
                 queue[`guild-lichess-rating-equation-${interaction.guild.id}`] = undefined
 
-                let embed = new MessageEmbed()
+                embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
-                interaction.reply({embeds: [embed], failIfNotExists: false})
             }
             else
             {  
@@ -92,21 +95,20 @@ module.exports = {
                   Parser.evaluate(formula, { x: -1 })
               }
               catch (error) {
-                  let embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
-                  interaction.reply({embeds: [embed], failIfNotExists: false})
-
                   embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
-                  interaction.reply({embeds: [embed], failIfNotExists: false})
+                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+
+                  await interaction.editReply({embeds: [embed], failIfNotExists: false});
 
                   return;
               }
 
               queue[`guild-lichess-rating-equation-${interaction.guild.id}`] = formula
-              interaction.reply(`Successfully set Lichess rating equation to: ${formula}`)
+
+              embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully set Lichess rating equation to: ${formula}`)
             }
       }
 
@@ -116,5 +118,10 @@ module.exports = {
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
       await settings.setMany(queue, true)
+
+      if(embed)
+      {
+        await interaction.editReply({embeds: [embed], failIfNotExists: false});
+      }
     }
 };

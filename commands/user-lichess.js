@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('lichess')
@@ -85,25 +89,23 @@ module.exports = {
               })
 
               if (result == null) {
-                let embed = new MessageEmbed()
+                embed = new MessageEmbed()
                   .setColor('#0099ff')
                   .setDescription('User was not found!')
-                interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
               }
               else if (result == "Rate Limit") {
-                  let embed = new MessageEmbed()
+                  embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setURL(`https://lichess.org/@/${userName}`)
                     .setDescription('Rate Limit Encountered! Please try again!')
 
-                    const row = new MessageActionRow()
+                    row = new MessageActionRow()
                       .addComponents(
                         new MessageButton()
                           .setCustomId(interaction.user.id)
                           .setLabel(`Retry Link for ${userName}`)
                           .setStyle('PRIMARY'),
                       );
-                    interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false })
               }
               else {
                   // result.profile.location
@@ -114,47 +116,42 @@ module.exports = {
                       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                       jsGay.updateProfileDataByInteraction(interaction, true)
 
-                      let embed = new MessageEmbed()
+                      embed = new MessageEmbed()
                           .setColor('#0099ff')
                           .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                      interaction.reply({ embeds: [embed], failIfNotExists: false })
-
                   }
                   else {
-                      let attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
+                      attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
 
-                      let embed = new MessageEmbed()
+                      embed = new MessageEmbed()
                           .setColor('#0099ff')
                           .setURL(result.url)
                           .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
-                          const row = new MessageActionRow()
+                          row = new MessageActionRow()
                             .addComponents(
                               new MessageButton()
                                 .setCustomId(interaction.user.id)
                                 .setLabel(`Retry Link for ${userName}`)
                                 .setStyle('PRIMARY'),
                             );
-
-                            interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
                   }
               }
           }
           else {
-            let embed = new MessageEmbed()
+            embed = new MessageEmbed()
               .setColor('#0099ff')
               .setURL(`https://lichess.org/@/${userName}`)
               .setDescription('Rate Limit Encountered! Please try again!')
 
-              const row = new MessageActionRow()
+              row = new MessageActionRow()
                 .addComponents(
                   new MessageButton()
                     .setCustomId(interaction.user.id)
                     .setLabel(`Retry Link for ${userName}`)
                     .setStyle('PRIMARY'),
                 );
-              interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
           }
       }
       else
@@ -165,11 +162,9 @@ module.exports = {
 
           jsGay.updateProfileDataByInteraction(interaction, true)
 
-          let embed = new MessageEmbed()
+          embed = new MessageEmbed()
               .setColor('#0099ff')
               .setDescription(`Successfully unlinked your Lichess Profile`)
-
-          interaction.reply({ embeds: [embed], failIfNotExists: false })
 
       }
 
@@ -179,5 +174,18 @@ module.exports = {
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
       await settings.setMany(queue, true)
+
+      if(embed && row && attachment)
+      {
+        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
+      }
+      else if(embed && row)
+      {
+        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false })
+      }
+      else if(embed)
+      {
+        interaction.editReply({ embeds: [embed], failIfNotExists: false })
+      }
     }
 };

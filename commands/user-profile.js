@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('profile')

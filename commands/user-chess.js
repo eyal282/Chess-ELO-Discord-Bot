@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports =
 {
 	data: new SlashCommandBuilder()
@@ -87,25 +91,23 @@ module.exports =
 
 
                 if (result == null) {
-                  let embed = new MessageEmbed()
+                  embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setDescription('User was not found!')
-                  interaction.reply({ embeds: [embed], failIfNotExists: false })
                 }
                 else if (result == "Rate Limit") {
-                      let embed = new MessageEmbed()
+                      embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setURL(`https://www.chess.com/member/${userName}`)
                       .setDescription('Rate Limit Encountered! Please try again!')
 
-                      const row = new MessageActionRow()
+                      row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
                             .setCustomId(interaction.user.id)
                             .setLabel(`Retry Link for ${userName}`)
                             .setStyle('PRIMARY'),
                         );
-                      interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false })
                 }
                 else {
                     // result.profile.location
@@ -118,50 +120,44 @@ module.exports =
                         //await settings.set(`cached-chesscom-account-data-of-${interaction.user.id}`, result)
                         jsGay.updateProfileDataByMessage(message, true)
 
-                        let embed = new MessageEmbed()
+                        embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
-
-
-                          interaction.reply({ embeds: [embed], failIfNotExists: false })
 
                     }
                     else {
 
-                        let attachment = await jsGay.buildCanvasForChessCom(interaction.user.username + "#" + interaction.user.discriminator)
+                        attachment = await jsGay.buildCanvasForChessCom(interaction.user.username + "#" + interaction.user.discriminator)
 
                       
-                        let embed = new MessageEmbed()
+                        embed = new MessageEmbed()
                             .setColor('#0099ff')
                             .setURL(`https://www.chess.com/member/${userName}`)
                             .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
-                              const row = new MessageActionRow()
+                              row = new MessageActionRow()
                               .addComponents(
                                 new MessageButton()
                                   .setCustomId(interaction.user.id)
                                   .setLabel(`Retry Link for ${userName}`)
                                   .setStyle('PRIMARY'),
                               );
-
-                              interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
                     }
                 }
             }
             else {
-              let embed = new MessageEmbed()
+              embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setURL(`https://www.chess.com/member/${userName}`)
                 .setDescription('Rate Limit Encountered! Please try again!')
 
-                const row = new MessageActionRow()
+                row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
                       .setCustomId(interaction.user.id)
                       .setLabel(`Retry Link for ${userName}`)
                       .setStyle('PRIMARY'),
                   );
-                interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false })
             }
         }
         else {
@@ -170,11 +166,9 @@ module.exports =
 
             jsGay.updateProfileDataByMessage(message, true)
 
-            let embed = new MessageEmbed()
+            embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Successfully unlinked your Chess.com Profile`)
-
-            interaction.reply({ embeds: [embed], failIfNotExists: false })
         }
 
         queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
@@ -183,5 +177,18 @@ module.exports =
         queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
         await settings.setMany(queue, true)
+
+        if(embed && row && attachment)
+        {
+          interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
+        }
+        else if(embed && row)
+        {
+          interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false })
+        }
+        else if(embed)
+        {
+          interaction.editReply({ embeds: [embed], failIfNotExists: false })
+        }
     }
 }

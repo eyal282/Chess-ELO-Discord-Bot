@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('resetelo')
@@ -77,20 +81,17 @@ module.exports = {
           msgToSend = msgToSend.trim() + "`"
 
           if (!msgToSend.includes('<@')) {
-              let embed = new MessageEmbed()
+              embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setDescription(`There were no role milestones to delete.`)
-              interaction.reply({embeds: [embed], failIfNotExists: false})
           }
           else {
 
               ratingRoles = undefined
               
-              let embed = new MessageEmbed()
+              embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Successfully reset all elo related roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``)
-
-              interaction.reply({embeds: [embed], failIfNotExists: false})
 
               interaction.member.send({embeds: [embed], failIfNotExists: false}).catch(() => null)
               
@@ -103,5 +104,10 @@ module.exports = {
         queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
         await settings.setMany(queue, true)
+
+        if(embed)
+        {
+          await interaction.editReply({embeds: [embed], failIfNotExists: false});
+        }
     } 
 }

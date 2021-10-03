@@ -73,6 +73,7 @@ client.on('interactionCreate', async interaction => {
 
 	try
   {
+    await interaction.deferReply();
 		await command.execute(client, interaction, settings);
 	} catch (error) {
 		console.error(error);

@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('getelo')
@@ -38,10 +42,10 @@ module.exports = {
           msgToSend = "None."
       }
 
-      let embed = new MessageEmbed()
+      embed = new MessageEmbed()
           .setColor('#0099ff')
           .setDescription(msgToSend)
 
-      interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
+      interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
 	},
 };

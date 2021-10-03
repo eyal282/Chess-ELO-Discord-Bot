@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 let slashCommand = new SlashCommandBuilder()
 		.setName('addelo')
 		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
@@ -75,27 +79,16 @@ module.exports =
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
   
       if (!isAdmin) {
-          jsGay.replyAccessDeniedByMessage(interaction)
+          jsGay.replyAccessDeniedByInteraction(interaction)
       }
       else if (args.length == 0 || args.length % 2 != 0) {
-          let embed = new MessageEmbed()
+          embed = new MessageEmbed()
                   .setColor('#0099ff')
                   .setDescription(`/addelo [elo] [@role] (elo2) [@role2] ... ...`)
-          interaction.reply({embeds: [embed], failIfNotExists: false})
       }
       else
       {
-        let embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setDescription(`Adding Roles...`)
-
-        await interaction.reply({embeds: [embed], failIfNotExists: false})
-
-        const msg = await interaction.fetchReply();
-
         let msgToSend = ""
-
-
 
         for (let i = 0; i < (args.length / 2); i++)
         {
@@ -120,12 +113,13 @@ module.exports =
               result = "Success."
             }
 
-        }
-        embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(msgToSend)
+            msgToSend = `${msgToSend} ${i+1}. ${result}\n`
 
-        msg.edit({embeds: [embed], failIfNotExists: false}).catch(() => null)
+        }
+
+        embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setDescription(msgToSend)
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
@@ -134,6 +128,11 @@ module.exports =
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
       await settings.setMany(queue, true)
+
+      if(embed)
+      {
+        await interaction.editReply({embeds: [embed], failIfNotExists: false});
+      }
   }
 }
 

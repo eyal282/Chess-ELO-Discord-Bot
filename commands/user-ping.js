@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('ping')
@@ -23,6 +27,6 @@ module.exports = {
       let embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`🏓Latency is ${Date.now() - interaction.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms`)
-        interaction.reply({embeds: [embed], ephemeral: true})
+        interaction.editReply({embeds: [embed], ephemeral: true})
 	},
 };

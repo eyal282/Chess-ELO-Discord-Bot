@@ -808,7 +808,8 @@ function replyAccessDeniedByInteraction(interaction)
   let embed = new MessageEmbed()
       .setColor('#0099ff')
       .setDescription(`Access Denied`)
-  return interaction.reply({embeds: [embed], failIfNotExists: false, ephemeral: true })
+
+  return interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true })
 }
 
 function isBotSelfHosted()

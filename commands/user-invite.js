@@ -12,6 +12,10 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
+let embed
+let row
+let attachment
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('invite')
@@ -28,7 +32,7 @@ module.exports = {
           .setColor('#0099ff')
           .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
-      interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
+      interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
 
       interaction.member.send({ embeds: [embed] }).catch(() => null)
 	},

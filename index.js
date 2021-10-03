@@ -34,10 +34,6 @@ const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
 
 let defaultPrefix = "!"
-
-let Constant_lichessDefaultRatingEquation = "x"
-let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
-let Constant_ProvisionalRD = 110
 //const bot = new Discord.Client();
 
 let settings = jsGay.settings
@@ -77,12 +73,7 @@ client.on('interactionCreate', async interaction => {
 		await command.execute(client, interaction, settings);
 	} catch (error) {
 		console.error(error);
-		return interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true }).catch( async() =>
-    {
-      const msg = await interaction.fetchReply();
-      msg.reply({ content: 'There was an error while executing this command!', ephemeral: true })
-    }
-    );
+		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
 
@@ -483,13 +474,13 @@ client.on("messageCreate", async message => {
     let lichessRatingEquation = manyMuch[`guild-lichess-rating-equation-${message.guild.id}`]
 
     if (lichessRatingEquation == undefined) {
-        lichessRatingEquation = Constant_lichessDefaultRatingEquation
+        lichessRatingEquation = jsGay.Constant_lichessDefaultRatingEquation
     }
 
     let chessComRatingEquation = manyMuch[`guild-chesscom-rating-equation-${message.guild.id}`]
 
     if (chessComRatingEquation == undefined) {
-        chessComRatingEquation = Constant_chessComDefaultRatingEquation
+        chessComRatingEquation = jsGay.Constant_chessComDefaultRatingEquation
     }
 
     let modRoles = manyMuch[`guild-bot-mods-${message.guild.id}`]
@@ -570,8 +561,8 @@ client.on("messageCreate", async message => {
         result = jsGay.addCommandToHelp(result, prefix, `resetelo ---> Deletes all role milestones. This command will send you a copy of what got reset`)
         result = jsGay.addCommandToHelp(result, prefix, `resetpuzzleelo ---> Deletes all puzzle role milestones. This command will send you a copy of what got reset`)
         result = jsGay.addCommandToHelp(result, prefix, `resettitle ---> Deletes all title role milestones. This command will send you a copy of what got reset`)
-        result = jsGay.addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
-        result = jsGay.addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
+        result = jsGay.addCommandToHelp(result, prefix, `setlichessequation ---> Sets the equation for inflating or deflating lichess rating, x = User's current rating. Default: '${jsGay.Constant_lichessDefaultRatingEquation}'. Current: '${lichessRatingEquation}'`)
+        result = jsGay.addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${jsGay.Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
         result = jsGay.addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
         result = jsGay.addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
 
@@ -901,13 +892,13 @@ client.on("messageCreate", async message => {
           classicalRating = "Unrated"
 
           if (result.chess_daily)
-            corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= Constant_ProvisionalRD ? "" : "?")
+            corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
 
           if (result.chess_blitz)
-            blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= Constant_ProvisionalRD ? "" : "?")
+            blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
 
           if (result.chess_rapid)
-            rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= Constant_ProvisionalRD ? "" : "?")
+            rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
 
           let chessComAccount = manyMuch[`chesscom-account-of-${message.author.id}`]
 
@@ -1467,7 +1458,7 @@ client.on("messageCreate", async message => {
 
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setDescription(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
                 message.reply({embeds: [embed], failIfNotExists: false})
             }
             else
@@ -1494,7 +1485,7 @@ client.on("messageCreate", async message => {
 
                   embed = new MessageEmbed()
                     .setColor('#0099ff')
-                    .setDescription(`Successfully reset Lichess rating equation to default: ${Constant_lichessDefaultRatingEquation}`)
+                    .setDescription(`Successfully reset Lichess rating equation to default: ${jsGay.Constant_lichessDefaultRatingEquation}`)
                   message.reply({embeds: [embed], failIfNotExists: false})
 
                   return;
@@ -1516,7 +1507,7 @@ client.on("messageCreate", async message => {
             if (args.length == 0) {
                 queue[`guild-chesscom-rating-equation-${message.guild.id}`] = undefined
 
-                message.reply(`Successfully reset Chess.com rating equation to default: ${Constant_chessComDefaultRatingEquation}`)
+                message.reply(`Successfully reset Chess.com rating equation to default: ${jsGay.Constant_chessComDefaultRatingEquation}`)
             }
             else
             {

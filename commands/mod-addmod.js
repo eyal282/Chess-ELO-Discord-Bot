@@ -17,11 +17,11 @@ let row
 let attachment
 
 let slashCommand = new SlashCommandBuilder()
-		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
+		.setName('addmod')
+		.setDescription('Adds as many moderator roles as you want to the bot')
 
     .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
+      option.setName('arguments').setDescription('List of roles to add as moderator').setRequired(true))
 
 
 module.exports =
@@ -29,15 +29,18 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings)
   {  
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
+      /*
+       <>@ allows mass mentioning roles without spacebar.
+       /` /g allows to encase the entire message with ` ` or ``` ```.
+       / +/g seperates the string into arguments by spaces
+      */
+      let args = interaction.options.getString('arguments').replaceAll('><@', '> <@').replace(/`/g, "").trim().split(/ +/g)
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
-      let guildRoles
       await interaction.guild.roles.fetch()
       .then(roles => 
           {
-              guildRoles = roles
               let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
               if(highestBotRole)
@@ -81,35 +84,32 @@ module.exports =
       if (!isAdmin) {
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
-      else if (args.length == 0 || args.length % 2 != 0) {
+      else if (args.length == 0) {
           embed = new MessageEmbed()
                   .setColor('#0099ff')
-                  .setDescription(`/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
+                  .setDescription(`/addmod [@role] (@role2) (@role3) ... ...`)
       }
       else
       {
         let msgToSend = ""
 
-        for (let i = 0; i < (args.length / 2); i++)
+        for (let i = 0; i < args.length; i++)
         {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
+            let role = jsGay.getRoleFromMentionString(interaction.guild, args[i])
 
             let result = 'Could not find role'
 
             if(role)
             {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
+                result = jsGay.addModCommand(interaction, modRoles, role)
             }
 
             if(result == undefined)
               result = "This role was already added to the bot!"
-
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
+ 
             else if(result != 'Could not find role')
             {
-              ratingRoles.push(result)            
+              modRoles.push(result)            
               result = "Success."
             }
 

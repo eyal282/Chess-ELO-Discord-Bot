@@ -118,7 +118,7 @@ module.exports =
 
                         // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
                         //await settings.set(`cached-chesscom-account-data-of-${interaction.user.id}`, result)
-                        jsGay.updateProfileDataByMessage(message, true)
+                        jsGay.updateProfileDataByInteraction(interaction, true)
 
                         embed = new MessageEmbed()
                             .setColor('#0099ff')
@@ -164,7 +164,7 @@ module.exports =
             queue[`chesscom-account-of-${interaction.user.id}`] = undefined
             queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
 
-            jsGay.updateProfileDataByMessage(message, true)
+            jsGay.updateProfileDataByInteraction(interaction, true)
 
             embed = new MessageEmbed()
                 .setColor('#0099ff')

@@ -16,28 +16,21 @@ let embed
 let row
 let attachment
 
-let slashCommand = new SlashCommandBuilder()
-		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('setchessequation')
+		.setDescription('Sets Chess.com formula to inflate rating')
 
     .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
+      option.setName('formula').setDescription(`Formula of rating inflation. Ignore to reset. Default: ${jsGay.Constant_chessComDefaultRatingEquation}`)
+    ),
+    async execute(client, interaction, settings) {
 
-
-module.exports =
-{
-	data: slashCommand,
-  async execute(client, interaction, settings)
-  {  
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
-      
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
-      let guildRoles
       await interaction.guild.roles.fetch()
       .then(roles => 
           {
-              guildRoles = roles
               let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
               if(highestBotRole)
@@ -75,51 +68,48 @@ module.exports =
       puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
 
       let queue = {}
-      
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
   
       if (!isAdmin) {
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
-      else if (args.length == 0 || args.length % 2 != 0) {
-          embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(`/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
-      }
       else
       {
-        let msgToSend = ""
+            let formula = interaction.options.getString('formula');
 
-        for (let i = 0; i < (args.length / 2); i++)
-        {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
-
-            let result = 'Could not find role'
-
-            if(role)
+            if (!formula)
             {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
+                queue[`guild-chesscom-rating-equation-${interaction.guild.id}`] = undefined
+
+                embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully reset Chess.com rating equation to default: ${jsGay.Constant_chessComDefaultRatingEquation}`)
             }
+            else
+            {  
+              formula = formula.trim()
 
-            if(result == undefined)
-              result = "This role was already added to the bot!"
+              try {
+                  Parser.evaluate(formula, { x: 1000 })
+                  Parser.evaluate(formula, { x: 0 })
+                  Parser.evaluate(formula, { x: -1 })
+              }
+              catch (error) {
+                  embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
 
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
-            else if(result != 'Could not find role')
-            {
-              ratingRoles.push(result)            
-              result = "Success."
+                  await interaction.editReply({embeds: [embed], failIfNotExists: false});
+
+                  return;
+              }
+
+              queue[`guild-chesscom-rating-equation-${interaction.guild.id}`] = formula
+
+              embed = new MessageEmbed()
+                    .setColor('#0099ff')
+                    .setDescription(`Successfully set Chess.com rating equation to: ${formula}`)
             }
-
-            msgToSend = `${msgToSend} ${i+1}. ${result}\n`
-
-        }
-
-        embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setDescription(msgToSend)
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
@@ -133,19 +123,5 @@ module.exports =
       {
         await interaction.editReply({embeds: [embed], failIfNotExists: false});
       }
-  }
-}
-
-function splitBy(text, delimiter) {
-    var delimiterPATTERN = "(" + delimiter + ")",
-        delimiterRE = new RegExp(delimiterPATTERN, "g");
-
-    return text.split(delimiterRE).reduce(function (chunks, item) {
-        if (item.match(delimiterRE)) {
-            chunks[chunks.length - 1] += item;
-        } else {
-            chunks.push(item.trim());
-        }
-        return chunks;
-    }, []);
-}
+    }
+};

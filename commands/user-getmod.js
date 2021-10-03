@@ -18,8 +18,8 @@ let attachment
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('getelo')
-		.setDescription('List of ELO Roles.')
+		.setName('getmod')
+		.setDescription('List of roles that can moderate this bot ( excludes default MANAGE_SERVER roles ).')
 
     .addBooleanOption((option) =>
       option.setName('ephemeral').setDescription('Only you can see this message?')
@@ -32,9 +32,9 @@ module.exports = {
 
       let msgToSend = ""
 
-      for (let i = 0; i < ratingRoles.length; i++)
+      for (let i = 0; i < modRoles.length; i++)
       {
-          msgToSend = msgToSend + "<@&" + ratingRoles[i].id + "> ( " + ratingRoles[i].rating + " ELO ) \n"
+          msgToSend = msgToSend + "<@&" + modRoles[i] + ">\n"
       }
 
       if (msgToSend == "")

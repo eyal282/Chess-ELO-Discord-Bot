@@ -133,6 +133,6 @@ module.exports = {
           .setTitle(`Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           .setDescription('Could not find any stats for user.')
       }
-      interaction.reply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })
+      interaction.editReply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })
     }
 };

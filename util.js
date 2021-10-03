@@ -715,6 +715,16 @@ function addTitleCommand(message, titleRoles, role, title, guildRoles) {
     return template
 }
 
+
+function addModCommand(message, modRoles, role) {
+    for (let i = 0; i < modRoles.length; i++) {
+        if (modRoles[i].id == role.id)
+            return undefined
+    }
+
+    return role.id
+}
+
 function addCommandToHelp(result, prefix, commandData) {
     return result + prefix + commandData + '\n\n'
 }
@@ -937,4 +947,4 @@ function getUserFullDiscordName(user)
 }
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }

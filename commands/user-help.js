@@ -64,6 +64,7 @@ module.exports = {
       result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
       result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"
       result = result + "Note: Due to Chess.com limits, only puzzle rating of Lichess is calculated at all.\n"
+      result = result + "Note: Bot's access to a role is calculated from his special integration role, and not his highest role.\n"
       result = result + "Title List: `GM` `WGM` `IM` `WIM` `FM` `WFM` `NM` `CM` `WCM` `WNM` `LM` `BOT`\n"
       
       let embed = new MessageEmbed()

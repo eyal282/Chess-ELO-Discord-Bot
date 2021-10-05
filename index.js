@@ -60,6 +60,7 @@ for (const file of commandFiles) {
 	client.commands.set(command.data.name, command);
 }
 
+// On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;
 
@@ -67,6 +68,10 @@ client.on('interactionCreate', async interaction => {
 
 	if (!command) return;
 
+  else if(!interaction.guild)
+  {
+		return interaction.reply({ content: 'This bot does not accept DM Slash Commands', ephemeral: true });
+  }
 	try
   {
     await interaction.deferReply();
@@ -77,7 +82,9 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-deploySlashCommands() // Comment this line to avoid deploying the slash commands
+//deploySlashCommands() // Comment this line to avoid deploying the slash commands
+
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -1654,7 +1661,33 @@ function deploySlashCommands()
   const rest = new REST({ version: '9' }).setToken(token);
 
   rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
-    .then(() => console.log('Successfully registered application commands.'))
+    .then(() => console.log('Successfully registered guild application commands.'))
+    .catch(console.error);
+}
+
+
+function deployGlobalSlashCommands()
+{
+  const { REST } = require('@discordjs/rest');
+  const { Routes } = require('discord-api-types/v9');
+  const { clientId, guildId } = require('./config.json');
+
+  const commands = [];
+  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  const rest = new REST({ version: '9' }).setToken(token);
+  
+  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
+    .then(() => console.log('Successfully unregistered guild application commands.'))
+    .catch(console.error);
+
+  rest.put(Routes.applicationCommands(clientId), { body: commands })
+    .then(() => console.log('Successfully registered global application commands.'))
     .catch(console.error);
 }
 

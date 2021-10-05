@@ -17,39 +17,36 @@ let row
 let attachment
 
 let slashCommand = new SlashCommandBuilder()
-		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
-
-    .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
-
-    
-
+		.setName('setupelo')
+		.setDescription('Quick setup of ELO roles for lazy people.')
 
 module.exports =
 {
 	data: slashCommand,
   async execute(client, interaction, settings)
   {  
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
-      
-      let guildRoles
+
+      let ephemeral = false
+
+      let botRole = await jsGay.getBotIntegrationRoleByInteraction(interaction)
+
+      let guildRoles 
       await interaction.guild.roles.fetch()
       .then(roles => 
           {
-              guildRoles = roles
-              let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
-              if(highestBotRole)
+              guildRoles = roles
+
+              if(botRole)
               {
                   for (let i = 0; i < ratingRoles.length; i++)
                   {
                       let role = roles.get(ratingRoles[i].id)
 
                       // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                      if (!role || botRole.rawPosition < role.rawPosition)
                           ratingRoles.splice(i, 1)
                   }
 
@@ -58,7 +55,7 @@ module.exports =
                       let role = roles.get(puzzleRatingRoles[i].id)
 
         // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                      if (!role || botRole.rawPosition < role.rawPosition)
         puzzleRatingRoles.splice(i, 1)
                   }
 
@@ -66,7 +63,7 @@ module.exports =
                       let role = roles.get(titleRoles[i].id)
 
                       // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                      if (!role || botRole.rawPosition < role.rawPosition)
                       titleRoles.splice(i, 1)
                   }
               }
@@ -76,54 +73,48 @@ module.exports =
       ratingRoles.sort(function (a, b) { return a.rating - b.rating });
       puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
 
+      
       let queue = {}
       
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
-  
+    
+      console.log(ratingRoles)
       if (!isAdmin) {
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
-      else if (args.length == 0 || args.length % 2 != 0) {
-          embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(`/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
+      else if (botRole.rawPosition != 1 || ratingRoles.length > 0 || puzzleRatingRoles > 0 || titleRoles.length > 0) {
+         
+              embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Bot integration role must be the lowest position in the guild to execute this command\nAlso, no roles can be assigned to the bot besides moderator roles.`)
+
+              ephemeral = true
       }
       else
       {
-        let msgToSend = ""
-
-        for (let i = 0; i < (args.length / 2); i++)
+        let increment = 200
+        for(let i=3000;i > 0;i -= increment)
         {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
-
-            let result = 'Could not find role'
-
-            if(role)
+            let nextElo = i - increment
+            await interaction.guild.roles.create({
+              name: `${nextElo}~${i}`,
+              reason: 'Setup command',
+            })
+            .then(role => 
             {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
-            }
+                guildRoles.set(role.id, role)
 
-            if(result == undefined)
-              result = "This role was already added to the bot!"
+                let result = jsGay.addEloCommand(interaction, ratingRoles, role, i, guildRoles)
 
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
-            else if(result != 'Could not find role')
-            {
-              ratingRoles.push(result)            
-              result = "Success."
-            }
-
-            msgToSend = `${msgToSend} ${i+1}. ${result}\n`
-
+                ratingRoles.push(result)
+            })
+            .catch(console.error);
         }
 
-        embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setDescription(msgToSend)
+              embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Success.`)
       }
-
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
@@ -133,7 +124,7 @@ module.exports =
 
       if(embed)
       {
-        await interaction.editReply({embeds: [embed], failIfNotExists: false});
+        await interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: ephemeral});
       }
   }
 }

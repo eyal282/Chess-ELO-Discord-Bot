@@ -28,6 +28,50 @@ module.exports = {
 
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
+      let queue = {}
+      
+      let guildRoles
+      await interaction.guild.roles.fetch()
+      .then(roles => 
+          {
+              guildRoles = roles
+              let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
+
+              if(highestBotRole)
+              {
+                  for (let i = 0; i < ratingRoles.length; i++)
+                  {
+                      let role = roles.get(ratingRoles[i].id)
+
+                      // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                          ratingRoles.splice(i, 1)
+                  }
+
+                  for (let i = 0; i < puzzleRatingRoles.length; i++)
+                  {
+                      let role = roles.get(puzzleRatingRoles[i].id)
+
+        // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+        puzzleRatingRoles.splice(i, 1)
+                  }
+
+                  for (let i = 0; i < titleRoles.length; i++) {
+                      let role = roles.get(titleRoles[i].id)
+
+                      // if role doesn't exist or is above bot.
+                      if (!role || highestBotRole.rawPosition < role.rawPosition)
+                      titleRoles.splice(i, 1)
+                  }
+              }
+          })
+      .catch(() => null)
+
+      ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+      puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+
+
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
       let msgToSend = ""
@@ -47,5 +91,12 @@ module.exports = {
           .setDescription(msgToSend)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
+
+      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+      await settings.setMany(queue, true)
 	},
 };

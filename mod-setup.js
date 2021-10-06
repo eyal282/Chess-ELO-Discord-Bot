@@ -18,8 +18,8 @@ let row
 let attachment
 
 let slashCommand = new SlashCommandBuilder()
-		.setName('setupelo')
-		.setDescription('Quick setup of ELO roles for lazy people.')
+		.setName('setup')
+		.setDescription('Quick setup of ELO roles. This WILL create 50 roles. /purge to somewhat undo this command')
 
 module.exports =
 {
@@ -45,7 +45,7 @@ module.exports =
                   for (let i = 0; i < ratingRoles.length; i++)
                   {
                       let role = roles.get(ratingRoles[i].id)
-
+                      
                       // if role doesn't exist or is above bot.
                       if (!role || botRole.rawPosition < role.rawPosition)
                           ratingRoles.splice(i, 1)
@@ -79,22 +79,39 @@ module.exports =
       
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
     
-      console.log(ratingRoles)
       if (!isAdmin) {
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
-      else if (botRole.rawPosition != 1 || ratingRoles.length > 0 || puzzleRatingRoles > 0 || titleRoles.length > 0) {
-         
+      else if (botRole.rawPosition != 1 || ratingRoles.length > 0 || puzzleRatingRoles.length > 0 || titleRoles.length > 0) {
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Bot integration role must be the lowest position in the guild to execute this command\nAlso, no roles can be assigned to the bot besides moderator roles.`)
+                .setDescription(`Bot integration role must be the lowest position in the guild to execute this command\nAlso, no roles can be assigned to the bot besides moderator roles.\nNote: Sometimes discord forgets the bot's position, so play with it until you get it to the lowest role position and this should work.\nNote: \`/getelo /getpuzzleelo /gettitle\` are the commands to check if there are any roles left.`)
 
               ephemeral = true
       }
       else
       {
+        let maxElo = 3000
+        let minElo = 0
         let increment = 200
-        for(let i=3000;i > 0;i -= increment)
+
+        // Elo setup!!!
+        await interaction.guild.roles.create({
+          name: `${maxElo}+`,
+          reason: 'Setup command',
+        })
+        .then(role => 
+        {
+            guildRoles.set(role.id, role)
+
+            let result = jsGay.addEloCommand(interaction, ratingRoles, role, maxElo, guildRoles)
+
+            ratingRoles.push(result)
+        })
+        .catch(console.error);
+
+        
+        for(let i=maxElo;i > minElo;i -= increment)
         {
             let nextElo = i - increment
             await interaction.guild.roles.create({
@@ -105,13 +122,94 @@ module.exports =
             {
                 guildRoles.set(role.id, role)
 
-                let result = jsGay.addEloCommand(interaction, ratingRoles, role, i, guildRoles)
+                let result = jsGay.addEloCommand(interaction, ratingRoles, role, nextElo, guildRoles)
 
                 ratingRoles.push(result)
             })
             .catch(console.error);
         }
 
+        await interaction.guild.roles.create({
+          name: `Unrated`,
+          reason: 'Setup command',
+        })
+        .then(role => 
+        {
+            guildRoles.set(role.id, role)
+
+            let result = jsGay.addEloCommand(interaction, ratingRoles, role, -1, guildRoles)
+
+            ratingRoles.push(result)
+        })
+        .catch(console.error);
+
+
+        // Puzzles Setup!!!
+
+        await interaction.guild.roles.create({
+          name: `Puzzles ${maxElo}+`,
+          reason: 'Setup command',
+        })
+        .then(role => 
+        {
+            guildRoles.set(role.id, role)
+
+            let result = jsGay.addPuzzleEloCommand(interaction, puzzleRatingRoles, role, maxElo, guildRoles)
+
+            puzzleRatingRoles.push(result)
+        })
+        .catch(console.error);
+
+        
+        for(let i=maxElo;i > minElo;i -= increment)
+        {
+            let nextElo = i - increment
+            await interaction.guild.roles.create({
+              name: `Puzzles ${nextElo}~${i}`,
+              reason: 'Setup command',
+            })
+            .then(role => 
+            {
+                guildRoles.set(role.id, role)
+
+                let result = jsGay.addPuzzleEloCommand(interaction, puzzleRatingRoles, role, nextElo, guildRoles)
+
+                puzzleRatingRoles.push(result)
+            })
+            .catch(console.error);
+        }
+
+        await interaction.guild.roles.create({
+          name: `Puzzles Unrated`,
+          reason: 'Setup command',
+        })
+        .then(role => 
+        {
+            guildRoles.set(role.id, role)
+
+            let result = jsGay.addPuzzleEloCommand(interaction, puzzleRatingRoles, role, -1, guildRoles)
+
+            puzzleRatingRoles.push(result)
+        })
+        .catch(console.error);
+
+        // Title Setup!!!
+
+         jsGay.titleList.forEach(async (title) => {
+            await interaction.guild.roles.create({
+              name: title.roleName,
+              reason: 'Setup command',
+            })
+            .then(role => 
+            {
+                guildRoles.set(role.id, role)
+
+                let result = jsGay.addTitleCommand(interaction, titleRoles, role, title.titleName, guildRoles)
+
+                titleRoles.push(result)
+            })
+            .catch(console.error);
+          });
               embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Success.`)

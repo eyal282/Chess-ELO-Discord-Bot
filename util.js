@@ -28,6 +28,56 @@ const settings = new Josh({
   }
 });
 
+
+let titleList = [
+  {
+    "roleName": "Lichess Master",
+    "titleName": "LM"
+  },
+  {
+    "roleName": "Grandmaster",
+    "titleName": "GM"
+  }, 
+  {
+    "roleName": "Woman Grandmaster",
+    "titleName": "WGM"
+  }, 
+  {
+    "roleName": "International Master",
+    "titleName": "IM"
+  }, 
+  {
+    "roleName": "Woman International Master",
+    "titleName": "WIM"
+  }, 
+  {
+    "roleName": "FIDE Master",
+    "titleName": "FM"
+  }, 
+  {
+    "roleName": "Woman FIDE Master",
+    "titleName": "WFM"
+  }, 
+  {
+    "roleName": "National Master",
+    "titleName": "NM"
+  }, 
+  {
+    "roleName": "Candidate Master",
+    "titleName": "CM"
+  }, 
+  {
+    "roleName": "Woman Candidate Master",
+    "titleName": "WCM"
+  }, 
+  {
+    "roleName": "Woman National Master",
+    "titleName": "WNM"
+  }
+]
+
+let roleNamesToPurge = ["Unrated", "Puzzles Unrated"]
+
 async function updateProfileDataByMessage(message, useCacheOnly)
 {
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
@@ -951,4 +1001,4 @@ function getUserFullDiscordName(user)
 }
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, getBotIntegrationRoleByInteraction, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, settings, client }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, getBotIntegrationRoleByInteraction, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, titleList, roleNamesToPurge, settings, client }

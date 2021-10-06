@@ -24,7 +24,7 @@ module.exports = {
     .addStringOption((option) =>
       option.setName('formula').setDescription(`Formula of rating inflation. Ignore to reset. Default: ${jsGay.Constant_chessComDefaultRatingEquation}`)
     ),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
 
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       

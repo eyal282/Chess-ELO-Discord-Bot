@@ -27,7 +27,7 @@ let slashCommand = new SlashCommandBuilder()
 module.exports =
 {
 	data: slashCommand,
-  async execute(client, interaction, settings)
+  async execute(client, interaction, settings, goodies)
   {  
       let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
       

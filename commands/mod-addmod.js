@@ -27,7 +27,7 @@ let slashCommand = new SlashCommandBuilder()
 module.exports =
 {
 	data: slashCommand,
-  async execute(client, interaction, settings)
+  async execute(client, interaction, settings, goodies)
   {  
       /*
        <>@ allows mass mentioning roles without spacebar.

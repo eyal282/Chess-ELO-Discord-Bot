@@ -21,7 +21,7 @@ module.exports = {
 		.setName('privacy')
 		.setDescription('Privacy policy'
     ),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
 
       let embed = new MessageEmbed()
           .setColor('#0099ff')

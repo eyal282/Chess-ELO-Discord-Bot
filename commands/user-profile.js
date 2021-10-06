@@ -27,7 +27,7 @@ module.exports = {
     .addBooleanOption((option) =>
       option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
 
       let trueUser = interaction.user
 

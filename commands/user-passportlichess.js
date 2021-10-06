@@ -1,6 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 
+
+
+const jsGay = require('../util.js')
+
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
@@ -10,36 +14,44 @@ const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
-const jsGay = require('../util.js')
+const passport = require('passport')
+
+var LichessStrategy = require('passport-lichess').Strategy;
+
+const lichess_secret = process.env['LICHESS_OAUTH2']
+
+passport.use(new LichessStrategy({
+    clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.id}`,
+    callbackURL: "http://127.0.0.1:3000/auth/lichess/callback"
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ lichessId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
 
 let embed
 let row
 let attachment
 
-let slashCommand = new SlashCommandBuilder()
-		.setName('addelo')
-		.setDescription('Adds as many elo <---> role pairs as you want to the bot.')
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('passportlichess')
+		.setDescription('Links your Lichess in OAuth2. Does not work')
 
     .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addelo -1 @unrated 0 @Under 600 600 @600~800 800 @800~1000').setRequired(true))
+      option.setName('username').setDescription('Your Lichess Username')
+    ),
+    async execute(client, interaction, settings, goodies) {
 
-    
-
-
-module.exports =
-{
-	data: slashCommand,
-  async execute(client, interaction, settings, goodies)
-  {  
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
-      
+      let express = goodies.express
+      let app = goodies.app
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
-      
-      let guildRoles
+
       await interaction.guild.roles.fetch()
       .then(roles => 
           {
-              guildRoles = roles
               let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
 
               if(highestBotRole)
@@ -77,51 +89,35 @@ module.exports =
       puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
 
       let queue = {}
-      
-      let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
-  
-      if (!isAdmin) {
-          jsGay.replyAccessDeniedByInteraction(interaction)
-      }
-      else if (args.length == 0 || args.length % 2 != 0) {
-          embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription(`/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
+
+      let userName = interaction.options.getString('username');
+
+      if (userName)
+      {
+        embed = new MessageEmbed()
+              .setColor('#0099ff')
+              .setDescription(`Prove account ownership [here](https://lichess.org/oauth?response_type=code&client_id=Eyal282-Chess-ELO-Role-Bot-${client.id}&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback&state=folhsruqgnuewkagqpiabbzoaldybieoznnlratvenhgifilcfpksmbjmdiycoxr&code_challenge_method=S256&code_challenge=${BASE64URL(SHA256(code_verifier))})`)
+        app.get('/auth/lichess/callback',
+          passport.authenticate('lichess', { failureRedirect: '/' }),
+          function(req, res) {
+            // Successful authentication, redirect home.
+
+            console.log(req, res)
+            res.redirect('/');
+          });
       }
       else
       {
-        let msgToSend = ""
 
-        for (let i = 0; i < (args.length / 2); i++)
-        {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
+          queue[`lichess-account-of-${interaction.user.id}`] = undefined
+          queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
 
-            let result = 'Could not find role'
+          jsGay.updateProfileDataByInteraction(interaction, true)
 
-            if(role)
-            {
-                result = jsGay.addEloCommand(interaction, ratingRoles, role, args[2 * i + 0], guildRoles)
-            }
+          embed = new MessageEmbed()
+              .setColor('#0099ff')
+              .setDescription(`Successfully unlinked your Lichess Profile`)
 
-            if(result == undefined)
-              result = "This role was already added to the bot!"
-
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
-            else if(result != 'Could not find role')
-            {
-              ratingRoles.push(result)            
-              result = "Success."
-            }
-
-            msgToSend = `${msgToSend} ${i+1}. ${result}\n`
-
-        }
-
-        embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setDescription(msgToSend)
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
@@ -131,23 +127,17 @@ module.exports =
 
       await settings.setMany(queue, true)
 
-      if(embed)
+      if(embed && row && attachment)
       {
-        await interaction.editReply({embeds: [embed], failIfNotExists: false});
+        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
       }
-  }
-}
-
-function splitBy(text, delimiter) {
-    var delimiterPATTERN = "(" + delimiter + ")",
-        delimiterRE = new RegExp(delimiterPATTERN, "g");
-
-    return text.split(delimiterRE).reduce(function (chunks, item) {
-        if (item.match(delimiterRE)) {
-            chunks[chunks.length - 1] += item;
-        } else {
-            chunks.push(item.trim());
-        }
-        return chunks;
-    }, []);
-}
+      else if(embed && row)
+      {
+        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false })
+      }
+      else if(embed)
+      {
+        interaction.editReply({ embeds: [embed], failIfNotExists: false })
+      }
+    }
+};

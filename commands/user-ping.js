@@ -21,7 +21,7 @@ module.exports = {
 		.setName('ping')
 		.setDescription('Lag of the Bot'
     ),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
       //let ephemeral = interaction.options.getBoolean('ephemeral');
 
       let embed = new MessageEmbed()

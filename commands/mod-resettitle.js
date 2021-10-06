@@ -20,7 +20,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('resettitle')
 		.setDescription('Resets all tile roles'),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
           
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       

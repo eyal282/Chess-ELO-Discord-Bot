@@ -24,7 +24,7 @@ module.exports = {
     .addStringOption((option) =>
       option.setName('username').setDescription('Your Lichess Username')
     ),
-    async execute(client, interaction, settings) {
+    async execute(client, interaction, settings, goodies) {
 
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 

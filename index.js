@@ -14,6 +14,8 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
 
+var session = require('express-session');
+app.use(session({ secret: process.env['LICHESS_OAUTH2'] }));
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
@@ -75,16 +77,21 @@ client.on('interactionCreate', async interaction => {
 	try
   {
     await interaction.deferReply();
-		await command.execute(client, interaction, settings);
+
+    let goodies = {}
+    
+    goodies.express = express
+    goodies.app = app
+		await command.execute(client, interaction, settings, goodies);
 	} catch (error) {
 		console.error(error);
 		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
 
-//deploySlashCommands() // Comment this line to avoid deploying the slash commands
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

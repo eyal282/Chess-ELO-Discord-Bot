@@ -19,7 +19,7 @@ let attachment
 
 let slashCommand = new SlashCommandBuilder()
 		.setName('setup')
-		.setDescription('Quick setup of ELO roles. This WILL create 50 roles. /purge to somewhat undo this command')
+		.setDescription('Quick setup of ELO roles. /purge to somewhat undo this command. Command is not guaranteed to work!')
 
 module.exports =
 {
@@ -33,48 +33,8 @@ module.exports =
 
       let botRole = await jsGay.getBotIntegrationRoleByInteraction(interaction)
 
-      let guildRoles 
-      await interaction.guild.roles.fetch()
-      .then(roles => 
-          {
+      [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles] = jsGay.wipeDeletedRolesFromDB(interactionm, ratingRoles, puzzleRatingRoles, titleRoles)
 
-              guildRoles = roles
-
-              if(botRole)
-              {
-                  for (let i = 0; i < ratingRoles.length; i++)
-                  {
-                      let role = roles.get(ratingRoles[i].id)
-                      
-                      // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-                          ratingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < puzzleRatingRoles.length; i++)
-                  {
-                      let role = roles.get(puzzleRatingRoles[i].id)
-
-        // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-        puzzleRatingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < titleRoles.length; i++) {
-                      let role = roles.get(titleRoles[i].id)
-
-                      // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-                      titleRoles.splice(i, 1)
-                  }
-              }
-          })
-      .catch(() => null)
-
-      ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-      puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
-
-      
       let queue = {}
       
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
@@ -91,10 +51,11 @@ module.exports =
       }
       else
       {
-        let maxElo = 3000
+        let maxElo = 400
         let minElo = 0
         let increment = 200
 
+        
         // Elo setup!!!
         await interaction.guild.roles.create({
           name: `${maxElo}+`,
@@ -143,7 +104,7 @@ module.exports =
         })
         .catch(console.error);
 
-
+        /*
         // Puzzles Setup!!!
 
         await interaction.guild.roles.create({
@@ -192,7 +153,7 @@ module.exports =
             puzzleRatingRoles.push(result)
         })
         .catch(console.error);
-
+        */
         // Title Setup!!!
 
          jsGay.titleList.forEach(async (title) => {
@@ -205,6 +166,8 @@ module.exports =
                 guildRoles.set(role.id, role)
 
                 let result = jsGay.addTitleCommand(interaction, titleRoles, role, title.titleName, guildRoles)
+
+                console.log(title)
 
                 titleRoles.push(result)
             })

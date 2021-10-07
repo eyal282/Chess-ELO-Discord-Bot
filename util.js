@@ -990,6 +990,63 @@ async function getCriticalData(interaction)
     
 }
 
+async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+{
+    let guildRoles
+
+    await interaction.guild.roles.fetch()
+    .then(async (roles) => 
+        {
+            guildRoles = roles
+            let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
+            
+            if(highestBotRole)
+            {
+                for (let i = 0; i < ratingRoles.length; i++)
+                {
+                    let role = roles.get(ratingRoles[i].id)
+
+                    // if role doesn't exist or is above bot.
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    {
+                        ratingRoles.splice(i, 1)
+                        i--
+                    }
+                }
+
+                for (let i = 0; i < puzzleRatingRoles.length; i++)
+                {
+                    let role = roles.get(puzzleRatingRoles[i].id)
+
+                    // if role doesn't exist or is above bot.
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    {
+                      puzzleRatingRoles.splice(i, 1)
+                      i--
+                    }
+                }
+
+                for (let i = 0; i < titleRoles.length; i++) {
+                    let role = roles.get(titleRoles[i].id)
+
+                    // if role doesn't exist or is above bot.
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    {
+                      titleRoles.splice(i, 1)
+                      i--
+                    }
+                }
+            }
+        })
+    .catch(() => null)
+
+    ratingRoles.sort(function (a, b) { return a.rating - b.rating });
+    puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+
+      return [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles]
+
+}
+
 async function getBotIntegrationRoleByInteraction(interaction)
 {
   return interaction.guild.roles.botRoleFor(client.user)
@@ -1001,4 +1058,4 @@ function getUserFullDiscordName(user)
 }
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, getBotIntegrationRoleByInteraction, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, titleList, roleNamesToPurge, settings, client }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, titleList, roleNamesToPurge, settings, client }

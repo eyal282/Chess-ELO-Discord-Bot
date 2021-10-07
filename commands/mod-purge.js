@@ -33,46 +33,7 @@ module.exports =
 
       let botRole = await jsGay.getBotIntegrationRoleByInteraction(interaction)
 
-      let guildRoles 
-      await interaction.guild.roles.fetch()
-      .then(roles => 
-          {
-
-              guildRoles = roles
-
-              if(botRole)
-              {
-                  for (let i = 0; i < ratingRoles.length; i++)
-                  {
-                      let role = roles.get(ratingRoles[i].id)
-
-                      // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-                          ratingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < puzzleRatingRoles.length; i++)
-                  {
-                      let role = roles.get(puzzleRatingRoles[i].id)
-
-        // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-        puzzleRatingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < titleRoles.length; i++) {
-                      let role = roles.get(titleRoles[i].id)
-
-                      // if role doesn't exist or is above bot.
-                      if (!role || botRole.rawPosition < role.rawPosition)
-                      titleRoles.splice(i, 1)
-                  }
-              }
-          })
-      .catch(() => null)
-
-      ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-      puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+      [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles] = jsGay.wipeDeletedRolesFromDB(interactionm, ratingRoles, puzzleRatingRoles, titleRoles)
 
       
       let queue = {}

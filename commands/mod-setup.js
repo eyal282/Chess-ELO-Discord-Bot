@@ -19,7 +19,7 @@ let attachment
 
 let slashCommand = new SlashCommandBuilder()
 		.setName('setup')
-		.setDescription('Quick setup of ELO roles. /purge to somewhat undo this command. Command is not guaranteed to work!')
+		.setDescription('Quick setup of ELO roles. This WILL create more than 50 roles/purge to somewhat undo this command.')
 
 module.exports =
 {
@@ -33,7 +33,12 @@ module.exports =
 
       let botRole = await jsGay.getBotIntegrationRoleByInteraction(interaction)
 
-      [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles] = jsGay.wipeDeletedRolesFromDB(interactionm, ratingRoles, puzzleRatingRoles, titleRoles)
+      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+	  
+	  ratingRoles = obj.ratingRoles
+	  puzzleRatingRoles = obj.puzzleRatingRoles
+	  titleRoles = obj.titleRoles
+	  let guildRoles = obj.guildRoles
 
       let queue = {}
       
@@ -51,7 +56,7 @@ module.exports =
       }
       else
       {
-        let maxElo = 400
+        let maxElo = 3000
         let minElo = 0
         let increment = 200
 
@@ -104,7 +109,7 @@ module.exports =
         })
         .catch(console.error);
 
-        /*
+        
         // Puzzles Setup!!!
 
         await interaction.guild.roles.create({
@@ -153,10 +158,14 @@ module.exports =
             puzzleRatingRoles.push(result)
         })
         .catch(console.error);
-        */
-        // Title Setup!!!
 
-         jsGay.titleList.forEach(async (title) => {
+        // Title Setup!!!
+        
+        
+        for(let i=0;i < jsGay.titleList.length;i++)
+        {
+            let title = jsGay.titleList[i]
+            
             await interaction.guild.roles.create({
               name: title.roleName,
               reason: 'Setup command',
@@ -167,16 +176,16 @@ module.exports =
 
                 let result = jsGay.addTitleCommand(interaction, titleRoles, role, title.titleName, guildRoles)
 
-                console.log(title)
-
                 titleRoles.push(result)
             })
             .catch(console.error);
-          });
-              embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(`Success.`)
+        }
+    
+        embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Successfully initiated quick setup.\n Use \`/getelo, /getpuzzleelo, /gettitle\` to see how it got set up.\nWarning: The bot cannot create more than 250 roles per 24 hours, don't abuse this or you will be forced to wait 24 hours.`)
       }
+
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles

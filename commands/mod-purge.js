@@ -33,7 +33,12 @@ module.exports =
 
       let botRole = await jsGay.getBotIntegrationRoleByInteraction(interaction)
 
-      [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles] = jsGay.wipeDeletedRolesFromDB(interactionm, ratingRoles, puzzleRatingRoles, titleRoles)
+      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+	  
+	  ratingRoles = obj.ratingRoles
+	  puzzleRatingRoles = obj.puzzleRatingRoles
+	  titleRoles = obj.titleRoles
+	  let guildRoles = obj.guildRoles
 
       
       let queue = {}

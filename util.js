@@ -1042,8 +1042,14 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
 
     ratingRoles.sort(function (a, b) { return a.rating - b.rating });
     puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+    
+    let obj = {}
 
-      return [ratingRoles, puzzleRatingRoles, titleRoles, guildRoles]
+    obj.ratingRoles = ratingRoles
+    obj.puzzleRatingRoles = puzzleRatingRoles
+    obj.titleRoles = titleRoles
+    obj.guildRoles = guildRoles
+    return obj
 
 }
 

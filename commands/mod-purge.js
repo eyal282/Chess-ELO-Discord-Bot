@@ -15,7 +15,7 @@ const jsGay = require('../util.js')
 
 let slashCommand = new SlashCommandBuilder()
 		.setName('purge')
-		.setDescription('Deletes all roles below the bot that have 3+ numbers in their names. Must have MANAGE_ROLES and mod')
+		.setDescription('Deletes all roles below the bot that either got 3+ numbers in their names or get created with /setup')
 
 module.exports =
 {

@@ -97,7 +97,7 @@ module.exports = {
                       embed = new MessageEmbed()
                           .setColor('#0099ff')
                           .setURL(result.url)
-                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)\nNote: If this never works, use `/passportlichess` instead.')
 
                           row = new MessageActionRow()
                             .addComponents(

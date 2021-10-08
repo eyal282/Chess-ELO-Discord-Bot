@@ -51,7 +51,7 @@ module.exports =
 {
 	data: new SlashCommandBuilder()
 		.setName('passportlichess')
-		.setDescription('Links your Lichess in OAuth2. Does not work'
+		.setDescription('Links your Lichess in OAuth2'
 
     ),
     async execute(client, interaction, settings, goodies)
@@ -103,7 +103,7 @@ module.exports =
                 .setColor('#0099ff')
                 .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
 
-              interaction.editReply({ embeds: [embed], failIfNotExists: false })
+              await interaction.followUp({ embeds: [embed], failIfNotExists: false })
 
               return
             }
@@ -118,15 +118,15 @@ module.exports =
 
       if(embed && row && attachment)
       {
-        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment] })
+        await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment], ephemeral: true })
       }
       else if(embed && row)
       {
-        interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false })
+        await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
       }
       else if(embed)
       {
-        interaction.editReply({ embeds: [embed], failIfNotExists: false })
+        await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
       }
     }
 }

@@ -44,11 +44,22 @@ const rawData = command.toJSON();
 const fs = require('fs');
 
 client.commands = new Collection();
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
 	client.commands.set(command.data.name, command);
+}
+
+commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+let ephemeralCommands = []
+
+for (const file of commandFiles) {
+	const command = require(`./commands-ephemeral/${file}`);
+	client.commands.set(command.data.name, command);
+
+  ephemeralCommands.push(command)
 }
 
 // On Slash Command
@@ -65,8 +76,11 @@ client.on('interactionCreate', async interaction => {
   }
 	try
   {
-    await interaction.deferReply();
-
+    if(ephemeralCommands.indexOf(command) == -1)
+      await interaction.deferReply();
+    else
+      await interaction.deferReply({ephemeral: true});
+    
     let goodies = {}
 		await command.execute(client, interaction, settings, goodies);
 	} catch (error) {
@@ -75,9 +89,9 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-//deploySlashCommands() // Comment this line to avoid deploying the slash commands
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

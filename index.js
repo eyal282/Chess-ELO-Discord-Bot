@@ -1625,7 +1625,7 @@ client.on("messageCreate", async message => {
     else if (command == "invite") {
         let embed = new MessageEmbed()
             .setColor('#0099ff')
-            .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+            .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014229697&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
         message.reply({ embeds: [embed], failIfNotExists: false })
 

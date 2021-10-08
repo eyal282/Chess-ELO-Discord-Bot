@@ -12,10 +12,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 let slashCommand = new SlashCommandBuilder()
 		.setName('addmod')
 		.setDescription('Adds as many moderator roles as you want to the bot')
@@ -29,6 +25,10 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings, goodies)
   {  
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
+      
       /*
        <>@ allows mass mentioning roles without spacebar.
        /` /g allows to encase the entire message with ` ` or ``` ```.

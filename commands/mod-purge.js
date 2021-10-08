@@ -13,10 +13,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 let slashCommand = new SlashCommandBuilder()
 		.setName('purge')
 		.setDescription('Deletes all roles below the bot that have 3+ numbers in their names. Must have MANAGE_ROLES and mod')
@@ -26,7 +22,10 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings, goodies)
   {  
-      
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
+       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 
       let ephemeral = false

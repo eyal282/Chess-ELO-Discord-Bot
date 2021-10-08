@@ -12,10 +12,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 module.exports =
 {
 	data: new SlashCommandBuilder()
@@ -27,6 +23,12 @@ module.exports =
     ),
     async execute(client, interaction, settings, goodies)
     {
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
+
+      let bUpdate = false
+      
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
 
@@ -132,7 +134,7 @@ module.exports =
             queue[`chesscom-account-of-${interaction.user.id}`] = undefined
             queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
 
-            jsGay.updateProfileDataByInteraction(interaction, true)
+            bUpdate = true
 
             embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -145,6 +147,11 @@ module.exports =
         queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
         await settings.setMany(queue, true)
+
+        if(bUpdate)
+        {
+          jsGay.updateProfileDataByInteraction(interaction, true)
+        }
 
         if(embed && row && attachment)
         {

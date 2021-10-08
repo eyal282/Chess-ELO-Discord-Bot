@@ -13,10 +13,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 let slashCommand = new SlashCommandBuilder()
 		.setName('setup')
 		.setDescription('Quick setup of ELO roles. This WILL create more than 50 roles/purge to somewhat undo this command.')
@@ -26,6 +22,9 @@ module.exports =
 	data: slashCommand,
   async execute(client, interaction, settings, goodies)
   {  
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
       
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 

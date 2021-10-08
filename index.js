@@ -6,17 +6,6 @@ const jsGay = require('./util.js')
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 
-const express = require('express');
-const app = express();
-const port = 3000;
- 
-app.get('/', (req, res) => res.send('Hello World!'));
-
-app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
-
-var session = require('express-session');
-app.use(session({ secret: process.env['LICHESS_OAUTH2'] }));
-
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
@@ -79,9 +68,6 @@ client.on('interactionCreate', async interaction => {
     await interaction.deferReply();
 
     let goodies = {}
-    
-    goodies.express = express
-    goodies.app = app
 		await command.execute(client, interaction, settings, goodies);
 	} catch (error) {
 		console.error(error);
@@ -89,9 +75,9 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-deploySlashCommands() // Comment this line to avoid deploying the slash commands
+//deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

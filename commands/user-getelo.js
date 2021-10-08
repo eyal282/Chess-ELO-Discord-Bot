@@ -12,10 +12,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('getelo')
@@ -25,7 +21,10 @@ module.exports = {
       option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
     async execute(client, interaction, settings, goodies) {
-
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
+      
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
       let queue = {}

@@ -5,3 +5,4 @@ npm install node-fetch@2
 npm install expr-eval
 npm i @joshdb/core
 npm i @joshdb/core @joshdb/mongo
+npm i passport@0.4.1

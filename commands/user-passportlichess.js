@@ -1,8 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-
-
-
 const jsGay = require('../util.js')
 
 const Discord = require('discord.js');
@@ -20,124 +17,97 @@ const Crypto = require('crypto')
 const passport = require('passport')
 
 var LichessStrategy = require('passport-lichess').Strategy;
-
+ 
 const lichess_secret = process.env['LICHESS_OAUTH2']
 
 jsGay.client.on('ready', () => {
+  
+  jsGay.app.use(passport.initialize());
+  jsGay.app.use(passport.session());
+  
+  passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
 
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });
   passport.use(new LichessStrategy({
       clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
       callbackURL: "https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback"
     },
-    function(accessToken, refreshToken, profile, cb) {
+    function(accessToken, refreshToken, profile, cb)
+    {
         if(profile.id)
-        {
           return cb(null, profile.id);
-        }
+
         else
           return cb(404, "Authentication failed")
     }
   ));
-})
+});
 
-let embed
-let row
-let attachment
-
-module.exports = {
+module.exports =
+{
 	data: new SlashCommandBuilder()
 		.setName('passportlichess')
-		.setDescription('Links your Lichess in OAuth2. Does not work')
+		.setDescription('Links your Lichess in OAuth2. Does not work'
 
-    .addStringOption((option) =>
-      option.setName('username').setDescription('Your Lichess Username')
     ),
-    async execute(client, interaction, settings, goodies) {
+    async execute(client, interaction, settings, goodies)
+    {
+      
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
 
-      let express = goodies.express
-      let app = goodies.app
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 
-      await interaction.guild.roles.fetch()
-      .then(roles => 
-          {
-              let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
-
-              if(highestBotRole)
-              {
-                  for (let i = 0; i < ratingRoles.length; i++)
-                  {
-                      let role = roles.get(ratingRoles[i].id)
-
-                      // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
-                          ratingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < puzzleRatingRoles.length; i++)
-                  {
-                      let role = roles.get(puzzleRatingRoles[i].id)
-
-        // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
-        puzzleRatingRoles.splice(i, 1)
-                  }
-
-                  for (let i = 0; i < titleRoles.length; i++) {
-                      let role = roles.get(titleRoles[i].id)
-
-                      // if role doesn't exist or is above bot.
-                      if (!role || highestBotRole.rawPosition < role.rawPosition)
-                      titleRoles.splice(i, 1)
-                  }
-              }
-          })
-      .catch(() => null)
-
-      ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-      puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+  
+      ratingRoles = obj.ratingRoles
+      puzzleRatingRoles = obj.puzzleRatingRoles
+      titleRoles = obj.titleRoles
+      let guildRoles = obj.guildRoles
 
       let queue = {}
 
-      let userName = interaction.options.getString('username');
 
-      if (userName)
-      {
-          let code_verifier = randomSecureString()
-          let state = randomSecureString(21)
+      let code_verifier = randomSecureString()
+      let state = randomSecureString(21)
 
-          let challenge = btoa(jsGay.sha256(code_verifier))
+      let challenge = btoa(jsGay.sha256(code_verifier))
 
 
-        embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setDescription(`Prove account ownership [here](https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess)`)
+      embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Prove account ownership [here](https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess)`)
 
-        app.get('/auth/lichess',
-          passport.authenticate('lichess'));
+      jsGay.app.get('/auth/lichess',
+        passport.authenticate('lichess'));
 
-        app.get('/auth/lichess/callback',
-          passport.authenticate('lichess', { failureRedirect: '/' }),
-          function(req, res) {
-            // Successful authentication, redirect home.
-            console.log("TESTTTTT")
-            console.log(req, res)
-            res.redirect('/');
-          });
-      }
-      else
-      {
+       jsGay.app.get('/auth/lichess/callback',
+         passport.authenticate('lichess', { failureRedirect: '/' }),
+            async function(req, res) {
+              // Successful authentication, redirect home.
 
-          queue[`lichess-account-of-${interaction.user.id}`] = undefined
-          queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
+              res.redirect('/');
 
-          jsGay.updateProfileDataByInteraction(interaction, true)
+              let userName = req.user
 
-          embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setDescription(`Successfully unlinked your Lichess Profile`)
+              await settings.set(`lichess-account-of-${interaction.user.id}`, userName)
 
-      }
+              await jsGay.updateProfileDataByInteraction(interaction, false)
+              
+              embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+
+              interaction.editReply({ embeds: [embed], failIfNotExists: false })
+
+              return
+            }
+      );
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
@@ -159,7 +129,7 @@ module.exports = {
         interaction.editReply({ embeds: [embed], failIfNotExists: false })
       }
     }
-};
+}
 
 function randomSecureString(size = 21) {  
   return Crypto

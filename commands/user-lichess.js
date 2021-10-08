@@ -12,10 +12,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('lichess')
@@ -25,7 +21,13 @@ module.exports = {
       option.setName('username').setDescription('Your Lichess Username')
     ),
     async execute(client, interaction, settings, goodies) {
+      
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
 
+      let bUpdate = false
+      
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
@@ -82,7 +84,7 @@ module.exports = {
                   if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
                       queue[`lichess-account-of-${interaction.user.id}`] = result.username
                       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
-                      jsGay.updateProfileDataByInteraction(interaction, true)
+                      bUpdate = true
 
                       embed = new MessageEmbed()
                           .setColor('#0099ff')
@@ -127,8 +129,8 @@ module.exports = {
 
           queue[`lichess-account-of-${interaction.user.id}`] = undefined
           queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
-
-          jsGay.updateProfileDataByInteraction(interaction, true)
+          
+          bUpdate = true
 
           embed = new MessageEmbed()
               .setColor('#0099ff')
@@ -142,6 +144,11 @@ module.exports = {
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
       await settings.setMany(queue, true)
+
+      if(bUpdate)
+      {
+        jsGay.updateProfileDataByInteraction(interaction, true)
+      }
 
       if(embed && row && attachment)
       {

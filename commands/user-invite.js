@@ -12,10 +12,6 @@ const fetch = require('node-fetch');
 
 const jsGay = require('../util.js')
 
-let embed
-let row
-let attachment
-
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('invite')
@@ -25,12 +21,15 @@ module.exports = {
       option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
     async execute(client, interaction, settings, goodies) {
-
+      let embed = undefined
+      let row = undefined
+      let attachment = undefined
+      
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
-      let embed = new MessageEmbed()
+      embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014237889&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+          .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014229697&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
 

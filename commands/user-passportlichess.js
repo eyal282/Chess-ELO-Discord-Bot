@@ -13,6 +13,9 @@ const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
+const Lichess = require('lichess-client')
+
+const Crypto = require('crypto')
 
 const passport = require('passport')
 
@@ -20,16 +23,22 @@ var LichessStrategy = require('passport-lichess').Strategy;
 
 const lichess_secret = process.env['LICHESS_OAUTH2']
 
-passport.use(new LichessStrategy({
-    clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.id}`,
-    callbackURL: "http://127.0.0.1:3000/auth/lichess/callback"
-  },
-  function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({ lichessId: profile.id }, function (err, user) {
-      return cb(err, user);
-    });
-  }
-));
+jsGay.client.on('ready', () => {
+
+  passport.use(new LichessStrategy({
+      clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
+      callbackURL: "https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback"
+    },
+    function(accessToken, refreshToken, profile, cb) {
+        if(profile.id)
+        {
+          return cb(null, profile.id);
+        }
+        else
+          return cb(404, "Authentication failed")
+    }
+  ));
+})
 
 let embed
 let row
@@ -94,14 +103,24 @@ module.exports = {
 
       if (userName)
       {
+          let code_verifier = randomSecureString()
+          let state = randomSecureString(21)
+
+          let challenge = btoa(jsGay.sha256(code_verifier))
+
+
         embed = new MessageEmbed()
               .setColor('#0099ff')
-              .setDescription(`Prove account ownership [here](https://lichess.org/oauth?response_type=code&client_id=Eyal282-Chess-ELO-Role-Bot-${client.id}&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback&state=folhsruqgnuewkagqpiabbzoaldybieoznnlratvenhgifilcfpksmbjmdiycoxr&code_challenge_method=S256&code_challenge=${BASE64URL(SHA256(code_verifier))})`)
+              .setDescription(`Prove account ownership [here](https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess)`)
+
+        app.get('/auth/lichess',
+          passport.authenticate('lichess'));
+
         app.get('/auth/lichess/callback',
           passport.authenticate('lichess', { failureRedirect: '/' }),
           function(req, res) {
             // Successful authentication, redirect home.
-
+            console.log("TESTTTTT")
             console.log(req, res)
             res.redirect('/');
           });
@@ -141,3 +160,10 @@ module.exports = {
       }
     }
 };
+
+function randomSecureString(size = 21) {  
+  return Crypto
+    .randomBytes(size)
+    .toString('base64')
+    .slice(0, size)
+}

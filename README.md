@@ -12,5 +12,4 @@ Support Server:
 https://discord.gg/tznbm6XVrJ
 
 Invite Link:
-https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=268438528&scope=bot
-
+https://discord.boats/bot/886616669093503047

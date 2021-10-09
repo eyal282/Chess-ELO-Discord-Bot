@@ -1,3 +1,5 @@
+// Urgent todo for passport!!! Fix so that you can't leecch someone else's entry, probably clientID should become the author ID
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const jsGay = require('../util.js')
@@ -32,19 +34,6 @@ jsGay.client.on('ready', () => {
   passport.deserializeUser(function(user, done) {
     done(null, user);
   });
-  passport.use(new LichessStrategy({
-      clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
-      callbackURL: "https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback"
-    },
-    function(accessToken, refreshToken, profile, cb)
-    {
-        if(profile.id)
-          return cb(null, profile.id);
-
-        else
-          return cb(404, "Authentication failed")
-    }
-  ));
 });
 
 module.exports =
@@ -78,15 +67,29 @@ module.exports =
 
       let challenge = btoa(jsGay.sha256(code_verifier))
 
-
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`Prove account ownership [here](https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess)`)
-
       jsGay.app.get('/auth/lichess',
         passport.authenticate('lichess'));
 
-       jsGay.app.get('/auth/lichess/callback',
+      jsGay.app.get('/auth/lichess/callback',
+        passport.authenticate('lichess'));
+
+
+      let callbackEnd = btoa(jsGay.sha256(randomSecureString(64)))
+
+      passport.use(new LichessStrategy({
+          clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
+          callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`
+        },
+        function(accessToken, refreshToken, profile, cb)
+        {
+            if(profile.id)
+              return cb(null, profile.id);
+
+            else
+              return cb(404, "Authentication failed")
+        }
+      ));        
+       jsGay.app.get(`/auth/lichess/callback/${callbackEnd}`,
          passport.authenticate('lichess', { failureRedirect: '/' }),
             async function(req, res) {
               // Successful authentication, redirect home.
@@ -116,18 +119,18 @@ module.exports =
 
       await settings.setMany(queue, true)
 
-      if(embed && row && attachment)
-      {
-        await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, files: [attachment], ephemeral: true })
-      }
-      else if(embed && row)
-      {
-        await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
-      }
-      else if(embed)
-      {
-        await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
-      }
+
+      embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Prove account ownership in the link below this message:`)
+
+        await interaction.editReply({ embeds: [embed], failIfNotExists: false })
+
+        embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`)
+
+        await interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
     }
 }
 

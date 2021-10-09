@@ -29,7 +29,7 @@ module.exports = {
 
       embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`[Invite the Bot](https://discord.com/api/oauth2/authorize?client_id=886616669093503047&permissions=518014229697&scope=bot%20applications.commands) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
+          .setDescription(`[Invite the Bot](https://discord.boats/bot/886616669093503047) or [Join the Support Server](https://discord.gg/tznbm6XVrJ)`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
 

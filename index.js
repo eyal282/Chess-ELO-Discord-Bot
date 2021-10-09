@@ -434,7 +434,7 @@ client.on("messageCreate", async message => {
         }
     }
 });
-
+/*
 // Messages with the prefix
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
@@ -1650,7 +1650,7 @@ client.on("messageCreate", async message => {
 
     await settings.setMany(queue, true)
 });
-
+*/
 function deploySlashCommands()
 {
   const { REST } = require('@discordjs/rest');

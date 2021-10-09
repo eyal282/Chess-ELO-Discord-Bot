@@ -122,7 +122,7 @@ module.exports =
 
       embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`Prove account ownership in the link below this message:`)
+          .setDescription(`Prove account ownership in the link below this message.\nIf you send the link to anybody, he can force you to pretend you are him`)
 
         await interaction.editReply({ embeds: [embed], failIfNotExists: false })
 

@@ -67,12 +67,6 @@ module.exports =
 
       let challenge = btoa(jsGay.sha256(code_verifier))
 
-      jsGay.app.get('/auth/lichess',
-        passport.authenticate('lichess'));
-
-      jsGay.app.get('/auth/lichess/callback',
-        passport.authenticate('lichess'));
-
 
       let callbackEnd = btoa(jsGay.sha256(randomSecureString(64)))
 

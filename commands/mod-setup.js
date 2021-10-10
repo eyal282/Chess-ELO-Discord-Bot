@@ -59,7 +59,28 @@ module.exports =
         let minElo = 0
         let increment = 200
 
+        // Title Setup!!!
         
+        
+        for(let i=0;i < jsGay.titleList.length;i++)
+        {
+            let title = jsGay.titleList[i]
+            
+            await interaction.guild.roles.create({
+              name: title.roleName,
+              reason: 'Setup command',
+            })
+            .then(role => 
+            {
+                guildRoles.set(role.id, role)
+
+                let result = jsGay.addTitleCommand(interaction, titleRoles, role, title.titleName, guildRoles)
+
+                titleRoles.push(result)
+            })
+            .catch(console.error);
+        }
+
         // Elo setup!!!
         await interaction.guild.roles.create({
           name: `${maxElo}+`,
@@ -157,28 +178,6 @@ module.exports =
             puzzleRatingRoles.push(result)
         })
         .catch(console.error);
-
-        // Title Setup!!!
-        
-        
-        for(let i=0;i < jsGay.titleList.length;i++)
-        {
-            let title = jsGay.titleList[i]
-            
-            await interaction.guild.roles.create({
-              name: title.roleName,
-              reason: 'Setup command',
-            })
-            .then(role => 
-            {
-                guildRoles.set(role.id, role)
-
-                let result = jsGay.addTitleCommand(interaction, titleRoles, role, title.titleName, guildRoles)
-
-                titleRoles.push(result)
-            })
-            .catch(console.error);
-        }
     
         embed = new MessageEmbed()
           .setColor('#0099ff')

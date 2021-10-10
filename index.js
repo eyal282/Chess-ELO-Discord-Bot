@@ -77,9 +77,15 @@ client.on('interactionCreate', async interaction => {
 	try
   {
     if(ephemeralCommands.indexOf(command) == -1)
-      await interaction.deferReply();
+    {
+      let ephemeral = interaction.options.getBoolean('ephemeral');
+
+      await interaction.deferReply({ephemeral: ephemeral});
+    }
     else
+    {
       await interaction.deferReply({ephemeral: true});
+    }
     
     let goodies = {}
 		await command.execute(client, interaction, settings, goodies);

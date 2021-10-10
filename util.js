@@ -312,10 +312,10 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       let puzzleRating = -1
 
       if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
-      if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
-      if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+      if (result.chess_blitz && result.chess_blitz.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+      if (result.chess_rapid && result.chess_rapid.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
 
-      if (result.tactics) puzzleRating = result.tactics.highest.rating
+      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.highest.rating
 
       let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
 
@@ -620,10 +620,10 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       let puzzleRating = -1
 
       if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
-      if (result.chess_blitz && result.chess_daily.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
-      if (result.chess_rapid && result.chess_daily.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+      if (result.chess_blitz && result.chess_blitz.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+      if (result.chess_rapid && result.chess_rapid.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
 
-      if (result.tactics) puzzleRating = result.tactics.highest.rating
+      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.highest.rating
 
       let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
 

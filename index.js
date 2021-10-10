@@ -419,7 +419,7 @@ client.on("messageCreate", async message => {
     if (prefix == undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) === 0) return;
-
+    /*
     if (message.mentions.has(client.user) && message.mentions.users.size == 1) {
         let embed = new MessageEmbed()
                 .setColor('#0099ff')
@@ -431,6 +431,7 @@ client.on("messageCreate", async message => {
         .catch(() => null)
     }
     else
+    */
     {
         let timestamp = await settings.get(`last-updated-${message.author.id}`)
 

@@ -39,8 +39,8 @@ jsGay.client.on('ready', () => {
 module.exports =
 {
 	data: new SlashCommandBuilder()
-		.setName('passportlichess')
-		.setDescription('Links your Lichess in OAuth2'
+		.setName('lichessnew')
+		.setDescription('Links your Lichess in OAuth2, which is "Sign in With Lichess"'
 
     ),
     async execute(client, interaction, settings, goodies)

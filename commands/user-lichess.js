@@ -81,7 +81,7 @@ module.exports = {
                   // result.profile.location
                   let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
-                  if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+                  if(result.profile && ( result.profile.location && result.profile.location.includes(fullDiscordUsername) ) || ( result.profile.bio && result.profile.bio.includes(fullDiscordUsername) )) {
                       queue[`lichess-account-of-${interaction.user.id}`] = result.username
                       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                       bUpdate = true
@@ -97,7 +97,7 @@ module.exports = {
                       embed = new MessageEmbed()
                           .setColor('#0099ff')
                           .setURL(result.url)
-                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)\nNote: If this never works, use `/lichessnew` instead.')
+                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` or `Biography` in your [Lichess Profile](https://lichess.org/account/profile)\nNote: If this never works, use `/lichessnew` instead.')
 
                           row = new MessageActionRow()
                             .addComponents(

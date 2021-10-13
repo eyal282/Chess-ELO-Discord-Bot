@@ -86,6 +86,7 @@ module.exports = {
           .setURL(result.url)
           .addFields(
             { name: '\u200B', value: '\u200B' },
+            { name: `*Username: ${chessComAccount}*`, value: '\u200B' },
             { name: 'Blitz Rating', value: blitzRating, inline: true },
             { name: 'Rapid Rating', value: rapidRating, inline: true },
             { name: 'Classical Rating', value: classicalRating, inline: true },
@@ -126,6 +127,7 @@ module.exports = {
           .setURL(`https://www.chess.com/member/${chessComAccount}`)
           .addFields(
             { name: '\u200B', value: '\u200B' },
+            { name: `*Username: ${chessComAccount}*`, value: '\u200B' },
             { name: 'Blitz Rating', value: blitzRating, inline: true },
             { name: 'Rapid Rating', value: rapidRating, inline: true },
             { name: 'Classical Rating', value: classicalRating, inline: true },

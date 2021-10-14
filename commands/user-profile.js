@@ -41,6 +41,8 @@ module.exports = {
       // We do a little trolling
       interaction.user = fakeUser
 
+      let highestRating = await jsGay.updateProfileDataByInteraction(interaction, true)
+
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
@@ -56,6 +58,7 @@ module.exports = {
 
       // Soon chess.com steals every variable here.
       let result = lichessAccountData
+      
 
       let lichessEmbed
       let chessComEmbed
@@ -69,35 +72,36 @@ module.exports = {
 
 
         if (result.perfs.correspondence)
-          corresRating = result.perfs.correspondence.rating.toString() + (result.perfs.correspondence.prov == undefined ? "" : "?")
+          corresRating = result.perfs.correspondence.rating.toString() + (result.perfs.correspondence.prov == undefined ? "" : "**(?)**")
 
         if (result.perfs.blitz)
-          blitzRating = result.perfs.blitz.rating.toString() + (result.perfs.blitz.prov == undefined ? "" : "?")
+          blitzRating = result.perfs.blitz.rating.toString() + (result.perfs.blitz.prov == undefined ? "" : "**(?)**")
 
         if (result.perfs.rapid)
-          rapidRating = result.perfs.rapid.rating.toString() + (result.perfs.rapid.prov == undefined ? "" : "?")
+          rapidRating = result.perfs.rapid.rating.toString() + (result.perfs.rapid.prov == undefined ? "" : "**(?)**")
 
         if (result.perfs.classical)
-          classicalRating = result.perfs.classical.rating.toString() + (result.perfs.classical.prov == undefined ? "" : "?")
+          classicalRating = result.perfs.classical.rating.toString() + (result.perfs.classical.prov == undefined ? "" : "**(?)**")
 
+        let bestLichess = 
         lichessEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          .setURL(result.url)
+          .setTitle(`<:lichess_logo:898198362455687218> Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
+    
           .addFields(
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username: ${chessComAccount}*`, value: '\u200B' },
-            { name: 'Blitz Rating', value: blitzRating, inline: true },
-            { name: 'Rapid Rating', value: rapidRating, inline: true },
-            { name: 'Classical Rating', value: classicalRating, inline: true },
-            { name: 'Correspondence Rating', value: corresRating, inline: true },
+            { name: `*Username:*`, value: `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${lichessAccount}](${result.url})` },
+            { name: 'Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, lichessRatingEquation), inline: true },
+            { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation), inline: true },
+            { name: 'Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
+            { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
           )
       }
       else
       {
         lichessEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
+          .setTitle(`<:lichess_logo:898198362455687218> Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           .setDescription('Could not find stats for user.')
       }
 
@@ -113,25 +117,25 @@ module.exports = {
         classicalRating = "Unrated"
 
         if (result.chess_daily)
-          corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
+          corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         if (result.chess_blitz)
-          blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
+          blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         if (result.chess_rapid)
-          rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "?")
+          rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         chessComEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          .setURL(`https://www.chess.com/member/${chessComAccount}`)
+          .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
+          
           .addFields(
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username: ${chessComAccount}*`, value: '\u200B' },
-            { name: 'Blitz Rating', value: blitzRating, inline: true },
-            { name: 'Rapid Rating', value: rapidRating, inline: true },
-            { name: 'Classical Rating', value: classicalRating, inline: true },
-            { name: 'Correspondence Rating', value: corresRating, inline: true },
+            { name: `*Username:*`, value: `[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
+            { name: 'Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
+            { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
+            { name: 'Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, chessComRatingEquation), inline: true },
+            { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
           )
           .setFooter(`Note: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`);
       }
@@ -139,7 +143,7 @@ module.exports = {
       {
         chessComEmbed = new MessageEmbed()
           .setColor('#0099ff')
-          .setTitle(`Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
+          .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           .setDescription('Could not find any stats for user.')
       }
       interaction.editReply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })

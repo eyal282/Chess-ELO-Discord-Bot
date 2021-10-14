@@ -35,12 +35,12 @@ settings.defer.then( async () => {
 });
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
-
+/*
 const command = new SlashCommandBuilder().setName('ping').setDescription('Replies with Pong!');
 
 // Raw data that can be used to register a slash command
 const rawData = command.toJSON();
-
+*/
 const fs = require('fs');
 
 client.commands = new Collection();
@@ -56,6 +56,7 @@ commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWi
 let ephemeralCommands = []
 
 for (const file of commandFiles) {
+
 	const command = require(`./commands-ephemeral/${file}`);
 	client.commands.set(command.data.name, command);
 
@@ -97,7 +98,7 @@ client.on('interactionCreate', async interaction => {
 
 // deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -1687,10 +1688,19 @@ function deployGlobalSlashCommands()
   const { clientId, guildId } = require('./config.json');
 
   const commands = [];
-  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+  
+  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  
+commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands-ephemeral/${file}`);
     commands.push(command.data.toJSON());
   }
 

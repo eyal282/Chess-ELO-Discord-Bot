@@ -69,6 +69,7 @@ module.exports =
             await interaction.guild.roles.create({
               name: title.roleName,
               reason: 'Setup command',
+              hoist: true
             })
             .then(role => 
             {
@@ -85,6 +86,7 @@ module.exports =
         await interaction.guild.roles.create({
           name: `${maxElo}+`,
           reason: 'Setup command',
+          hoist: true
         })
         .then(role => 
         {
@@ -103,6 +105,7 @@ module.exports =
             await interaction.guild.roles.create({
               name: `${nextElo}~${i}`,
               reason: 'Setup command',
+              hoist: true
             })
             .then(role => 
             {
@@ -118,6 +121,7 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Unrated`,
           reason: 'Setup command',
+          hoist: true
         })
         .then(role => 
         {
@@ -135,6 +139,7 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Puzzles ${maxElo}+`,
           reason: 'Setup command',
+          hoist: true
         })
         .then(role => 
         {
@@ -153,6 +158,7 @@ module.exports =
             await interaction.guild.roles.create({
               name: `Puzzles ${nextElo}~${i}`,
               reason: 'Setup command',
+              hoist: true
             })
             .then(role => 
             {
@@ -168,6 +174,7 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Puzzles Unrated`,
           reason: 'Setup command',
+          hoist: true
         })
         .then(role => 
         {

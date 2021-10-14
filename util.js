@@ -17,6 +17,9 @@ let Constant_lichessDefaultRatingEquation = "x"
 let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 
+let Constant_Lichess = 0
+let Constant_ChessCom = 1
+
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
@@ -397,7 +400,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     await settings.setMany(queue, true)
 }
 
-
+// This returns the best rating AFTER formula.
 async function updateProfileDataByInteraction(interaction, useCacheOnly)
 {
     if(!interaction.guild.me.permissions.has('MANAGE_ROLES'))
@@ -703,6 +706,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       }
     }
     await settings.setMany(queue, true)
+
+    return highestRating
 }
 
 async function deleteMessageAfterTime(message, time)
@@ -1069,6 +1074,44 @@ async function getBotIntegrationRoleByInteraction(interaction)
 {
   return interaction.guild.roles.botRoleFor(client.user)
 }
+
+function getEmojiFromTitle(title)
+{
+  if(!title)
+    return ""
+
+  let finalTitle = "***" + title + "***"
+
+
+  finalTitle = finalTitle + " "
+  return finalTitle 
+}
+
+function addStarForBestRating(highestRating, ratingToTest, ratingEquation)
+{
+  if(!isANumber(ratingToTest))
+    return ratingToTest
+
+  let result
+
+  try {
+    result = Math.round(Parser.evaluate(ratingEquation, { x: ratingToTest }))
+  }
+
+  catch { console.log(error)}
+
+  if(result != highestRating)
+    return ratingToTest
+
+  return ratingToTest + ' <:chess_com_best_move:898211774736785460>'
+
+}
+
+// Apparantly an empty string will make this return true, I don't care for now.
+function isANumber(str){
+  return !/\D/.test(str);
+}
+
 function getUserFullDiscordName(user)
 {
   return user.username + "#" + user.discriminator
@@ -1174,4 +1217,4 @@ var sha256 = function sha256(ascii) {
 
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, titleList, roleNamesToPurge, settings, client, app, sha256 }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256 }

@@ -524,6 +524,7 @@ client.on('interactionCreate', async(interaction) => {
   
       await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
   }
+  /*
   else if(interaction.customId.startsWith("link-chesscom"))
   {
       let code_verifier = jsGay.randomSecureString(128)
@@ -543,7 +544,7 @@ client.on('interactionCreate', async(interaction) => {
 
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Chess.com Profile](https://lichess.org/@/${userName})`)
+                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${userName})`)
 
               interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
 
@@ -571,6 +572,7 @@ client.on('interactionCreate', async(interaction) => {
   
       await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
   }
+  */
   else if(interaction.customId.startsWith("unlink-lichess"))
   {
       queue[`lichess-account-of-${interaction.user.id}`] = null

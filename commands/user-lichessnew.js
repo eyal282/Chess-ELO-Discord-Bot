@@ -14,8 +14,6 @@ const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 const Lichess = require('lichess-client')
 
-const Crypto = require('crypto')
-
 const passport = require('passport')
 
 var LichessStrategy = require('passport-lichess').Strategy;
@@ -62,13 +60,13 @@ module.exports =
       let queue = {}
 
 
-      let code_verifier = randomSecureString()
-      let state = randomSecureString(21)
+      let code_verifier = jsGay.randomSecureString()
+      let state = jsGay.randomSecureString(21)
 
       let challenge = btoa(jsGay.sha256(code_verifier))
 
 
-      let callbackEnd = btoa(jsGay.sha256(randomSecureString(64)))
+      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
 
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
@@ -126,11 +124,4 @@ module.exports =
 
         await interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
     }
-}
-
-function randomSecureString(size = 21) {  
-  return Crypto
-    .randomBytes(size)
-    .toString('base64')
-    .slice(0, size)
 }

@@ -71,7 +71,8 @@ module.exports =
 
               if(strNumbersInName.length >= 3 || forcePurge)
               {
-                  await role.delete(`Purge Command executed by ${jsGay.getUserFullDiscordName(interaction.user)}`).catch()
+                  await role.delete(`Purge Command executed by ${jsGay.getUserFullDiscordName(interaction.user)}`).catch(() => null)
+
               }
           });
 

@@ -41,17 +41,28 @@ module.exports = {
       // We do a little trolling
       interaction.user = fakeUser
 
-      let highestRating = await jsGay.updateProfileDataByInteraction(interaction, true)
+      let highestRating
+
+      let timestamp1 = await settings.get(`last-updated-${interaction.user.id}`)
+
+      if ((timestamp1 == undefined || timestamp1 + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp1 + 10 * 1000 < Date.now())))
+      {
+        highestRating = await jsGay.updateProfileDataByInteraction(interaction, false)
+      }
+      else
+      {
+        highestRating = await jsGay.updateProfileDataByInteraction(interaction, true)
+      }
 
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
 	  
-	  ratingRoles = obj.ratingRoles
-	  puzzleRatingRoles = obj.puzzleRatingRoles
-	  titleRoles = obj.titleRoles
-	  let guildRoles = obj.guildRoles
-      
+      ratingRoles = obj.ratingRoles
+      puzzleRatingRoles = obj.puzzleRatingRoles
+      titleRoles = obj.titleRoles
+      let guildRoles = obj.guildRoles
+  
       interaction.user = trueUser
 
       let ephemeral = interaction.options.getBoolean('ephemeral');
@@ -114,16 +125,15 @@ module.exports = {
         corresRating = "Unrated"
         blitzRating = "Unrated"
         rapidRating = "Unrated"
-        classicalRating = "Unrated"
 
         if (result.chess_daily)
-          corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
+          corresRating = result.chess_daily.last.rating.toString() + (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         if (result.chess_blitz)
-          blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
+          blitzRating = result.chess_blitz.last.rating.toString() + (result.chess_blitz.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         if (result.chess_rapid)
-          rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd >= jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
+          rapidRating = result.chess_rapid.last.rating.toString() + (result.chess_rapid.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**")
 
         chessComEmbed = new MessageEmbed()
           .setColor('#0099ff')
@@ -134,7 +144,6 @@ module.exports = {
             { name: `*Username:*`, value: `[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
             { name: 'Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
             { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
-            { name: 'Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, chessComRatingEquation), inline: true },
             { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
           )
           .setFooter(`Note: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`);
@@ -145,6 +154,8 @@ module.exports = {
           .setColor('#0099ff')
           .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           .setDescription('Could not find any stats for user.')
+          .setFooter(`Note: Linking your account won't update your rating, you must send a message to update your rating`);
+
       }
       interaction.editReply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })
     }

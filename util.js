@@ -32,7 +32,9 @@ const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
 
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES", 'GUILD_MESSAGE_REACTIONS', 'DIRECT_MESSAGES']} );
+const Crypto = require('crypto')
+
+const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES", 'DIRECT_MESSAGES']} );
 
 const settings = new Josh({
   name: 'Chess ELO Role',
@@ -43,6 +45,7 @@ const settings = new Josh({
   }
 });
 
+let bootDate = new Date();
 
 let titleList = [
   {
@@ -93,6 +96,7 @@ let titleList = [
 
 let roleNamesToPurge = ["Unrated", "Puzzles Unrated"]
 
+// You can sneak a fake message if you assign .guild, .author and .member
 async function updateProfileDataByMessage(message, useCacheOnly)
 {
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
@@ -387,8 +391,8 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       if (highestTitleRole != null)
         fullRolesArray.push(highestTitleRole)
 
-      // Don't set if nothing was changed.
-      if (fullRolesArray != Array.from(fullRolesCache.keys()))
+      // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
+      if (fullRolesArray != Array.from(fullRolesCache.keys()) || (chessComAccount === undefined && lichessAccount === undefined))
       {
         try
         {
@@ -695,8 +699,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       if (highestTitleRole != null)
         fullRolesArray.push(highestTitleRole)
 
-      // Don't set if nothing was changed.
-      if (fullRolesArray != Array.from(fullRolesCache.keys()))
+      // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
+      if (fullRolesArray != Array.from(fullRolesCache.keys()) || (chessComAccount === undefined && lichessAccount === undefined))
       {
         try
         {
@@ -1215,6 +1219,44 @@ var sha256 = function sha256(ascii) {
     return result;
 };
 
+function getTimeDifference(dateFuture, dateNow) 
+{
+    let diffInSeconds = Math.abs(dateFuture - dateNow) / 1000;
+
+    // calculate days
+    const days = Math.floor(diffInSeconds / 86400);
+    diffInSeconds -= days * 86400;
+
+    // calculate hours
+    const hours = Math.floor(diffInSeconds / 3600) % 24;
+    diffInSeconds -= hours * 3600;
+
+    // calculate minutes
+    const minutes = Math.floor(diffInSeconds / 60) % 60;
+    diffInSeconds -= minutes * 60;
+
+    const seconds = Math.floor(diffInSeconds)
+    let difference = '';
+    if (days > 0) {
+      difference += (days === 1) ? `${days} Days, ` : `${days} Days, `;
+    }
+
+    difference += (hours === 1) ? `${hours} Hour, ` : `${hours} Hours, `;
+
+    difference += (minutes === 1) ? `${minutes} Minute` : `${minutes} Minutes, `; 
+
+    difference += (seconds === 1) ? `${seconds} Second` : `${seconds} Seconds`;
+
+    return difference;
+}
+
+function randomSecureString(size = 21) {  
+  return Crypto
+    .randomBytes(size)
+    .toString('base64')
+    .slice(0, size)
+}
+
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256 }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, randomSecureString, getTimeDifference, bootDate }

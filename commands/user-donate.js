@@ -14,19 +14,20 @@ const jsGay = require('../util.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('ping')
-		.setDescription('Lag of the Bot'
+		.setName('donate')
+		.setDescription('Donate Link')
+
+    .addBooleanOption((option) =>
+      option.setName('ephemeral').setDescription('Only you can see this message?')
     ),
     async execute(client, interaction, settings, goodies) {
-      //let ephemeral = interaction.options.getBoolean('ephemeral');
-
       let embed = undefined
       let row = undefined
       let attachment = undefined
-
+      
       embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(`🏓Latency is ${Date.now() - interaction.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nBot is running for ${jsGay.getTimeDifference(jsGay.bootDate, new Date())}`)
-        interaction.editReply({embeds: [embed], ephemeral: true})
+          .setColor('#0099ff')
+          .setDescription(`The bot is using a free hosting, but I can improve it at the price of $74 for 12 months or $7 per month\n\nThe bot will be incapable of shutting down if I upgrade, and it will be faster.\n\nIf you send over $7, specify whether you want to save for 12 months, or activate 1 month immediately.\n\nhttps://paypal.me/ChessEloRole`)
+        interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true})
 	},
 };

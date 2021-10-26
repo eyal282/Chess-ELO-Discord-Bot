@@ -14,9 +14,16 @@ const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 
+const Lichess = require('lichess-client')
+
+const passport = require('passport')
+
+var LichessStrategy = require('passport-lichess').Strategy;
+ 
+const lichess_secret = process.env['LICHESS_OAUTH2']
+
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 //const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
-
 
 const client = jsGay.client
 
@@ -96,9 +103,9 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-// deploySlashCommands() // Comment this line to avoid deploying the slash commands
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -136,6 +143,27 @@ client.on('ready', () => {
 });
 
 
+client.on("guildMemberAdd", async function(member){
+  
+    let fakeMessage = {}
+
+    fakeMessage.guild = member.guild
+    fakeMessage.author = member.user
+    fakeMessage.member = member
+
+    let timestamp = await settings.get(`last-updated-${fakeMessage.author.id}`)
+
+    if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
+    {
+      // You can sneak a fake message if you assign .guild, .author and .member
+      jsGay.updateProfileDataByMessage(fakeMessage, false)
+    }
+    else
+    {
+      // You can sneak a fake message if you assign .guild, .author and .member
+      jsGay.updateProfileDataByMessage(fakeMessage, true)
+    }
+});
 /* Emitted whenever the bot joins a guild.
 PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The created guild    */
@@ -160,7 +188,6 @@ client.on("guildCreate", async function(guild){
 
               targetMember = auditlog.executor
             }
-            
         }
 
         if(targetMember)
@@ -180,11 +207,11 @@ client.on("guildDelete", function(guild){
     client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
 });
 
-// On Button Pressed
+// On Retry Link Button Pressed
 client.on('interactionCreate', async(interaction) => {
-	if (!interaction.isButton() || interaction.user.id != interaction.customId) return;
+	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id) || !interaction.customId.includes("retry-link")) return;
 
-  let queue = []
+  let queue = {}
 
   let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
 
@@ -262,7 +289,8 @@ client.on('interactionCreate', async(interaction) => {
             // result.profile.location
             let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-            if(result.profile && result.profile.location && fullDiscordUsername == result.profile.location) {
+            if(result.profile?.location?.includes(fullDiscordUsername) || result.profile?.bio?.includes(fullDiscordUsername))
+            {
                 queue[`lichess-account-of-${message.author.id}`] = result.username
                 queue[`cached-lichess-account-data-of-${message.author.id}`] = result
                 jsGay.updateProfileDataByMessage(message, true)
@@ -409,17 +437,208 @@ client.on('interactionCreate', async(interaction) => {
 
   await settings.setMany(queue, true)
 });
-// Messages without the prefix
+
+
+// On Embed Button Pressed
+client.on('interactionCreate', async(interaction) => {
+	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id))
+    return;
+      
+  let bUpdate = false
+
+  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
+
+  let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+
+  ratingRoles = obj.ratingRoles
+  puzzleRatingRoles = obj.puzzleRatingRoles
+  titleRoles = obj.titleRoles
+  let guildRoles = obj.guildRoles
+
+  let queue = {}
+
+  if(interaction.customId.startsWith("link-lichess"))
+  {
+      let code_verifier = jsGay.randomSecureString()
+      let state = jsGay.randomSecureString(21)
+
+      let challenge = btoa(jsGay.sha256(code_verifier))
+
+
+      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
+      
+      passport.use(new LichessStrategy({
+          clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
+          callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`
+        },
+        function(accessToken, refreshToken, profile, cb)
+        {
+            if(profile.id)
+              return cb(null, profile.id);
+
+            else
+              return cb(404, "Authentication failed")
+        }
+      ));        
+       jsGay.app.get(`/auth/lichess/callback/${callbackEnd}`,
+         passport.authenticate('lichess', { failureRedirect: '/' }),
+            async function(req, res) {
+              // Successful authentication, redirect home.
+
+              res.redirect('/');
+
+              let userName = req.user
+
+              await settings.set(`lichess-account-of-${interaction.user.id}`, userName)
+
+              await jsGay.updateProfileDataByInteraction(interaction, false)
+              
+              embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+
+              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+
+              return
+            }
+      );
+
+      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+      await settings.setMany(queue, true)
+
+      embed = new MessageEmbed()
+        .setColor('#0099ff')
+        .setDescription(`Sign in with Lichess by pressing the button below:`)
+
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageButton()
+            .setLabel(`Sign in with Lichess`)
+            .setURL(`https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`)
+            .setStyle('LINK')
+      );
+  
+      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
+  }
+  else if(interaction.customId.startsWith("link-chesscom"))
+  {
+      let code_verifier = jsGay.randomSecureString()
+      let state = jsGay.randomSecureString(21)
+
+      let challenge = btoa(jsGay.sha256(code_verifier))
+
+
+      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
+      
+      passport.use(new LichessStrategy({
+          clientID: `3169b266-35d3-11ec-885b-3b9e2d963eb0`,
+          callbackURL: `https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback`
+        },
+        function(accessToken, refreshToken, profile, cb)
+        {
+            if(profile.id)
+              return cb(null, profile.id);
+
+            else
+              return cb(404, "Authentication failed")
+        }
+      ));        
+       jsGay.app.get(`/auth/lichess/callback/${callbackEnd}`,
+         passport.authenticate('lichess', { failureRedirect: '/' }),
+            async function(req, res) {
+              // Successful authentication, redirect home.
+
+              res.redirect('/');
+
+              let userName = req.user
+
+              await settings.set(`lichess-account-of-${interaction.user.id}`, userName)
+
+              await jsGay.updateProfileDataByInteraction(interaction, false)
+              
+              embed = new MessageEmbed()
+                .setColor('#0099ff')
+                .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+
+              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+
+              return
+            }
+      );
+
+      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+      await settings.setMany(queue, true)
+
+      embed = new MessageEmbed()
+        .setColor('#0099ff')
+        .setDescription(`Sign in with Lichess by pressing the button below:`)
+
+      const row = new MessageActionRow()
+        .addComponents(
+          new MessageButton()
+            .setLabel(`Sign in with Lichess`)
+            .setURL(`https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`)
+            .setStyle('LINK')
+      );
+  
+      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
+  }
+  else if(interaction.customId.startsWith("unlink-lichess"))
+  {
+      queue[`lichess-account-of-${interaction.user.id}`] = null
+      queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
+      
+      bUpdate = true
+
+      embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Successfully unlinked your Lichess Profile`)
+
+      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+  }
+  else if(interaction.customId.startsWith("unlink-chesscom"))
+  {
+      queue[`chesscom-account-of-${interaction.user.id}`] = null
+      queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
+
+      bUpdate = true
+
+      embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`Successfully unlinked your Chess.com Profile`)
+
+      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+  }
+
+  await settings.setMany(queue, true)
+
+
+  if(bUpdate)
+  {
+    jsGay.updateProfileDataByInteraction(interaction, true)
+  }
+});
+
+// All messages.
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
-    if (!jsGay.botHasMessagingPermissionsByMessage(message)) return;
-
+  //  if (!jsGay.botHasMessagingPermissionsByMessage(message)) return;
+    /*
     let prefix = await settings.get(`guild-prefix-${message.guild.id}`)
 
     if (prefix == undefined) prefix = defaultPrefix
 
     if (message.content.indexOf(prefix) === 0) return;
+    */
     /*
     if (message.mentions.has(client.user) && message.mentions.users.size == 1) {
         let embed = new MessageEmbed()
@@ -1666,10 +1885,19 @@ function deploySlashCommands()
   const { clientId, guildId } = require('./config.json');
 
   const commands = [];
-  const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+  
+  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  
+  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands-ephemeral/${file}`);
     commands.push(command.data.toJSON());
   }
 
@@ -1697,7 +1925,7 @@ function deployGlobalSlashCommands()
   }
 
   
-commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
     const command = require(`./commands-ephemeral/${file}`);

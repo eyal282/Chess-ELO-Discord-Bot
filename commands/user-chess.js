@@ -74,7 +74,7 @@ module.exports =
                       row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
-                            .setCustomId(interaction.user.id)
+                            .setCustomId(`retry-link-${interaction.user.id}`)
                             .setLabel(`Retry Link for ${userName}`)
                             .setStyle('PRIMARY'),
                         );
@@ -108,7 +108,7 @@ module.exports =
                               row = new MessageActionRow()
                               .addComponents(
                                 new MessageButton()
-                                  .setCustomId(interaction.user.id)
+                                  .setCustomId(`retry-link-${interaction.user.id}`)
                                   .setLabel(`Retry Link for ${userName}`)
                                   .setStyle('PRIMARY'),
                               );
@@ -124,14 +124,14 @@ module.exports =
                 row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
-                      .setCustomId(interaction.user.id)
+                      .setCustomId(`retry-link-${interaction.user.id}`)
                       .setLabel(`Retry Link for ${userName}`)
                       .setStyle('PRIMARY'),
                   );
             }
         }
         else {
-            queue[`chesscom-account-of-${interaction.user.id}`] = undefined
+            queue[`chesscom-account-of-${interaction.user.id}`] = null
             queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
 
             bUpdate = true

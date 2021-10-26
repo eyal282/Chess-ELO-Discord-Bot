@@ -72,7 +72,7 @@ module.exports = {
                     row = new MessageActionRow()
                       .addComponents(
                         new MessageButton()
-                          .setCustomId(interaction.user.id)
+                          .setCustomId(`retry-link-${interaction.user.id}`)
                           .setLabel(`Retry Link for ${userName}`)
                           .setStyle('PRIMARY'),
                       );
@@ -81,7 +81,7 @@ module.exports = {
                   // result.profile.location
                   let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
-                  if(result.profile && ( result.profile.location && result.profile.location.includes(fullDiscordUsername) ) || ( result.profile.bio && result.profile.bio.includes(fullDiscordUsername) )) {
+                  if(result.profile?.location?.includes(fullDiscordUsername) || result.profile?.bio?.includes(fullDiscordUsername)) {
                       queue[`lichess-account-of-${interaction.user.id}`] = result.username
                       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                       bUpdate = true
@@ -102,7 +102,7 @@ module.exports = {
                           row = new MessageActionRow()
                             .addComponents(
                               new MessageButton()
-                                .setCustomId(interaction.user.id)
+                                .setCustomId(`retry-link-${interaction.user.id}`)
                                 .setLabel(`Retry Link for ${userName}`)
                                 .setStyle('PRIMARY'),
                             );
@@ -118,7 +118,7 @@ module.exports = {
               row = new MessageActionRow()
                 .addComponents(
                   new MessageButton()
-                    .setCustomId(interaction.user.id)
+                    .setCustomId(`retry-link-${interaction.user.id}`)
                     .setLabel(`Retry Link for ${userName}`)
                     .setStyle('PRIMARY'),
                 );
@@ -127,7 +127,7 @@ module.exports = {
       else
       {
 
-          queue[`lichess-account-of-${interaction.user.id}`] = undefined
+          queue[`lichess-account-of-${interaction.user.id}`] = null
           queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
           
           bUpdate = true

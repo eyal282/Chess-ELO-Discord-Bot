@@ -532,44 +532,25 @@ client.on('interactionCreate', async(interaction) => {
       let challenge = btoa(jsGay.sha256(code_verifier))
 
 
-      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
-      
-      passport.use(new LichessStrategy({
-          clientID: `3169b266-35d3-11ec-885b-3b9e2d963eb0`,
-          callbackURL: `https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback`
-        },
-        function(accessToken, refreshToken, profile, cb)
-        {
-            if(profile.id)
-              return cb(null, profile.id);
+      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(43)))
 
-            else
-              return cb(404, "Authentication failed")
-        }
-      ));        
-       jsGay.app.get(`/auth/lichess/callback/${callbackEnd}`,
-         passport.authenticate('lichess', { failureRedirect: '/' }),
+      jsGay.app.get(`/auth/chesscom/callback`,
+         passport.authenticate('local', { failureRedirect: '/' }),
             async function(req, res) {
               // Successful authentication, redirect home.
 
               res.redirect('/');
+             
 
-              let userName = req.user
-
-              await settings.set(`lichess-account-of-${interaction.user.id}`, userName)
-
-              await jsGay.updateProfileDataByInteraction(interaction, false)
-              
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+                .setDescription(`Successfully linked your [Chess.com Profile](https://lichess.org/@/${userName})`)
 
               interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
 
               return
             }
       );
-
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
@@ -579,13 +560,13 @@ client.on('interactionCreate', async(interaction) => {
 
       embed = new MessageEmbed()
         .setColor('#0099ff')
-        .setDescription(`Sign in with Lichess by pressing the button below:`)
+        .setDescription(`Sign in with Chess.com by pressing the button below:`)
 
       const row = new MessageActionRow()
         .addComponents(
           new MessageButton()
-            .setLabel(`Sign in with Lichess`)
-            .setURL(`https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`)
+            .setLabel(`Sign in with Chess.com`)
+            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=profile&state=123&code_challenge=${challenge}&code_challenge_method=S256`)
             .setStyle('LINK')
       );
   

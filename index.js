@@ -526,13 +526,12 @@ client.on('interactionCreate', async(interaction) => {
   }
   else if(interaction.customId.startsWith("link-chesscom"))
   {
-      let code_verifier = jsGay.randomSecureString()
+      let code_verifier = jsGay.randomSecureString(128)
       let state = jsGay.randomSecureString(21)
 
-      let challenge = btoa(jsGay.sha256(code_verifier))
+      let challenge = encodeURIComponent((jsGay.sha256(code_verifier)))
 
-
-      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(43)))
+      let callbackEnd = challenge
 
       jsGay.app.get(`/auth/chesscom/callback`,
          passport.authenticate('local', { failureRedirect: '/' }),
@@ -566,7 +565,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Chess.com`)
-            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=profile&state=123&code_challenge=${challenge}&code_challenge_method=S256`)
+            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=profile&state=${state}&code_challenge=${callbackEnd}&code_challenge_method=S256`)
             .setStyle('LINK')
       );
   

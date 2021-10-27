@@ -19,7 +19,9 @@ const Lichess = require('lichess-client')
 const passport = require('passport')
 
 var LichessStrategy = require('passport-lichess').Strategy;
- 
+
+const CustomStrategy = require('passport-custom').Strategy;
+
 const lichess_secret = process.env['LICHESS_OAUTH2']
 
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
@@ -37,8 +39,22 @@ let defaultPrefix = "!"
 let settings = jsGay.settings
 
 settings.defer.then( async () => {
-  let size = await settings.size;
-  console.log(`Connected, there are ${size} rows in the database.`);
+    let size = await settings.size;
+    console.log(`Connected, there are ${size} rows in the database.`);
+});
+
+client.on('ready', () => {
+  
+  jsGay.app.use(passport.initialize());
+  jsGay.app.use(passport.session());
+  
+  passport.serializeUser(function(user, done) {
+    done(null, user);
+  });
+
+  passport.deserializeUser(function(user, done) {
+    done(null, user);
+  });
 });
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
@@ -446,7 +462,7 @@ client.on('interactionCreate', async(interaction) => {
       
   let bUpdate = false
 
-  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
+  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, lastState] = await jsGay.getCriticalData(interaction)
 
   let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
 
@@ -524,27 +540,44 @@ client.on('interactionCreate', async(interaction) => {
   
       await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
   }
-  /*
+  
   else if(interaction.customId.startsWith("link-chesscom"))
   {
       let code_verifier = jsGay.randomSecureString(128)
-      let state = jsGay.randomSecureString(21)
+      let state = jsGay.randomSecureString(64)
 
       let challenge = encodeURIComponent((jsGay.sha256(code_verifier)))
 
       let callbackEnd = challenge
 
+        passport.use(new CustomStrategy(
+            async function(req, done) {
+                let code = req.query.code
+
+                const response = await fetch(`https://oauth.chess.com/`, {
+                method: 'post',
+                body: `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString(128)}`,
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                });
+
+                console.log(response);
+
+                done(null, req);
+                
+
+            })
+        );      
       jsGay.app.get(`/auth/chesscom/callback`,
-         passport.authenticate('local', { failureRedirect: '/' }),
+         passport.authenticate("custom", { failureRedirect: '/' }),
             async function(req, res) {
               // Successful authentication, redirect home.
 
-              res.redirect('/');
+              //res.redirect('/');
              
 
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${userName})`)
+                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${"Test"})`)
 
               interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
 
@@ -555,6 +588,7 @@ client.on('interactionCreate', async(interaction) => {
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+      queue[`last-state-of-${interaction.user.id}`] = state
 
       await settings.setMany(queue, true)
 
@@ -572,7 +606,7 @@ client.on('interactionCreate', async(interaction) => {
   
       await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
   }
-  */
+  
   else if(interaction.customId.startsWith("unlink-lichess"))
   {
       queue[`lichess-account-of-${interaction.user.id}`] = null

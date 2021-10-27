@@ -25,7 +25,18 @@ module.exports =
       let embed = undefined
       let row = undefined
       let attachment = undefined
-      
+
+      if(!jsGay.botHasPermissionByGuild(interaction.guild, "MANAGE_ROLES"))
+      {
+        embed = new MessageEmbed()
+          .setColor('#0099ff')
+          .setDescription(`The bot is missing "Manage Roles" permission.`)
+
+          await interaction.editReply({embeds: [embed], failIfNotExists: false})
+
+          return
+      }  
+
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 
       let ephemeral = false

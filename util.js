@@ -957,6 +957,7 @@ async function getCriticalData(interaction)
       `chesscom-account-of-${interaction.user.id}`,
       `cached-lichess-account-data-of-${interaction.user.id}`,
       `cached-chesscom-account-data-of-${interaction.user.id}`,
+      `last-state-of-${interaction.user.id}`
     ])
 
     let ratingRoles = manyMuch[`guild-elo-roles-${interaction.guild.id}`]
@@ -1006,7 +1007,9 @@ async function getCriticalData(interaction)
     let lichessAccountData = manyMuch[`cached-lichess-account-data-of-${interaction.user.id}`]
     let chessComAccountData = manyMuch[`cached-chesscom-account-data-of-${interaction.user.id}`]
     
-    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData]
+    let lastState = manyMuch[`last-state-of-${interaction.user.id}`]
+
+    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, lastState]
 
     
 }

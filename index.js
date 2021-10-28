@@ -460,7 +460,7 @@ client.on('interactionCreate', async(interaction) => {
 
   let bUpdate = false
 
-  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, lastState] = await jsGay.getCriticalData(interaction)
+  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
 
   let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
 
@@ -474,8 +474,6 @@ client.on('interactionCreate', async(interaction) => {
     let code_verifier = jsGay.generateCodeVerifier()
 
     let code_challenge = jsGay.generateCodeChallenge(code_verifier)
-
-    console.log(code_verifier)
 
   if(interaction.customId.startsWith("link-lichess"))
   {
@@ -539,12 +537,18 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
+
       let state = jsGay.generateCodeVerifier()
 
         passport.use(new CustomStrategy(
             async function(req, done) {
                 let code = req.query.code
+                let state = req.query.state
 
+                let lastState = await settings.get(`last-state-of-${interaction.user.id}`)
+
+                if(state != lastState)
+                    return;
 
                 let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${code_verifier}`
 
@@ -556,11 +560,18 @@ client.on('interactionCreate', async(interaction) => {
                 })
 
                 response = await response.json()
-
-                console.log(response)
-
-                done(null, null);
                 
+                let decryptedResult = jsGay.parseJwt(response.id_token)
+
+
+                if(decryptedResult?.preferred_username)
+                {
+                    let userName = decryptedResult.preferred_username
+                    
+                    await settings.set(`chesscom-account-of-${interaction.user.id}`, userName)
+
+                    done(null, "Success");
+                }
 
             })
         );      
@@ -569,13 +580,15 @@ client.on('interactionCreate', async(interaction) => {
             async function(req, res) {
               // Successful authentication, redirect home.
 
-                console.log(req)
               res.redirect('/');
-             
+              
+              await jsGay.updateProfileDataByInteraction(interaction, false)
+              
+              let userName = await settings.get(`chesscom-account-of-${interaction.user.id}`)
 
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${"Test"})`)
+                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${userName})`)
 
               interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
@@ -587,7 +600,7 @@ client.on('interactionCreate', async(interaction) => {
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
       queue[`last-state-of-${interaction.user.id}`] = state
-
+    
       await settings.setMany(queue, true)
 
       embed = new MessageEmbed()

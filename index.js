@@ -555,12 +555,14 @@ client.on('interactionCreate', async(interaction) => {
             async function(req, done) {
                 console.log(req)
                 let code = req.query.code
-                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString()}`
 
+
+                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString()}`
+                console.log(body)
                 const response = await fetch(`https://oauth.chess.com/token`, {
                 method: 'POST',
                 body: body,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'Host': 'https://oauth.chess.com' }
+                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'host': 'oauth.chess.com' }
                 });
 
                 console.log(response)

@@ -45,12 +45,12 @@ module.exports = {
           new MessageButton()
             .setCustomId(`link-lichess-${interaction.user.id}`)
             .setLabel(`Link Lichess Account`)
-            .setStyle('PRIMARY'))
+            .setStyle('SUCCESS'))
         .addComponents(
           new MessageButton()
             .setCustomId(`link-chesscom-${interaction.user.id}`)
             .setLabel(`Link Chess.com Account`)
-            .setStyle('PRIMARY')
+            .setStyle('SUCCESS')
       );
 
       row2 = new MessageActionRow()
@@ -58,12 +58,12 @@ module.exports = {
           new MessageButton()
             .setCustomId(`unlink-lichess-${interaction.user.id}`)
             .setLabel(`Unlink Lichess Account`)
-            .setStyle('PRIMARY'))
+            .setStyle('DANGER'))
         .addComponents(
           new MessageButton()
             .setCustomId(`unlink-chesscom-${interaction.user.id}`)
             .setLabel(`Unlink Chess.com Account`)
-            .setStyle('PRIMARY')
+            .setStyle('DANGER')
        );    
 
          

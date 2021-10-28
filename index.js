@@ -33,6 +33,7 @@ const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
 
+
 let defaultPrefix = "!"
 //const bot = new Discord.Client();
 
@@ -473,9 +474,10 @@ client.on('interactionCreate', async(interaction) => {
 
   let queue = {}
 
+  let code_verifier = jsGay.randomSecureString()
+  
   if(interaction.customId.startsWith("link-lichess"))
   {
-      let code_verifier = jsGay.randomSecureString()
       let state = jsGay.randomSecureString(21)
 
       let challenge = btoa(jsGay.sha256(code_verifier))
@@ -543,7 +545,6 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
-      let code_verifier = jsGay.randomSecureString(128)
       let state = jsGay.randomSecureString(64)
 
       let challenge = encodeURIComponent((jsGay.sha256(code_verifier)))
@@ -552,16 +553,17 @@ client.on('interactionCreate', async(interaction) => {
 
         passport.use(new CustomStrategy(
             async function(req, done) {
+                console.log(req)
                 let code = req.query.code
+                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString()}`
 
-                const response = await fetch(`https://oauth.chess.com/`, {
-                method: 'post',
-                body: `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString(128)}`,
+                const response = await fetch(`https://oauth.chess.com/token`, {
+                method: 'POST',
+                body: body,
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
                 });
 
-                console.log(response);
-
+                console.log(response)
                 done(null, req);
                 
 

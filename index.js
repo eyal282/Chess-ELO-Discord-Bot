@@ -115,9 +115,9 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-deploySlashCommands() // Comment this line to avoid deploying the slash commands
+//deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -581,7 +581,7 @@ client.on('interactionCreate', async(interaction) => {
               // Successful authentication, redirect home.
 
               res.redirect('/');
-              
+
               await jsGay.updateProfileDataByInteraction(interaction, false)
               
               let userName = await settings.get(`chesscom-account-of-${interaction.user.id}`)

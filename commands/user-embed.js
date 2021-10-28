@@ -38,7 +38,7 @@ module.exports = {
 
       embed = new MessageEmbed()
         .setColor('#0099ff')
-        .setDescription('Use the buttons below for linking your account to gain your rating roles!\nIf you dislike "Sign in" linking methods, you can still use /lichess and /chess')
+        .setDescription('Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess')
 
       row = new MessageActionRow()
         .addComponents(

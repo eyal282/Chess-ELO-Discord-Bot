@@ -30,16 +30,24 @@ module.exports = {
       let attachment = undefined
       
       let trueUser = interaction.user
+      let trueMember = interaction.member
 
       let fakeUser = interaction.options.getUser('user');
+      let fakeMember = interaction.options.getMember('user');
       
       if(!fakeUser)
       {
           fakeUser = trueUser
       }
 
+      if(!fakeMember)
+      {
+          fakeMember = trueMember
+      }
+
       // We do a little trolling
       interaction.user = fakeUser
+      interaction.member = fakeMember
 
       let highestRating
 
@@ -64,6 +72,7 @@ module.exports = {
       let guildRoles = obj.guildRoles
   
       interaction.user = trueUser
+      interaction.member = trueMember
 
       let ephemeral = interaction.options.getBoolean('ephemeral');
 

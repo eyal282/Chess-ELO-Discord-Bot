@@ -461,6 +461,8 @@ client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id))
     return;
       
+    interaction.deferReply({ephemeral: true})
+
   let bUpdate = false
 
   let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, lastState] = await jsGay.getCriticalData(interaction)
@@ -540,7 +542,7 @@ client.on('interactionCreate', async(interaction) => {
             .setStyle('LINK')
       );
   
-      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
+      await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
   
   else if(interaction.customId.startsWith("link-chesscom"))
@@ -558,6 +560,7 @@ client.on('interactionCreate', async(interaction) => {
 
                 let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${code_verifier}`
                 console.log(body)
+                /*
                 const response = await fetch(`https://oauth.chess.com/token`, {
                 method: 'POST',
                 body: body,
@@ -565,6 +568,7 @@ client.on('interactionCreate', async(interaction) => {
                 });
 
                 console.log(response)
+                */
                 done(null, req);
                 
 
@@ -607,7 +611,7 @@ client.on('interactionCreate', async(interaction) => {
             .setStyle('LINK')
       );
   
-      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
+      await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
   
   else if(interaction.customId.startsWith("unlink-lichess"))
@@ -621,7 +625,7 @@ client.on('interactionCreate', async(interaction) => {
           .setColor('#0099ff')
           .setDescription(`Successfully unlinked your Lichess Profile`)
 
-      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+      await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
   }
   else if(interaction.customId.startsWith("unlink-chesscom"))
   {
@@ -634,7 +638,7 @@ client.on('interactionCreate', async(interaction) => {
           .setColor('#0099ff')
           .setDescription(`Successfully unlinked your Chess.com Profile`)
 
-      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+      await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
 
   await settings.setMany(queue, true)

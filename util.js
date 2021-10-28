@@ -405,6 +405,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 }
 
 // This returns the best rating AFTER formula.
+// You can sneak a fake interaction if you assign .guild, .user and .member
 async function updateProfileDataByInteraction(interaction, useCacheOnly)
 {
     if(!interaction.guild.me.permissions.has('MANAGE_ROLES'))

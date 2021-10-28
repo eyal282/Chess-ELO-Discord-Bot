@@ -483,7 +483,7 @@ client.on('interactionCreate', async(interaction) => {
       let challenge = btoa(jsGay.sha256(code_verifier))
 
 
-      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
+      let callbackEnd = btoa(jsGay.sha256(code_verifier))
       
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
@@ -515,7 +515,7 @@ client.on('interactionCreate', async(interaction) => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
 
-              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
               return
             }
@@ -540,12 +540,12 @@ client.on('interactionCreate', async(interaction) => {
             .setStyle('LINK')
       );
   
-      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
+      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
-      let state = jsGay.randomSecureString(64)
+      let state = jsGay.randomSecureString(32)
 
       let challenge = encodeURIComponent((jsGay.sha256(code_verifier)))
 
@@ -553,16 +553,15 @@ client.on('interactionCreate', async(interaction) => {
 
         passport.use(new CustomStrategy(
             async function(req, done) {
-                console.log(req)
                 let code = req.query.code
 
 
-                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${jsGay.randomSecureString()}`
+                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${code_verifier}`
                 console.log(body)
                 const response = await fetch(`https://oauth.chess.com/token`, {
                 method: 'POST',
                 body: body,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'host': 'oauth.chess.com' }
+                headers: {'Content-Type': 'application/x-www-form-urlencoded' }
                 });
 
                 console.log(response)
@@ -583,7 +582,7 @@ client.on('interactionCreate', async(interaction) => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${"Test"})`)
 
-              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
               return
             }
@@ -608,7 +607,7 @@ client.on('interactionCreate', async(interaction) => {
             .setStyle('LINK')
       );
   
-      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true })
+      await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
   
   else if(interaction.customId.startsWith("unlink-lichess"))
@@ -635,7 +634,7 @@ client.on('interactionCreate', async(interaction) => {
           .setColor('#0099ff')
           .setDescription(`Successfully unlinked your Chess.com Profile`)
 
-      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true })
+      await interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
 
   await settings.setMany(queue, true)

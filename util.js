@@ -1253,13 +1253,20 @@ function getTimeDifference(dateFuture, dateNow)
     return difference;
 }
 
-function randomSecureString(size = 21) {  
-  return Crypto
+// This generates a code verifier, not just any RNG secure string.
+function randomSecureString(size = 100) {  
+  let rngStr = Crypto
     .randomBytes(size)
     .toString('base64')
     .slice(0, size)
+
+    rngStr = rngStr.replaceAll('+', '-').replaceAll('/', '-').replaceAll('=', '')
+
+    
+    console.log(rngStr)
+    return rngStr
 }
 
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess,buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, randomSecureString, getTimeDifference, bootDate }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, randomSecureString, getTimeDifference, bootDate }

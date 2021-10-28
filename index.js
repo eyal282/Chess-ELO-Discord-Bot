@@ -560,7 +560,7 @@ client.on('interactionCreate', async(interaction) => {
                 const response = await fetch(`https://oauth.chess.com/token`, {
                 method: 'POST',
                 body: body,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'Host': 'https://oauth.chess.com' }
                 });
 
                 console.log(response)

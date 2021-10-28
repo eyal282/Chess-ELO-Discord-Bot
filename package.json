@@ -17,6 +17,7 @@
     "better-sqlite3": "^7.4.3",
     "canvas": "^2.8.0",
     "connect-flash": "^0.1.1",
+    "crypto-js": "^4.1.1",
     "discord-api-types": "^0.23.1",
     "discord-canvas": "^1.4.1",
     "discord.js": "^13.1.0",
@@ -31,6 +32,7 @@
     "passport": "^0.4.1",
     "passport-custom": "^1.1.1",
     "passport-lichess": "^2.0.0",
-    "passport-oauth2": "^1.6.1"
+    "passport-oauth2": "^1.6.1",
+    "randomstring": "^1.2.1"
   }
 }

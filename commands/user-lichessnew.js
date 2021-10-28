@@ -60,13 +60,12 @@ module.exports =
       let queue = {}
 
 
-      let code_verifier = jsGay.randomSecureString()
-      let state = jsGay.randomSecureString(21)
+      let code_verifier = jsGay.generateCodeVerifier()
 
-      let challenge = btoa(jsGay.sha256(code_verifier))
+      let challenge = jsGay.generateCodeVerifier(code_verifier)
 
 
-      let callbackEnd = btoa(jsGay.sha256(jsGay.randomSecureString(64)))
+      let callbackEnd = challenge
 
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,

@@ -476,20 +476,17 @@ client.on('interactionCreate', async(interaction) => {
 
   let queue = {}
 
-  let code_verifier = jsGay.randomSecureString()
-  
+    let code_verifier = jsGay.generateCodeVerifier()
+
+    let code_challenge = jsGay.generateCodeChallenge(code_verifier)
+
+    console.log(code_verifier)
+
   if(interaction.customId.startsWith("link-lichess"))
   {
-      let state = jsGay.randomSecureString(21)
-
-      let challenge = btoa(jsGay.sha256(code_verifier))
-
-
-      let callbackEnd = btoa(jsGay.sha256(code_verifier))
-      
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
-          callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`
+          callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`
         },
         function(accessToken, refreshToken, profile, cb)
         {
@@ -500,7 +497,7 @@ client.on('interactionCreate', async(interaction) => {
               return cb(404, "Authentication failed")
         }
       ));        
-       jsGay.app.get(`/auth/lichess/callback/${callbackEnd}`,
+       jsGay.app.get(`/auth/lichess/callback/${code_challenge}`,
          passport.authenticate('lichess', { failureRedirect: '/' }),
             async function(req, res) {
               // Successful authentication, redirect home.
@@ -538,7 +535,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Lichess`)
-            .setURL(`https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${callbackEnd}`)
+            .setURL(`https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`)
             .setStyle('LINK')
       );
   
@@ -547,11 +544,7 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
-      let state = jsGay.randomSecureString(32)
-
-      let challenge = encodeURIComponent((jsGay.sha256(code_verifier)))
-
-      let callbackEnd = challenge
+      let state = jsGay.generateCodeVerifier()
 
         passport.use(new CustomStrategy(
             async function(req, done) {
@@ -559,16 +552,14 @@ client.on('interactionCreate', async(interaction) => {
 
 
                 let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${code_verifier}`
-                console.log(body)
-                /*
+                
                 const response = await fetch(`https://oauth.chess.com/token`, {
                 method: 'POST',
                 body: body,
                 headers: {'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-
+                
                 console.log(response)
-                */
                 done(null, req);
                 
 
@@ -607,7 +598,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Chess.com`)
-            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=profile&state=${state}&code_challenge=${callbackEnd}&code_challenge_method=S256`)
+            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
             .setStyle('LINK')
       );
   

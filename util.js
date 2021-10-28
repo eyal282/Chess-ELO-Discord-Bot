@@ -32,7 +32,7 @@ const Josh = require("@joshdb/core");
 const provider = require("@joshdb/mongo");
 const fetch = require('node-fetch');
 
-const Crypto = require('crypto')
+var CryptoJS = require("crypto-js");
 
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES", 'DIRECT_MESSAGES']} );
 
@@ -1254,20 +1254,25 @@ function getTimeDifference(dateFuture, dateNow)
     return difference;
 }
 
-// This generates a code verifier, not just any RNG secure string.
-function randomSecureString(size = 100) {  
-  let rngStr = Crypto
-    .randomBytes(size)
-    .toString('base64')
-    .slice(0, size)
+const randomstring = require("randomstring");
+const crypto = require("crypto");
+const base64url = require("base64url");
 
-    rngStr = rngStr.replaceAll('+', '-').replaceAll('/', '-').replaceAll('=', '')
+function generateCodeVerifier()
+{
+    return randomstring.generate(128);
+}
 
-    
-    console.log(rngStr)
-    return rngStr
+function generateCodeChallenge(code_verifier)
+{
+    const base64Digest = crypto
+    .createHash("sha256")
+    .update(code_verifier)
+    .digest("base64");
+
+    return base64url.fromBase64(base64Digest);
 }
 
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, randomSecureString, getTimeDifference, bootDate }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, getTimeDifference, bootDate }

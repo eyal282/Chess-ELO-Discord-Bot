@@ -30,12 +30,13 @@ module.exports = {
 
       let queue = {}
     
-      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 	  
 	  ratingRoles = obj.ratingRoles
 	  puzzleRatingRoles = obj.puzzleRatingRoles
 	  titleRoles = obj.titleRoles
 	  let guildRoles = obj.guildRoles
+	  verifyRole = obj.verifyRole
 
       let ephemeral = interaction.options.getBoolean('ephemeral');
 

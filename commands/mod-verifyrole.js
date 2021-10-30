@@ -33,7 +33,7 @@ module.exports =
       
       let newRole = interaction.options.getRole('role')
       
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifiedRole] = await jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 	  
@@ -56,7 +56,7 @@ module.exports =
 		
         embed = new MessageEmbed()
             .setColor('#0099ff')
-            .setDescription(`Successfully turned <@${newRole.id}> into a verify role`)
+            .setDescription(`Successfully turned <@&${newRole.id}> into a verify role`)
 
       }
 

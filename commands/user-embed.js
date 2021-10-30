@@ -25,7 +25,7 @@ module.exports = {
       let row2 = undefined
       let attachment = undefined
       
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 	  
@@ -33,6 +33,7 @@ module.exports = {
       puzzleRatingRoles = obj.puzzleRatingRoles
       titleRoles = obj.titleRoles
       let guildRoles = obj.guildRoles
+	  verifyRole = obj.verifyRole
 
       let queue = {}
 

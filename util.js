@@ -104,6 +104,8 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 	fakeInteraction.guild = message.guild
 	fakeInteraction.user = message.author
 	fakeInteraction.member = message.member
+
+	updateProfileDataByInteraction(fakeInteraction, useCacheOnly)
 	/*
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
         return;
@@ -617,6 +619,12 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
           fullRolesArray.splice(index, 1);
       }
 
+	  let index = fullRolesArray.indexOf(verifyRole)
+
+	  if (index != -1)
+	  	fullRolesArray.splice(index, 1)
+
+
       if (highestRatingRole != null)
         fullRolesArray.push(highestRatingRole)
 
@@ -627,7 +635,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       if (highestTitleRole != null)
         fullRolesArray.push(highestTitleRole)
 
-	  if(verifyRole != null && (highestRatingRole != null || highestPuzzleRatingRole != null || highestTitleRole != null) )
+	  if(verifyRole != null && (lichessAccount != null || chessComAccount != null) )
 	  	fullRolesArray.push(verifyRole)
 
       // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
@@ -984,6 +992,7 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                 for (let i = 0; i < titleRoles.length; i++) {
                     let role = roles.get(titleRoles[i].id)
 
+
                     // if role doesn't exist or is above bot.
                     if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
                     {
@@ -992,7 +1001,7 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                     }
                 }
 
-				let role = roles.get(verifyRole.id)
+				let role = roles.get(verifyRole)
 
 				// if role doesn't exist or is above bot.
 				if (role == undefined || highestBotRole.rawPosition < role.rawPosition)

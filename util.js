@@ -945,7 +945,7 @@ async function getCriticalData(interaction)
     
 }
 
-async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 {
     let guildRoles
 

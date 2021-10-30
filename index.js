@@ -117,7 +117,7 @@ client.on('interactionCreate', async interaction => {
 
 //deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -453,21 +453,22 @@ client.on('interactionCreate', async(interaction) => {
 
 // On Embed Button Pressed
 client.on('interactionCreate', async(interaction) => {
-	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id))
+	if (!interaction.isButton())
     return;
       
     interaction.deferReply({ephemeral: true})
 
   let bUpdate = false
 
-  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData] = await jsGay.getCriticalData(interaction)
+  let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
 
-  let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles)
+  let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 
   ratingRoles = obj.ratingRoles
   puzzleRatingRoles = obj.puzzleRatingRoles
   titleRoles = obj.titleRoles
   let guildRoles = obj.guildRoles
+  verifyRole = obj.verifyRole
 
   let queue = {}
 
@@ -540,12 +541,13 @@ client.on('interactionCreate', async(interaction) => {
 
       let state = jsGay.generateCodeVerifier()
 
-        passport.use(new CustomStrategy(
-            async function(req, done) {
+		passport.use(new CustomStrategy(
+            async function(req, done)
+            {
                 let code = req.query.code
                 let state = req.query.state
 
-                let lastState = await settings.get(`last-state-of-${interaction.user.id}`)
+				let lastState = await settings.get(`last-state-of-${interaction.user.id}`)
 
                 if(state != lastState)
                     return;
@@ -560,18 +562,27 @@ client.on('interactionCreate', async(interaction) => {
                 })
 
                 response = await response.json()
+
+				if(!response.id_token)
+				{
+					console.log(response)
+
+					return;
+				}
                 
                 let decryptedResult = jsGay.parseJwt(response.id_token)
-
-
+              
                 if(decryptedResult?.preferred_username)
                 {
                     let userName = decryptedResult.preferred_username
                     
+                    console.log(userName)
                     await settings.set(`chesscom-account-of-${interaction.user.id}`, userName)
 
                     done(null, "Success");
                 }
+
+                return;
 
             })
         );      

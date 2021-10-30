@@ -99,6 +99,12 @@ let roleNamesToPurge = ["Unrated", "Puzzles Unrated"]
 // You can sneak a fake message if you assign .guild, .author and .member
 async function updateProfileDataByMessage(message, useCacheOnly)
 {
+	let fakeInteraction = {}
+
+	fakeInteraction.guild = message.guild
+	fakeInteraction.user = message.author
+	fakeInteraction.member = message.member
+	/*
     if(!message.guild.me.permissions.has('MANAGE_ROLES'))
         return;
 
@@ -115,6 +121,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       `chesscom-account-of-${message.author.id}`,
       `cached-lichess-account-data-of-${message.author.id}`,
       `cached-chesscom-account-data-of-${message.author.id}`,
+	  `guild-verify-role-${message.guild.id}`
     ])
     
     let queue = []
@@ -156,6 +163,8 @@ async function updateProfileDataByMessage(message, useCacheOnly)
     if (modRoles == undefined) {
         modRoles = []
     }
+
+	let verifyRole = manyMuch[`guild-verify-role-${message.guild.id}`]
 
     await message.guild.roles.fetch()
     .then(roles => 
@@ -391,6 +400,9 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       if (highestTitleRole != null)
         fullRolesArray.push(highestTitleRole)
 
+	  if(verifyRole != null && (highestRatingRole != null || highestPuzzleRatingRole != null || highestTitleRole != null) )
+	  	fullRolesArray.push(verifyRole)
+
       // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
       if (fullRolesArray != Array.from(fullRolesCache.keys()) || (chessComAccount === undefined && lichessAccount === undefined))
       {
@@ -402,6 +414,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
       }
     }
     await settings.setMany(queue, true)
+	*/
 }
 
 // This returns the best rating AFTER formula.
@@ -411,100 +424,17 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     if(!interaction.guild.me.permissions.has('MANAGE_ROLES'))
         return;
 
-     let manyMuch = await settings.getMany([
-      `guild-prefix-${interaction.guild.id}`,
-      `guild-elo-roles-${interaction.guild.id}`,
-      `guild-puzzle-elo-roles-${interaction.guild.id}`,
-      `guild-title-roles-${interaction.guild.id}`,
-      `guild-bot-mods-${interaction.guild.id}`,
-      `guild-lichess-rating-equation-${interaction.guild.id}`,
-      `guild-chesscom-rating-equation-${interaction.guild.id}`,
-      `last-command-${interaction.user.id}`,
-      `lichess-account-of-${interaction.user.id}`,
-      `chesscom-account-of-${interaction.user.id}`,
-      `cached-lichess-account-data-of-${interaction.user.id}`,
-      `cached-chesscom-account-data-of-${interaction.user.id}`,
-    ])
-    
     let queue = []
 
-    let ratingRoles = manyMuch[`guild-elo-roles-${interaction.guild.id}`]
+    let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await getCriticalData(interaction)
 
-    if (ratingRoles == undefined)
-    {
-        ratingRoles = []
-    }
+	let obj = await wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 
-    let puzzleRatingRoles = manyMuch[`guild-puzzle-elo-roles-${interaction.guild.id}`]
-
-    if (puzzleRatingRoles == undefined)
-    {
-        puzzleRatingRoles = []
-    }
-
-    let titleRoles = manyMuch[`guild-title-roles-${interaction.guild.id}`]
-
-    if (titleRoles == undefined) {
-        titleRoles = []
-    }
-
-    let lichessRatingEquation = manyMuch[`guild-lichess-rating-equation-${interaction.guild.id}`]
-
-    if (lichessRatingEquation == undefined) {
-        lichessRatingEquation = Constant_lichessDefaultRatingEquation
-    }
-
-    let chessComRatingEquation = manyMuch[`guild-chesscom-rating-equation-${interaction.guild.id}`]
-
-    if (chessComRatingEquation == undefined) {
-        chessComRatingEquation = Constant_chessComDefaultRatingEquation
-    }
-
-    let modRoles = manyMuch[`guild-bot-mods-${interaction.guild.id}`]
-
-    if (modRoles == undefined) {
-        modRoles = []
-    }
-
-    await interaction.guild.roles.fetch()
-    .then(roles => 
-    {
-      let highestBotRole = interaction.guild.members.resolve(client.user).roles.highest
-
-      if(highestBotRole)
-      {
-        for (let i = 0; i < ratingRoles.length; i++)
-        {
-          let role = roles.get(ratingRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          ratingRoles.splice(i, 1)
-        }
-
-        for (let i = 0; i < puzzleRatingRoles.length; i++)
-        {
-          let role = roles.get(puzzleRatingRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          puzzleRatingRoles.splice(i, 1)
-        }
-
-        for (let i = 0; i < titleRoles.length; i++) {
-          let role = roles.get(titleRoles[i].id)
-
-          // if role doesn't exist or is above bot.
-          if (!role || highestBotRole.rawPosition < role.rawPosition)
-          titleRoles.splice(i, 1)
-        }
-      }
-    })
-    .catch(() => null)
-
-      
-    ratingRoles.sort(function (a, b) { return a.rating - b.rating });
-    puzzleRatingRoles.sort(function (a, b) { return a.rating - b.rating });
+	ratingRoles = obj.ratingRoles
+	puzzleRatingRoles = obj.puzzleRatingRoles
+	titleRoles = obj.titleRoles
+	let guildRoles = obj.guildRoles
+	verifyRole = obj.verifyRole
 
     try {
       Parser.evaluate(lichessRatingEquation, { x: 1000 })
@@ -519,9 +449,6 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
     queue[`last-updated-${interaction.user.id}`] = Date.now()
 
-    let lichessAccount = manyMuch[`lichess-account-of-${interaction.user.id}`]
-    let chessComAccount = manyMuch[`chesscom-account-of-${interaction.user.id}`]
-      
     let result
 
     if (lichessAccount == undefined) {
@@ -531,7 +458,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     {
       if(useCacheOnly) 
       {
-        result = manyMuch[`cached-lichess-account-data-of-${interaction.user.id}`]
+        result = lichessAccountData
       }
       else
       {
@@ -601,7 +528,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     {
       if(useCacheOnly) 
       {
-        result = manyMuch[`cached-chesscom-account-data-of-${interaction.user.id}`]
+        result = chessComAccountData
       }
       else
       {
@@ -699,6 +626,9 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
       if (highestTitleRole != null)
         fullRolesArray.push(highestTitleRole)
+
+	  if(verifyRole != null && (highestRatingRole != null || highestPuzzleRatingRole != null || highestTitleRole != null) )
+	  	fullRolesArray.push(verifyRole)
 
       // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
       if (fullRolesArray != Array.from(fullRolesCache.keys()) || (chessComAccount === undefined && lichessAccount === undefined))
@@ -957,7 +887,8 @@ async function getCriticalData(interaction)
       `lichess-account-of-${interaction.user.id}`,
       `chesscom-account-of-${interaction.user.id}`,
       `cached-lichess-account-data-of-${interaction.user.id}`,
-      `cached-chesscom-account-data-of-${interaction.user.id}`
+      `cached-chesscom-account-data-of-${interaction.user.id}`,
+	  `guild-verify-role-${interaction.guild.id}`
     ])
 
     let ratingRoles = manyMuch[`guild-elo-roles-${interaction.guild.id}`]
@@ -1007,7 +938,9 @@ async function getCriticalData(interaction)
     let lichessAccountData = manyMuch[`cached-lichess-account-data-of-${interaction.user.id}`]
     let chessComAccountData = manyMuch[`cached-chesscom-account-data-of-${interaction.user.id}`]
 
-    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData]
+	let verifyRole = manyMuch[`guild-verify-role-${interaction.guild.id}`]
+	
+    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole]
 
     
 }
@@ -1058,6 +991,12 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                       i--
                     }
                 }
+
+				let role = roles.get(verifyRole.id)
+
+				// if role doesn't exist or is above bot.
+				if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+					verifyRole = undefined
             }
         })
     .catch(() => null)
@@ -1071,6 +1010,7 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
     obj.puzzleRatingRoles = puzzleRatingRoles
     obj.titleRoles = titleRoles
     obj.guildRoles = guildRoles
+	obj.verifyRole = verifyRole
     return obj
 
 }

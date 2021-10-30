@@ -44,9 +44,7 @@ module.exports = {
       result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
-      result = jsGay.addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
-      result = jsGay.addCommandToHelp(result, prefix, `invite ---> Invite Link`)
-      result = jsGay.addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
+	  result = jsGay.addCommandToHelp(result, prefix, `verifyrole [@role] ---> Sets a role to be a verified role. Delete the role to disable. Current role: <@&${verifyRole.id}>`)
       result = jsGay.addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
@@ -61,6 +59,9 @@ module.exports = {
       result = jsGay.addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${jsGay.Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
       result = jsGay.addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
       result = jsGay.addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
+	  result = jsGay.addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
+      result = jsGay.addCommandToHelp(result, prefix, `invite ---> Invite Link`)
+      result = jsGay.addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
 
       if(jsGay.isBotSelfHosted())
       {

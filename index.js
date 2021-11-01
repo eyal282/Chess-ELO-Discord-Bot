@@ -122,7 +122,7 @@ client.on('interactionCreate', async interaction => {
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
 
     setTimeout(async () => {
 	
@@ -182,7 +182,7 @@ guild        Guild        The created guild    */
 client.on("guildCreate", async function(guild){
     console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
 
     if(!jsGay.botHasBasicPermissionsByGuild(guild))
     { 
@@ -216,7 +216,7 @@ guild        Guild        The guild that was deleted    */
 client.on("guildDelete", function(guild){
     console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Mention me to find the prefix`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
 });
 
 // On Retry Link Button Pressed

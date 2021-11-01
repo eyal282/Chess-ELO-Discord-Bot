@@ -37,7 +37,7 @@ module.exports =
           return
       }  
 
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRoe] = await jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
 
       let ephemeral = false
 
@@ -81,7 +81,8 @@ module.exports =
             await interaction.guild.roles.create({
               name: title.roleName,
               reason: 'Setup command',
-              hoist: true
+              hoist: true,
+			  permissions: ""
             })
             .then(role => 
             {
@@ -98,7 +99,8 @@ module.exports =
         await interaction.guild.roles.create({
           name: `${maxElo}+`,
           reason: 'Setup command',
-          hoist: true
+          hoist: true, 			 
+		  permissions: ""
         })
         .then(role => 
         {
@@ -117,7 +119,8 @@ module.exports =
             await interaction.guild.roles.create({
               name: `${nextElo}~${i}`,
               reason: 'Setup command',
-              hoist: true
+              hoist: true, 
+			  permissions: ""
             })
             .then(role => 
             {
@@ -133,7 +136,8 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Unrated`,
           reason: 'Setup command',
-          hoist: true
+          hoist: true,
+		  permissions: ""
         })
         .then(role => 
         {
@@ -151,7 +155,8 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Puzzles ${maxElo}+`,
           reason: 'Setup command',
-          hoist: true
+          hoist: true,
+		  permissions: ""
         })
         .then(role => 
         {
@@ -170,7 +175,8 @@ module.exports =
             await interaction.guild.roles.create({
               name: `Puzzles ${nextElo}~${i}`,
               reason: 'Setup command',
-              hoist: true
+              hoist: true,
+			  permissions: ""
             })
             .then(role => 
             {
@@ -186,7 +192,8 @@ module.exports =
         await interaction.guild.roles.create({
           name: `Puzzles Unrated`,
           reason: 'Setup command',
-          hoist: true
+          hoist: true,
+		  permissions: ""
         })
         .then(role => 
         {

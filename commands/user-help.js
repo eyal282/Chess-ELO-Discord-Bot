@@ -40,11 +40,16 @@ module.exports = {
       let result = ""
       let prefix = '/'
 
+	  let currentVerifyRole = `None`
+
+	  if(verifyRole != undefined)
+	  	currentVerifyRole = `<@&${verifyRole}>`
+
       result = jsGay.addCommandToHelp(result, prefix, `embed ---> Sets up an embed for linking accounts. Best used by moderators`)
       result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)
-	  result = jsGay.addCommandToHelp(result, prefix, `verifyrole [@role] ---> Sets a role to be a verified role. Delete the role to disable. Current role: <@&${verifyRole.id}>`)
+	  result = jsGay.addCommandToHelp(result, prefix, `verifyrole [@role] ---> Sets a role to be a verified role. Delete the role to disable. Current role: ${currentVerifyRole}`)
       result = jsGay.addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
@@ -62,12 +67,6 @@ module.exports = {
 	  result = jsGay.addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
       result = jsGay.addCommandToHelp(result, prefix, `invite ---> Invite Link`)
       result = jsGay.addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)
-
-      if(jsGay.isBotSelfHosted())
-      {
-          result = jsGay.addCommandToHelp(result, prefix, `forcelichess [username] [@user]  ---> Links a user to Lichess.org, ignoring linking condition`)
-          result = jsGay.addCommandToHelp(result, prefix, `forcechess [username] [@user] ---> Links a user to Chess.org, ignoring linking condition`)
-      }
 
       result = result + "Note: -1 ELO stands for either unrated or provisonary elo (Shows (?) on Lichess))\n"
       result = result + "Note: Provisionary rating in Chess.com is artifically calculated by Lichess standards.\n"

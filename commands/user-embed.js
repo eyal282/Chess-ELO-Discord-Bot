@@ -1,3 +1,5 @@
+const defaultMessage = 'Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess'
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 
@@ -15,7 +17,9 @@ const jsGay = require('../util.js')
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('embed')
-		.setDescription('Creates an embed for linking accounts'
+		.setDescription('Creates an embed for linking accounts')
+		.addStringOption((option) =>
+      	option.setName('message').setDescription('Optional message to use. Use `///n` for new line')
     ),
     async execute(client, interaction, settings, goodies)
     {
@@ -25,6 +29,7 @@ module.exports = {
       let row2 = undefined
       let attachment = undefined
       
+
       let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
       
       let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
@@ -37,9 +42,16 @@ module.exports = {
 
       let queue = {}
 
+	  let message = interaction.options.getString('message');
+
+	  if(!message)
+	  	message = defaultMessage
+
+	  message = message.replaceAll("///n", '\n');
+		  
       embed = new MessageEmbed()
         .setColor('#0099ff')
-        .setDescription('Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess')
+        .setDescription(message)
 
       row = new MessageActionRow()
         .addComponents(

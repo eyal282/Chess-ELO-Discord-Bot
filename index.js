@@ -219,9 +219,13 @@ client.on("guildDelete", function(guild){
     client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
 });
 
+
 // On Retry Link Button Pressed
 client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id) || !interaction.customId.includes("retry-link")) return;
+
+   interaction.deferReply({ephemeral: true})
+   
 
   let queue = {}
 
@@ -276,10 +280,10 @@ client.on('interactionCreate', async(interaction) => {
         })
 
         if (result == null) {
-                                let embed = new MessageEmbed()
+                    let embed = new MessageEmbed()
                         .setColor('#0099ff')
                         .setDescription(`Username was not found!`)
-                      message.reply({embeds: [embed], failIfNotExists: false})
+                      interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true})
         }
         else if (result == "Rate Limit") {
             let embed = new MessageEmbed()
@@ -290,12 +294,14 @@ client.on('interactionCreate', async(interaction) => {
               const row = new MessageActionRow()
                 .addComponents(
                   new MessageButton()
-                    .setCustomId(interaction.user.id)
+                    .setCustomId(`retry-link-${interaction.user.id}`)
                     .setURL(`https://lichess.org/@/${username}`)
                     .setLabel(`Retry Link for ${username}`)
                     .setStyle('PRIMARY'),
                 );
-              interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+
+
+              interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
         }
         else {
             // result.profile.location
@@ -311,12 +317,11 @@ client.on('interactionCreate', async(interaction) => {
                     .setColor('#0099ff')
                     .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
-                interaction.reply({ embeds: [embed], failIfNotExists: false})
+                interaction.editReply({ embeds: [embed], failIfNotExists: false})
 
             }
             else {
                 let attachment = await jsGay.buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
-
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setURL(result.url)
@@ -325,12 +330,13 @@ client.on('interactionCreate', async(interaction) => {
                     const row = new MessageActionRow()
                       .addComponents(
                         new MessageButton()
-                          .setCustomId(interaction.user.id)
+                          .setCustomId(`retry-link-${interaction.user.id}`)
                           .setLabel(`Retry Link for ${username}`)
                           .setStyle('PRIMARY'),
                       );
+					
 
-                      interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment]})
+					interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment]})
             }
         }
     }
@@ -343,11 +349,13 @@ client.on('interactionCreate', async(interaction) => {
         const row = new MessageActionRow()
           .addComponents(
             new MessageButton()
-              .setCustomId(interaction.user.id)
+              .setCustomId(`retry-link-${interaction.user.id}`)
               .setLabel(`Retry Link for ${username}`)
               .setStyle('PRIMARY'),
           );
-        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+
+
+        interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
     }
   }
   // If not lichess
@@ -374,7 +382,7 @@ client.on('interactionCreate', async(interaction) => {
             let embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`User was not found!'`)
-              interaction.reply({ embeds: [embed], failIfNotExists: false })
+              interaction.editReply({ embeds: [embed], failIfNotExists: false })
           }
           else if (result == "Rate Limit") {
                 let embed = new MessageEmbed()
@@ -385,11 +393,12 @@ client.on('interactionCreate', async(interaction) => {
                 const row = new MessageActionRow()
                   .addComponents(
                     new MessageButton()
-                      .setCustomId(message.author.id)
+                      .setCustomId(`retry-link-${interaction.user.id}`)
                       .setLabel(`Retry Link for ${username}`)
                       .setStyle('PRIMARY'),
                   );
-                interaction.reply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
+
+                interaction.editReply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
           }
           else {
               // result.profile.location
@@ -406,8 +415,7 @@ client.on('interactionCreate', async(interaction) => {
                       .setColor('#0099ff')
                       .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
-
-                    interaction.reply({ embeds: [embed], failIfNotExists: false })
+                    interaction.repeditReplyy({ embeds: [embed], failIfNotExists: false })
 
               }
               else {
@@ -421,12 +429,12 @@ client.on('interactionCreate', async(interaction) => {
                         const row = new MessageActionRow()
                         .addComponents(
                           new MessageButton()
-                            .setCustomId(message.author.id)
+                            .setCustomId(`retry-link-${interaction.user.id}`)
                             .setLabel(`Retry Link for ${username}`)
                             .setStyle('PRIMARY'),
                         );
 
-                        interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
+                        interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
               }
           }
       }
@@ -439,11 +447,12 @@ client.on('interactionCreate', async(interaction) => {
             const row = new MessageActionRow()
               .addComponents(
                 new MessageButton()
-                  .setCustomId(message.author.id)
+                  .setCustomId(`retry-link-${interaction.user.id}`)
                   .setLabel(`Retry Link for ${username}`)
                   .setStyle('PRIMARY'),
               );
-            interaction.reply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
+
+            interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
       }
   }
 
@@ -455,9 +464,9 @@ client.on('interactionCreate', async(interaction) => {
 client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton())
     return;
-      
-    interaction.deferReply({ephemeral: true})
 
+	
+ 
   let bUpdate = false
 
   let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
@@ -476,8 +485,10 @@ client.on('interactionCreate', async(interaction) => {
 
     let code_challenge = jsGay.generateCodeChallenge(code_verifier)
 
+
   if(interaction.customId.startsWith("link-lichess"))
   {
+	  	interaction.deferReply({ephemeral: true})
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
           callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`
@@ -508,7 +519,7 @@ client.on('interactionCreate', async(interaction) => {
                 .setColor('#0099ff')
                 .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
 
-              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+              interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
               return
             }
@@ -538,6 +549,7 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
+	  interaction.deferReply({ephemeral: true})
 
       let state = jsGay.generateCodeVerifier()
 
@@ -600,8 +612,8 @@ client.on('interactionCreate', async(interaction) => {
               embed = new MessageEmbed()
                 .setColor('#0099ff')
                 .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${userName})`)
-
-              interaction.followUp({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+			
+              interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
               return
             }
@@ -631,6 +643,8 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("unlink-lichess"))
   {
+	  interaction.deferReply({ephemeral: true})
+
       queue[`lichess-account-of-${interaction.user.id}`] = null
       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
       
@@ -644,6 +658,8 @@ client.on('interactionCreate', async(interaction) => {
   }
   else if(interaction.customId.startsWith("unlink-chesscom"))
   {
+	  interaction.deferReply({ephemeral: true})
+
       queue[`chesscom-account-of-${interaction.user.id}`] = null
       queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
 

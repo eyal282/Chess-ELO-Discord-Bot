@@ -224,7 +224,7 @@ client.on("guildDelete", function(guild){
 client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id) || !interaction.customId.includes("retry-link")) return;
 
-   interaction.deferReply({ephemeral: true})
+   await interaction.deferReply({ephemeral: true})
    
 
   let queue = {}
@@ -488,7 +488,7 @@ client.on('interactionCreate', async(interaction) => {
 
   if(interaction.customId.startsWith("link-lichess"))
   {
-	  	interaction.deferReply({ephemeral: true})
+	  	await interaction.deferReply({ephemeral: true})
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
           callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`
@@ -549,7 +549,7 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("link-chesscom"))
   {
-	  interaction.deferReply({ephemeral: true})
+	  await interaction.deferReply({ephemeral: true})
 
       let state = jsGay.generateCodeVerifier()
 
@@ -643,7 +643,7 @@ client.on('interactionCreate', async(interaction) => {
   
   else if(interaction.customId.startsWith("unlink-lichess"))
   {
-	  interaction.deferReply({ephemeral: true})
+	  await interaction.deferReply({ephemeral: true})
 
       queue[`lichess-account-of-${interaction.user.id}`] = null
       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
@@ -658,7 +658,7 @@ client.on('interactionCreate', async(interaction) => {
   }
   else if(interaction.customId.startsWith("unlink-chesscom"))
   {
-	  interaction.deferReply({ephemeral: true})
+	  await interaction.deferReply({ephemeral: true})
 
       queue[`chesscom-account-of-${interaction.user.id}`] = null
       queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined

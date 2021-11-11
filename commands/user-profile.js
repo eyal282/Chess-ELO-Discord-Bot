@@ -121,6 +121,8 @@ module.exports = {
             { name: 'Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
             { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
           )
+
+		  .setFooter(`Note: Time Controls marked with :x: are disabled for this server.`)
       }
       else
       {
@@ -167,7 +169,7 @@ module.exports = {
             { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
             { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
           )
-          .setFooter(`Note: Time Controls marked with :x: are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`);
+          .setFooter(`Note: Time Controls marked with :x: are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`)
       }
       else
       {

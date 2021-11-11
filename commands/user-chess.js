@@ -19,7 +19,7 @@ module.exports =
 		.setDescription('Links your Chess.com account.')
 
     .addStringOption((option) =>
-      option.setName('username').setDescription('Your Chess.com Username')
+      option.setName('username').setDescription('Your Chess.com Username').setRequired(true)
     ),
     async execute(client, interaction, settings, goodies)
     {

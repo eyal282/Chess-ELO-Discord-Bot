@@ -117,6 +117,7 @@ client.on('interactionCreate', async interaction => {
 
 // deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
+
 // deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 client.on('ready', () => {

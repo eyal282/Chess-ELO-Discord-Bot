@@ -18,7 +18,7 @@ module.exports = {
 		.setDescription('Links your Lichess account.')
 
     .addStringOption((option) =>
-      option.setName('username').setDescription('Your Lichess Username')
+      option.setName('username').setDescription('Your Lichess Username').setRequired(true)
     ),
     async execute(client, interaction, settings, goodies) {
       

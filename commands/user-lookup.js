@@ -36,7 +36,7 @@ module.exports = {
 	  let found = false
 	  embed = new MessageEmbed()
 		.setColor('#0099ff')
-		.setDescription('Below is a list of matches of the username within the bot:')
+		.setDescription(`Below is a list of matches of the username **${lookupUsername}** within the bot:`)
 
 	  for(let i=0;i < keyValues.length;i++)
 	  {

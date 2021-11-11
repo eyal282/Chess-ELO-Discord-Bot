@@ -17,6 +17,12 @@ let Constant_lichessDefaultRatingEquation = "x"
 let Constant_chessComDefaultRatingEquation = "0.75 * x + 650"
 let Constant_ProvisionalRD = 110
 
+let Constant_BulletBitwise = (1 << 0)
+let Constant_BlitzBitwise = (1 << 1)
+let Constant_RapidBitwise = (1 << 2)
+let Constant_ClassicalBitwise = (1 << 3)
+let Constant_CorresBitwise = (1 << 4)
+
 let Constant_Lichess = 0
 let Constant_ChessCom = 1
 
@@ -428,7 +434,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
     let queue = []
 
-    let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await getCriticalData(interaction)
+    let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, timeControlsBitwise] = await getCriticalData(interaction)
 
 	let obj = await wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
 
@@ -489,27 +495,52 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     {
       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
 
-      let corresRating = -1
+	  let bulletRating = -1
       let blitzRating = -1
       let rapidRating = -1
       let classicalRating = -1
+	  let corresRating = -1
 
       let puzzleRating = -1
 
-      if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = result.perfs.correspondence.rating
+      if (result.perfs.bullet && result.perfs.bullet.prov == undefined) bulletRating = result.perfs.bullet.rating
+
       if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
+
       if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
+
       if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
+
+      if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = 
+		result.perfs.correspondence.rating
+
 
       if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
 
-      lichessHighestRating = Math.max(corresRating, blitzRating, rapidRating, classicalRating)
+	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
+	  	bulletRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
+	  	blitzRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
+	  	rapidRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise))
+	  	classicalRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
+	  	corresRating = -1
+
+      lichessHighestRating = Math.max(bulletRating, blitzRating, rapidRating, classicalRating, corresRating)
       lichessPuzzleRating = puzzleRating
 
       let value = lichessHighestRating
 
       try {
-        value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
+
+		if(value != -1)
+        	value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
       }
 
       catch { console.log(error)}
@@ -550,24 +581,45 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     if(result != null)
     {
       queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result
-      let corresRating = -1
+
+	  let bulletRating = -1
       let blitzRating = -1
       let rapidRating = -1
-
+      let corresRating = -1
+	  
       let puzzleRating = -1
 
-      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
+
+      if (result.chess_bullet && result.chess_bullet.last.rd < Constant_ProvisionalRD) bulletRating = result.chess_bullet.last.rating
+
       if (result.chess_blitz && result.chess_blitz.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+
       if (result.chess_rapid && result.chess_rapid.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+
+      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
 
       if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.highest.rating
 
-      let chessComHighestRating = Math.max(corresRating, blitzRating, rapidRating)
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
+	  	bulletRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
+	  	blitzRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
+	  	rapidRating = -1
+
+	  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
+	  	corresRating = -1
+		  
+      let chessComHighestRating = Math.max(bulletRating, blitzRating, rapidRating, corresRating)
 
       let value = chessComHighestRating
 
       try {
-        value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
+		if(value != -1)
+        	value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
       }
       catch {}
       chessComHighestRating = value
@@ -896,7 +948,8 @@ async function getCriticalData(interaction)
       `chesscom-account-of-${interaction.user.id}`,
       `cached-lichess-account-data-of-${interaction.user.id}`,
       `cached-chesscom-account-data-of-${interaction.user.id}`,
-	  `guild-verify-role-${interaction.guild.id}`
+	  `guild-verify-role-${interaction.guild.id}`,
+	  `guild-time-controls-${interaction.guild.id}`
     ])
 
     let ratingRoles = manyMuch[`guild-elo-roles-${interaction.guild.id}`]
@@ -947,8 +1000,13 @@ async function getCriticalData(interaction)
     let chessComAccountData = manyMuch[`cached-chesscom-account-data-of-${interaction.user.id}`]
 
 	let verifyRole = manyMuch[`guild-verify-role-${interaction.guild.id}`]
+
+	let timeControlsBitwise = manyMuch[`guild-time-controls-${interaction.guild.id}`]
+
+	if(timeControlsBitwise == undefined)
+		timeControlsBitwise = Constant_BlitzBitwise | Constant_RapidBitwise | Constant_ClassicalBitwise | Constant_CorresBitwise
 	
-    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole]
+    return [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, timeControlsBitwise]
 
     
 }
@@ -1228,6 +1286,13 @@ function parseJwt (token) {
 
     return JSON.parse(jsonPayload);
 };
+
+function areBitsContained (high, low) {
+	if((high & low) == low)
+		return true;
+
+	return false;
+};
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, titleList, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, titleList }

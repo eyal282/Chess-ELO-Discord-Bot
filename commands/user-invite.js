@@ -29,7 +29,7 @@ module.exports = {
 
       embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`[**Invite the Bot**](https://discord.boats/bot/886616669093503047) or [**Join the Support Server**](https://discord.gg/tznbm6XVrJ)\n\nVote for the bot in either [**Discord Boats**](https://discord.boats/bot/886616669093503047/vote) or [**Top.gg**](https://top.gg/bot/886616669093503047/vote)`)
+          .setDescription(`**[Invite the Bot](https://discord.boats/bot/886616669093503047)** or **[Join the Support Server](https://discord.gg/tznbm6XVrJ)**\n\nVote for the bot in either **[Discord Boats](https://discord.boats/bot/886616669093503047/vote)** or **[Top.gg](https://top.gg/bot/886616669093503047/vote)**`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })
 

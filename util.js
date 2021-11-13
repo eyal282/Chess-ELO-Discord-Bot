@@ -6,7 +6,8 @@ const express = require('express');
 const app = express();
 const port = 3000;
  
-app.get('/', (req, res) => res.send('You can now go back to the discord!'));
+app.get('/', (req, res) => res.sendFile("website/index.html", { root: '.' }));
+app.get('/fail', (req, res) => res.sendFile("website/fail.html", { root: '.' }));
 
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
 
@@ -25,6 +26,8 @@ let Constant_CorresBitwise = (1 << 4)
 
 let Constant_Lichess = 0
 let Constant_ChessCom = 1
+
+let Constant_DefaultEmbedMessage = "Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess"
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
@@ -580,7 +583,18 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     }
     if(result != null)
     {
-      queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result
+		result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
+          if (response.status == 404) { // Not Found
+            return null
+          }
+          else if (response.status == 200) { // Status OK
+            return response.json()
+          }
+          else if(response.status == 429) { // Rate Limit
+            return null
+          }
+        })
+      queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
 
 	  let bulletRating = -1
       let blitzRating = -1
@@ -691,7 +705,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 	  	fullRolesArray.push(verifyRole)
 
       // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
-      if (fullRolesArray != Array.from(fullRolesCache.keys()) || (chessComAccount === undefined && lichessAccount === undefined))
+      if (fullRolesArray != Array.from(fullRolesCache.keys()) && !(chessComAccount === undefined && lichessAccount === undefined))
       {
         try
         {
@@ -895,7 +909,7 @@ async function buildCanvasForLichess(discordUsername)
 
   const context = canvas.getContext('2d');
 
-  const background = await Canvas.loadImage('https://i.ibb.co/y5brqF1/Screenshot-93.png');
+  const background = await Canvas.loadImage('./images/Lichess-Canvas.png');
 
   // This uses the canvas dimensions to stretch the image onto the entire canvas
   context.drawImage(background, 0, 0, canvas.width, canvas.height);
@@ -917,7 +931,7 @@ async function buildCanvasForChessCom(discordUsername)
 
   const context = canvas.getContext('2d');
 
-  const background = await Canvas.loadImage('https://i.ibb.co/Xb5rtWh/Screenshot-90.png');
+  const background = await Canvas.loadImage('./images/ChessCom-Canvas.png');
 
   // This uses the canvas dimensions to stretch the image onto the entire canvas
   context.drawImage(background, 0, 0, canvas.width, canvas.height);
@@ -1295,4 +1309,4 @@ function areBitsContained (high, low) {
 };
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, titleList }
+module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, titleList }

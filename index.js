@@ -120,6 +120,8 @@ client.on('interactionCreate', async interaction => {
 
 // deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
+let targetInviteGuild = '889456328605577226'
+
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
@@ -148,6 +150,18 @@ client.on('ready', () => {
           uniqueGuildOwners.push(fullDiscordUsername)
 
         console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
+
+		if(guild.id == targetInviteGuild)
+		{			
+			guild.fetch().then((guild) => {
+			
+				const invitechannels = guild.channels.cache.filter(c=> c.type == 'GUILD_TEXT' && c.permissionsFor(guild.me).has('CREATE_INSTANT_INVITE'));
+
+				invitechannels.first().createInvite({maxAge: 0, maxUses: 0, unique: false})
+					.then(invite=> console.log(`Create Invite for ${guild.name}:\nhttps://discord.gg/${invite.code}`)).catch(() => console.log("I cannot access this"))
+
+			}).catch(console.error);
+		}
       }
 
       console.log(`Guilds with unique owners count: ${uniqueGuildOwners.length}`)
@@ -155,7 +169,7 @@ client.on('ready', () => {
     }, 2500);
 });
 
-
+// Someone joined the guild, we will give him the roles if he already linked.
 client.on("guildMemberAdd", async function(member){
   
     let fakeMessage = {}
@@ -504,7 +518,7 @@ client.on('interactionCreate', async(interaction) => {
         }
       ));        
        jsGay.app.get(`/auth/lichess/callback/${code_challenge}`,
-         passport.authenticate('lichess', { failureRedirect: '/' }),
+         passport.authenticate('lichess', { failureRedirect: '/fail' }),
             async function(req, res) {
               // Successful authentication, redirect home.
 
@@ -577,11 +591,7 @@ client.on('interactionCreate', async(interaction) => {
                 response = await response.json()
 
 				if(!response.id_token)
-				{
-					console.log(response)
-
 					return;
-				}
                 
                 let decryptedResult = jsGay.parseJwt(response.id_token)
               
@@ -600,7 +610,7 @@ client.on('interactionCreate', async(interaction) => {
             })
         );      
       jsGay.app.get(`/auth/chesscom/callback`,
-         passport.authenticate("custom", { failureRedirect: '/' }),
+         passport.authenticate("custom", { failureRedirect: '/fail' }),
             async function(req, res) {
               // Successful authentication, redirect home.
 

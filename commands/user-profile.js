@@ -114,12 +114,12 @@ module.exports = {
     
           .addFields(
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${lichessAccount}](${result.url})` },
-			{ name: 'Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, lichessRatingEquation), inline: true },
-            { name: 'Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, lichessRatingEquation), inline: true },
-            { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation), inline: true },
-            { name: 'Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
-            { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
+            { name: `*Username:*`, value: `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${result.username}](${result.url})` },
+			{ name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, lichessRatingEquation), inline: true },
+            { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, lichessRatingEquation), inline: true },
+            { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation), inline: true },
+            { name: '<:lichess_classical:909073486075527210> Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
+            { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
           )
 
 		  .setFooter(`Note: Time Controls marked with X are disabled for this server.`)
@@ -162,12 +162,13 @@ module.exports = {
           .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           
           .addFields(
+			  
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
-            { name: 'Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation), inline: true },
-            { name: 'Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
-            { name: 'Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
-            { name: 'Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
+            { name: `*Username:*`, value: `${result.status == "premium" ? ' <:chess_com_diamond:909056645131288606> ' : ''}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
+            { name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation), inline: true },
+            { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
+            { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
+            { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
           )
           .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.\nNote: Linking your account won't update your rating, you must send a message to update your rating`)
       }

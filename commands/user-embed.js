@@ -1,4 +1,4 @@
-const defaultMessage = 'Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess'
+
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
@@ -45,7 +45,7 @@ module.exports = {
 	  let message = interaction.options.getString('message');
 
 	  if(!message)
-	  	message = defaultMessage
+	  	message = jsGay.Constant_DefaultEmbedMessage
 
 	  message = message.replaceAll("///n", '\n');
 		  

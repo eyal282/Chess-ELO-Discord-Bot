@@ -84,8 +84,6 @@ module.exports =
 		  if(corres)
 		  	result |= jsGay.Constant_CorresBitwise
 
-		console.log(result)
-
         queue[`guild-time-controls-${interaction.guild.id}`] = result
 		
         embed = new MessageEmbed()

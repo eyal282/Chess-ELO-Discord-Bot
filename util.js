@@ -714,7 +714,10 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
         catch {}
       }
     }
-    await settings.setMany(queue, true)
+
+	// Don't set the timestamp cooldown if nothing is even linked...
+	if(!(chessComAccount === undefined && lichessAccount === undefined))
+    	await settings.setMany(queue, true)
 
     return highestRating
 }

@@ -81,19 +81,33 @@ module.exports =
                         );
                 }
                 else {
+
                     // result.profile.location
                     let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
                     if (result.location && fullDiscordUsername == result.location) {
-                        queue[`chesscom-account-of-${interaction.user.id}`] = result.username
 
-                        // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
-                        //await settings.set(`cached-chesscom-account-data-of-${interaction.user.id}`, result)
-                        jsGay.updateProfileDataByInteraction(interaction, true)
+					result2 = await fetch(`https://api.chess.com/pub/player/${result.username}/stats`).then(response => {
+					if (response.status == 404) { // Not Found
+						return null
+					}
+					else if (response.status == 200) { // Status OK
+						return response.json()
+					}
+					else if(response.status == 429) { // Rate Limit
+						return null
+					}
+					})
+					
+					queue[`chesscom-account-of-${interaction.user.id}`] = result.username
 
-                        embed = new MessageEmbed()
-                            .setColor('#0099ff')
-                            .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
+					queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result, result2) // stats are the most important thing!
+
+					bUpdate = true
+					
+					embed = new MessageEmbed()
+						.setColor('#0099ff')
+						.setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
                     }
                     else {

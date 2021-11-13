@@ -241,6 +241,7 @@ client.on('interactionCreate', async(interaction) => {
 
    await interaction.deferReply({ephemeral: true})
    
+  let bUpdate = false
 
   let queue = {}
 
@@ -326,7 +327,7 @@ client.on('interactionCreate', async(interaction) => {
             {
                 queue[`lichess-account-of-${message.author.id}`] = result.username
                 queue[`cached-lichess-account-data-of-${message.author.id}`] = result
-                jsGay.updateProfileDataByMessage(message, true)
+                bUpdate = true
 
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
@@ -420,17 +421,30 @@ client.on('interactionCreate', async(interaction) => {
               let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
               if (result.location && fullDiscordUsername == result.location) {
-                  queue[`chesscom-account-of-${message.author.id}`] = result.username
+				  result2 = await fetch(`https://api.chess.com/pub/player/${result.username}/stats`).then(response => {
+						if (response.status == 404) { // Not Found
+							return null
+						}
+						else if (response.status == 200) { // Status OK
+							return response.json()
+						}
+						else if(response.status == 429) { // Rate Limit
+							return null
+						}
+				})
+				
+				  queue[`chesscom-account-of-${interaction.user.id}`] = result.username
 
-                  // Unfortunately the endpoint of chess.com is different for getting location than the endpoint for getting stats, therefore we cannot use the line below.
-                  //await settings.set(`cached-chesscom-account-data-of-${message.author.id}`, result)
-                  jsGay.updateProfileDataByMessage(message, true)
+				  queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result, result2) // stats are the most important thing!
+
+				  bUpdate = true
+
 
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
 
-                    interaction.repeditReplyy({ embeds: [embed], failIfNotExists: false })
+                    interaction.editReply({ embeds: [embed], failIfNotExists: false })
 
               }
               else {
@@ -472,6 +486,9 @@ client.on('interactionCreate', async(interaction) => {
   }
 
   await settings.setMany(queue, true)
+
+  if(bUpdate)
+  	await jsGay.updateProfileDataByMessage(message, true)
 });
 
 

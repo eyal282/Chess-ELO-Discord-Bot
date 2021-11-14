@@ -129,7 +129,7 @@ module.exports = {
         lichessEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTitle(`<:lichess_logo:898198362455687218> Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          .setDescription('Could not find stats for user.')
+          .setDescription('Could not find any stats for user.')
       }
 
       // Now chess.com steals every variable!
@@ -178,7 +178,6 @@ module.exports = {
           .setColor('#0099ff')
           .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           .setDescription('Could not find any stats for user.')
-          .setFooter(`Note: Linking your account won't update your rating, you must send a message to update your rating`);
 
       }
       interaction.editReply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })

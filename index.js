@@ -60,67 +60,31 @@ client.on('ready', () => {
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-const fs = require('fs');
+client.on("roleCreate", role => {
+  const guild = role.guild
 
-client.commands = new Collection();
-let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-	client.commands.set(command.data.name, command);
-}
-
-commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-let ephemeralCommands = []
-
-for (const file of commandFiles) {
-
-	const command = require(`./commands-ephemeral/${file}`);
-	client.commands.set(command.data.name, command);
-
-  ephemeralCommands.push(command)
-}
-
-// On Slash Command
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-
-	const command = client.commands.get(interaction.commandName);
-
-	if (!command) return;
-
-  else if(!interaction.guild)
-  {
-		return interaction.reply({ content: 'This bot does not accept DM Slash Commands', ephemeral: true });
-  }
-	try
-  {
-    if(ephemeralCommands.indexOf(command) == -1)
-    {
-      let ephemeral = interaction.options.getBoolean('ephemeral');
-
-      await interaction.deferReply({ephemeral: ephemeral});
-    }
-    else
-    {
-      await interaction.deferReply({ephemeral: true});
-    }
-    
-    let goodies = {}
-		await command.execute(client, interaction, settings, goodies);
-	} catch (error) {
-		console.error(error);
-		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
+  jsGay.updateSlashCommandPermissionsByGuild(guild)
 });
 
-// deploySlashCommands() // Comment this line to avoid deploying the slash commands
+// roleUpdate
+/* Emitted whenever a guild role is updated.
+PARAMETER      TYPE        DESCRIPTION
+oldRole        Role        The role before the update
+newRole        Role        The role after the update    */
+client.on("roleUpdate", function(oldRole, newRole){
+    const guild = newRole.guild
 
+	jsGay.updateSlashCommandPermissionsByGuild(guild)
+});
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+client.on('guildMemberUpdate', (oldMember, newMember) => {
+	const guild = newMember.guild
 
-let targetInviteGuild = '889456328605577226'
+	console.log(guild)
+	jsGay.updateSlashCommandPermissionsByGuild(guild)
+});
+
+let targetInviteGuild = '710384911520890900'
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -153,6 +117,8 @@ client.on('ready', () => {
 
 		if(guild.id == targetInviteGuild)
 		{			
+					
+			jsGay.updateSlashCommandPermissionsByGuild(guild)
 			guild.fetch().then((guild) => {
 			
 				const invitechannels = guild.channels.cache.filter(c=> c.type == 'GUILD_TEXT' && c.permissionsFor(guild.me).has('CREATE_INSTANT_INVITE'));
@@ -720,70 +686,5 @@ client.on("messageCreate", async message => {
         jsGay.updateProfileDataByMessage(message, false)
     }
 });
-
-function deploySlashCommands()
-{
-  const { REST } = require('@discordjs/rest');
-  const { Routes } = require('discord-api-types/v9');
-  const { clientId, guildId } = require('./config.json');
-
-  const commands = [];
-  
-  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  
-  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands-ephemeral/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  const rest = new REST({ version: '9' }).setToken(token);
-
-  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
-    .then(() => console.log('Successfully registered guild application commands.'))
-    .catch(console.error);
-}
-
-
-function deployGlobalSlashCommands()
-{
-  const { REST } = require('@discordjs/rest');
-  const { Routes } = require('discord-api-types/v9');
-  const { clientId, guildId } = require('./config.json');
-
-  const commands = [];
-  
-  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  
-  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands-ephemeral/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  const rest = new REST({ version: '9' }).setToken(token);
-  
-  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
-    .then(() => console.log('Successfully unregistered guild application commands.'))
-    .catch(console.error);
-
-  rest.put(Routes.applicationCommands(clientId), { body: commands })
-    .then(() => console.log('Successfully registered global application commands.'))
-    .catch(console.error);
-}
 
 module.exports = { client }

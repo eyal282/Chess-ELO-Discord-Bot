@@ -16,12 +16,27 @@ const jsGay = require('../util.js')
 let slashCommand = new SlashCommandBuilder()
 		.setName('purge')
 		.setDescription('Deletes all roles below the bot that either got 3+ numbers in their names or get created with /setup')
+		
+		.addBooleanOption((option) =>
+      option.setName('sure1').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+
+		.addBooleanOption((option) =>
+      option.setName('sure2').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+
+		.addBooleanOption((option) =>
+      option.setName('sure3').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+
+		.addBooleanOption((option) =>
+      option.setName('sure4').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
 
 module.exports =
 {
 	data: slashCommand,
   async execute(client, interaction, settings, goodies)
   {  
+	  if(!interaction.options.getBoolean('sure1') || !interaction.options.getBoolean('sure2') || !interaction.options.getBoolean('sure3') || !interaction.options.getBoolean('sure4'))
+	  	return;
+
       let embed = undefined
       let row = undefined
       let attachment = undefined

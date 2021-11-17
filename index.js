@@ -3,6 +3,8 @@
 
 const jsGay = require('./util.js')
 
+const { clientId, guildId, chessComClientId, chessComRedirectURI, chessComEndOfWebsite, myWebsite } = require('./config.json');
+
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 
@@ -17,6 +19,8 @@ const Parser = require('expr-eval').Parser;
 const Lichess = require('lichess-client')
 
 const passport = require('passport')
+
+let modCommands = []
 
 var LichessStrategy = require('passport-lichess').Strategy;
 
@@ -60,10 +64,148 @@ client.on('ready', () => {
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
+const fs = require('fs');
+
+client.commands = new Collection();
+let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+
+	if(file.startsWith('mod-'))
+		modCommands.push(command.data.name)
+
+	client.commands.set(command.data.name, command);
+}
+
+commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+let ephemeralCommands = []
+
+for (const file of commandFiles) {
+
+	const command = require(`./commands-ephemeral/${file}`);
+
+	if(file.startsWith('mod-'))
+		modCommands.push(command.data.name)
+
+	client.commands.set(command.data.name, command);
+
+  ephemeralCommands.push(command)
+}
+
+jsGay.setModSlashCommands(modCommands)
+
+
+// deploySlashCommands() // Comment this line to avoid deploying the slash commands
+
+
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+
+function deploySlashCommands()
+{
+  const { REST } = require('@discordjs/rest');
+  const { Routes } = require('discord-api-types/v9');
+
+  const commands = [];
+  
+  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  
+  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands-ephemeral/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  const rest = new REST({ version: '9' }).setToken(token);
+
+  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
+    .then(() => console.log('Successfully registered guild application commands.'))
+    .catch(console.error);
+}
+
+
+function deployGlobalSlashCommands()
+{
+  const { REST } = require('@discordjs/rest');
+  const { Routes } = require('discord-api-types/v9');
+
+  const commands = [];
+  
+  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  
+  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
+
+  for (const file of commandFiles) {
+    const command = require(`./commands-ephemeral/${file}`);
+    commands.push(command.data.toJSON());
+  }
+
+  const rest = new REST({ version: '9' }).setToken(token);
+  
+  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
+    .then(() => console.log('Successfully unregistered guild application commands.'))
+    .catch(console.error);
+
+  rest.put(Routes.applicationCommands(clientId), { body: commands })
+    .then(() => console.log('Successfully registered global application commands.'))
+    .catch(console.error);
+}
+
+// On Slash Command
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
+
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+  else if(!interaction.guild)
+  {
+		return interaction.reply({ content: 'This bot does not accept DM Slash Commands', ephemeral: true });
+  }
+	try
+  {
+    if(ephemeralCommands.indexOf(command) == -1)
+    {
+      let ephemeral = interaction.options.getBoolean('ephemeral');
+
+      await interaction.deferReply({ephemeral: ephemeral});
+    }
+    else
+    {
+      await interaction.deferReply({ephemeral: true});
+    }
+    
+    let goodies = {}
+		await command.execute(client, interaction, settings, goodies);
+	} catch (error) {
+		console.error(error);
+		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
+});
+
+
 client.on("roleCreate", role => {
   const guild = role.guild
 
-  jsGay.updateSlashCommandPermissionsByGuild(guild)
+  if(role.permissions.has('MANAGE_GUILD'))
+  {
+  	jsGay.updateSlashCommandPermissionsByGuild(guild)
+  }
 });
 
 // roleUpdate
@@ -74,17 +216,14 @@ newRole        Role        The role after the update    */
 client.on("roleUpdate", function(oldRole, newRole){
     const guild = newRole.guild
 
-	jsGay.updateSlashCommandPermissionsByGuild(guild)
+	if(oldRole.permissions.has('MANAGE_GUILD') != newRole.permissions.has('MANAGE_GUILD'))
+	{
+		jsGay.updateSlashCommandPermissionsByGuild(guild)
+	}
 });
 
-client.on('guildMemberUpdate', (oldMember, newMember) => {
-	const guild = newMember.guild
 
-	console.log(guild)
-	jsGay.updateSlashCommandPermissionsByGuild(guild)
-});
-
-let targetInviteGuild = '710384911520890900'
+let targetInviteGuild = '889456328605577226'
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
@@ -113,12 +252,12 @@ client.on('ready', () => {
         if(!uniqueGuildOwners.includes(fullDiscordUsername))
           uniqueGuildOwners.push(fullDiscordUsername)
 
+		await jsGay.updateSlashCommandPermissionsByGuild(guild)
+
         console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
 
 		if(guild.id == targetInviteGuild)
 		{			
-					
-			jsGay.updateSlashCommandPermissionsByGuild(guild)
 			guild.fetch().then((guild) => {
 			
 				const invitechannels = guild.channels.cache.filter(c=> c.type == 'GUILD_TEXT' && c.permissionsFor(guild.me).has('CREATE_INSTANT_INVITE'));
@@ -130,7 +269,7 @@ client.on('ready', () => {
 		}
       }
 
-      console.log(`Guilds with unique owners count: ${uniqueGuildOwners.length}`)
+      console.log(`Bot is fully operational!\nGuilds with unique owners count: ${uniqueGuildOwners.length}`)
       
     }, 2500);
 });
@@ -489,7 +628,7 @@ client.on('interactionCreate', async(interaction) => {
 	  	await interaction.deferReply({ephemeral: true})
       passport.use(new LichessStrategy({
           clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
-          callbackURL: `https://Chess-ELO-Discord-Bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`
+          callbackURL: `${myWebsite}/auth/lichess/callback/${code_challenge}`
         },
         function(accessToken, refreshToken, profile, cb)
         {
@@ -538,7 +677,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Lichess`)
-            .setURL(`https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/lichess/callback/${code_challenge}`)
+            .setURL(`${myWebsite}/auth/lichess/callback/${code_challenge}`)
             .setStyle('LINK')
       );
   
@@ -562,7 +701,7 @@ client.on('interactionCreate', async(interaction) => {
                 if(state != lastState)
                     return;
 
-                let body = `grant_type=authorization_code&client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&code=${code}&code_verifier=${code_verifier}`
+                let body = `grant_type=authorization_code&client_id=${chessComClientId}&redirect_uri=${chessComRedirectURI}&code=${code}&code_verifier=${code_verifier}`
 
 
                 let response = await fetch(`https://oauth.chess.com/token`, {
@@ -592,7 +731,7 @@ client.on('interactionCreate', async(interaction) => {
 
             })
         );      
-      jsGay.app.get(`/auth/chesscom/callback`,
+      jsGay.app.get(chessComEndOfWebsite,
          passport.authenticate("custom", { failureRedirect: '/fail' }),
             async function(req, res) {
               // Successful authentication, redirect home.
@@ -628,7 +767,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Chess.com`)
-            .setURL(`https://oauth.chess.com/authorize?client_id=3169b266-35d3-11ec-885b-3b9e2d963eb0&redirect_uri=https://chess-elo-discord-bot.chess-elo-role-bot.repl.co/auth/chesscom/callback&response_type=code&scope=openid%20profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
+            .setURL(`https://oauth.chess.com/authorize?client_id=${chessComClientId}&redirect_uri=${chessComRedirectURI}&response_type=code&scope=openid%20profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
             .setStyle('LINK')
       );
   

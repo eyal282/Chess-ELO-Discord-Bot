@@ -45,12 +45,14 @@ var CryptoJS = require("crypto-js");
 
 const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES", 'DIRECT_MESSAGES']} );
 
+let modCommands = []
+
 const settings = new Josh({
   name: 'Chess ELO Role',
   provider,
   providerOptions: {
     collection: `settings`,
-    url: `mongodb+srv://eyal282:${mongoPassword}@chess-elo-role.dpqoj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
+    url: `mongodb+srv://Chess-ELO-Role-Test:${mongoPassword}@chess-elo-role-test.toxag.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
   }
 });
 
@@ -105,142 +107,17 @@ let titleList = [
 
 let roleNamesToPurge = ["Unrated", "Puzzles Unrated"]
 
-client.commands = new Collection();
+/*
 
-const fs = require('fs');
+FUNCTIONS!!!!
 
-let modCommands = []
-
-let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-
-	if(file.startsWith('mod'))
-		modCommands.push(command.data.name)
-
-	client.commands.set(command.data.name, command);
-}
-
-commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-let ephemeralCommands = []
-
-for (const file of commandFiles) {
-
-	const command = require(`./commands-ephemeral/${file}`);
-
-	if(file.startsWith('mod'))
-		modCommands.push(command.data.name)
-
-	client.commands.set(command.data.name, command);
-
-  	ephemeralCommands.push(command)
-}
+*/
 
 
-// deploySlashCommands() // Comment this line to avoid deploying the slash commands
-
-
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
-
-function deploySlashCommands()
+async function setModSlashCommands(commandsArray)
 {
-  const { REST } = require('@discordjs/rest');
-  const { Routes } = require('discord-api-types/v9');
-  const { clientId, guildId } = require('./config.json');
-
-  const commands = [];
-  
-  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  
-  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands-ephemeral/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  const rest = new REST({ version: '9' }).setToken(token);
-
-  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
-    .then(() => console.log('Successfully registered guild application commands.'))
-    .catch(console.error);
+	modCommands = commandsArray
 }
-
-
-function deployGlobalSlashCommands()
-{
-  const { REST } = require('@discordjs/rest');
-  const { Routes } = require('discord-api-types/v9');
-  const { clientId, guildId } = require('./config.json');
-
-  const commands = [];
-  
-  let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  
-  commandFiles = fs.readdirSync('./commands-ephemeral').filter(file => file.endsWith('.js'));
-
-  for (const file of commandFiles) {
-    const command = require(`./commands-ephemeral/${file}`);
-    commands.push(command.data.toJSON());
-  }
-
-  const rest = new REST({ version: '9' }).setToken(token);
-  
-  rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] })
-    .then(() => console.log('Successfully unregistered guild application commands.'))
-    .catch(console.error);
-
-  rest.put(Routes.applicationCommands(clientId), { body: commands })
-    .then(() => console.log('Successfully registered global application commands.'))
-    .catch(console.error);
-}
-
-// On Slash Command
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
-
-	const command = client.commands.get(interaction.commandName);
-
-	if (!command) return;
-
-  else if(!interaction.guild)
-  {
-		return interaction.reply({ content: 'This bot does not accept DM Slash Commands', ephemeral: true });
-  }
-	try
-  {
-    if(ephemeralCommands.indexOf(command) == -1)
-    {
-      let ephemeral = interaction.options.getBoolean('ephemeral');
-
-      await interaction.deferReply({ephemeral: ephemeral});
-    }
-    else
-    {
-      await interaction.deferReply({ephemeral: true});
-    }
-    
-    let goodies = {}
-		await command.execute(client, interaction, settings, goodies);
-	} catch (error) {
-		console.error(error);
-		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
-});
 
 // You can sneak a fake message if you assign .guild, .author and .member
 async function updateProfileDataByMessage(message, useCacheOnly)
@@ -975,7 +852,24 @@ async function isBotControlAdminByInteraction(interaction, modRoles) {
     return false;
 }
 
+
 async function updateSlashCommandPermissionsByGuild(guild) {
+
+
+
+
+
+
+	
+	return false;
+
+
+
+
+
+
+
+
     let roles = await guild.roles.fetch()
 
  	let modRoles = await settings.get(`guild-bot-mods-${guild.id}`)
@@ -994,28 +888,22 @@ async function updateSlashCommandPermissionsByGuild(guild) {
 	{
 		if(modCommands.indexOf(cmd[1].name) != -1)
 		{
-			
+			console.log(cmd[1].name, guild.name)
 			await cmd[1].edit({ defaultPermission: true }).catch(console.error);
-			/*
+			
 			await cmd[1].permissions.set({ guild: guild, permissions: [] }).catch(console.error);
 			let permissions = []
-
 			for (const role of roles) {
 				
 				let cmdPerm = {}
-
 				cmdPerm.id = role[1].id
 				cmdPerm.type = 'ROLE'
 				cmdPerm.permission = true
-
 				permissions.push(cmdPerm)
-
-				await cmd[1].permissions.add({ guild: guild, permissions: cmdPerm }).catch(console.error);
 			}
 
-
-			console.log("Updated")
-			*/
+			await cmd[1].permissions.add({ guild: guild, permissions: permissions }).catch(console.error);
+			
 		}
 	}
 }
@@ -1494,4 +1382,4 @@ function areBitsContained (high, low) {
 };
 client.login(token)
 
-module.exports = { updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand,addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, titleList }
+module.exports = { setModSlashCommands, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, titleList }

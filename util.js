@@ -1,6 +1,10 @@
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 
+const { clientId, guildId, chessComClientId, chessComRedirectURI, chessComEndOfWebsite, myWebsite, dbURL } = require('./config.json');
+
+trueDBURL = dbURL.replace('<password>', mongoPassword)
+
 
 const express = require('express');
 const app = express();
@@ -52,7 +56,7 @@ const settings = new Josh({
   provider,
   providerOptions: {
     collection: `settings`,
-    url: `mongodb+srv://Chess-ELO-Role-Test:${mongoPassword}@chess-elo-role-test.toxag.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
+    url: trueDBURL,
   }
 });
 

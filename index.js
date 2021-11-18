@@ -3,7 +3,7 @@
 
 const jsGay = require('./util.js')
 
-const { clientId, guildId, chessComClientId, chessComRedirectURI, chessComEndOfWebsite, myWebsite } = require('./config.json');
+const { clientId, guildId, chessComClientId, chessComEndOfWebsite, myWebsite } = require('./config.json');
 
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
@@ -228,7 +228,7 @@ let targetInviteGuild = '889456328605577226'
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
 
     setTimeout(async () => {
 	
@@ -258,18 +258,18 @@ client.on('ready', () => {
 
 		if(guild.id == targetInviteGuild)
 		{			
-			guild.fetch().then((guild) => {
+			await guild.fetch().then(async (guild) => {
 			
 				const invitechannels = guild.channels.cache.filter(c=> c.type == 'GUILD_TEXT' && c.permissionsFor(guild.me).has('CREATE_INSTANT_INVITE'));
 
-				invitechannels.first().createInvite({maxAge: 0, maxUses: 0, unique: false})
+				await invitechannels.first().createInvite({maxAge: 0, maxUses: 0, unique: false})
 					.then(invite=> console.log(`Create Invite for ${guild.name}:\nhttps://discord.gg/${invite.code}`)).catch(() => console.log("I cannot access this"))
 
 			}).catch(console.error);
 		}
       }
 
-      console.log(`Bot is fully operational!\nGuilds with unique owners count: ${uniqueGuildOwners.length}`)
+      console.log(`Guilds with unique owners count: ${uniqueGuildOwners.length}\nBot is fully loaded and completely ready to use!`)
       
     }, 2500);
 });
@@ -302,7 +302,7 @@ guild        Guild        The created guild    */
 client.on("guildCreate", async function(guild){
     console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
 
     if(!jsGay.botHasBasicPermissionsByGuild(guild))
     { 
@@ -336,7 +336,7 @@ guild        Guild        The guild that was deleted    */
 client.on("guildDelete", function(guild){
     console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers | Try /invite`, { type: `WATCHING` });
+    client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
 });
 
 
@@ -701,7 +701,7 @@ client.on('interactionCreate', async(interaction) => {
                 if(state != lastState)
                     return;
 
-                let body = `grant_type=authorization_code&client_id=${chessComClientId}&redirect_uri=${chessComRedirectURI}&code=${code}&code_verifier=${code_verifier}`
+                let body = `grant_type=authorization_code&client_id=${chessComClientId}&redirect_uri=${myWebsite}${chessComEndOfWebsite}&code=${code}&code_verifier=${code_verifier}`
 
 
                 let response = await fetch(`https://oauth.chess.com/token`, {
@@ -767,7 +767,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Chess.com`)
-            .setURL(`https://oauth.chess.com/authorize?client_id=${chessComClientId}&redirect_uri=${chessComRedirectURI}&response_type=code&scope=openid%20profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
+            .setURL(`https://oauth.chess.com/authorize?client_id=${chessComClientId}&redirect_uri=${myWebsite}${chessComEndOfWebsite}&response_type=code&scope=openid%20profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
             .setStyle('LINK')
       );
   

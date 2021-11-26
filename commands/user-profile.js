@@ -152,7 +152,7 @@ module.exports = {
             blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
 
         if (result.chess_rapid)
-          corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
+          rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
 
    		if (result.chess_daily)
           corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))

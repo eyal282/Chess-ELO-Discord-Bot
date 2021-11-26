@@ -170,7 +170,7 @@ module.exports = {
             { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
           )
-          .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.`)
+          .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.\nNote: Chess.com hides your puzzle rating from me.`)
       }
       else
       {

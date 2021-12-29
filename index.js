@@ -347,6 +347,7 @@ client.on('interactionCreate', async(interaction) => {
    await interaction.deferReply({ephemeral: true})
    
   let bUpdate = false
+  let bCache = true
 
   let queue = {}
 
@@ -630,6 +631,7 @@ client.on('interactionCreate', async(interaction) => {
       queue[`lichess-account-of-${interaction.user.id}`] = oldAccount
       
       bUpdate = true
+	  bCache = false
 
 	embed = new MessageEmbed()
 	.setColor('#0099ff')
@@ -646,6 +648,7 @@ client.on('interactionCreate', async(interaction) => {
       queue[`chesscom-account-of-${interaction.user.id}`] = oldAccount
       
       bUpdate = true
+	  bCache = false
 
 	embed = new MessageEmbed()
 	.setColor('#0099ff')
@@ -891,7 +894,7 @@ client.on('interactionCreate', async(interaction) => {
 
   if(bUpdate)
   {
-    jsGay.updateProfileDataByInteraction(interaction, true)
+    jsGay.updateProfileDataByInteraction(interaction, bCache)
   }
 });
 

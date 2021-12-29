@@ -622,8 +622,38 @@ client.on('interactionCreate', async(interaction) => {
 
     let code_challenge = jsGay.generateCodeChallenge(code_verifier)
 
+  if(interaction.customId.startsWith("undo-unlink-lichess"))
+  {
+	await interaction.deferReply({ephemeral: true})
 
-  if(interaction.customId.startsWith("link-lichess"))
+	  let oldAccount = interaction.customId.replace("undo-unlink-lichess-", "");
+      queue[`lichess-account-of-${interaction.user.id}`] = oldAccount
+      
+      bUpdate = true
+
+	embed = new MessageEmbed()
+	.setColor('#0099ff')
+	.setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${oldAccount})`)
+
+	interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+  }
+  
+  else if(interaction.customId.startsWith("undo-unlink-chesscom"))
+  {
+	await interaction.deferReply({ephemeral: true})
+
+	  let oldAccount = interaction.customId.replace("undo-unlink-chesscom-", "");
+      queue[`chesscom-account-of-${interaction.user.id}`] = oldAccount
+      
+      bUpdate = true
+
+	embed = new MessageEmbed()
+	.setColor('#0099ff')
+	.setDescription(`Successfully linked your [Chess.com Profile](https://chess.com/member/${oldAccount})`)
+
+	interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+  }
+  else if(interaction.customId.startsWith("link-lichess"))
   {
 	  	await interaction.deferReply({ephemeral: true})
       passport.use(new LichessStrategy({
@@ -673,7 +703,7 @@ client.on('interactionCreate', async(interaction) => {
         .setColor('#0099ff')
         .setDescription(`Sign in with Lichess by pressing the button below:`)
 
-      const row = new MessageActionRow()
+      row = new MessageActionRow()
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Lichess`)
@@ -744,7 +774,7 @@ client.on('interactionCreate', async(interaction) => {
 
               embed = new MessageEmbed()
                 .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Chess.com Profile](chess.com/member/${userName})`)
+                .setDescription(`Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})`)
 			
               interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
@@ -763,7 +793,7 @@ client.on('interactionCreate', async(interaction) => {
         .setColor('#0099ff')
         .setDescription(`Sign in with Chess.com by pressing the button below:`)
 
-      const row = new MessageActionRow()
+      row = new MessageActionRow()
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Chess.com`)
@@ -777,32 +807,83 @@ client.on('interactionCreate', async(interaction) => {
   else if(interaction.customId.startsWith("unlink-lichess"))
   {
 	  await interaction.deferReply({ephemeral: true})
+		if(lichessAccount != null && lichessAccount != undefined)
+		{
+			queue[`lichess-account-of-${interaction.user.id}`] = null
+			queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
+		
+			bUpdate = true
 
-      queue[`lichess-account-of-${interaction.user.id}`] = null
-      queue[`cached-lichess-account-data-of-${interaction.user.id}`] = undefined
-      
-      bUpdate = true
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Successfully unlinked your Lichess Profile`)
 
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`Successfully unlinked your Lichess Profile`)
+			row = new MessageActionRow()
+					.addComponents(
+					new MessageButton()
+					.setCustomId(`undo-unlink-lichess-${lichessAccount}`)
+					.setLabel(`Relink as ${lichessAccount}`)
+					.setStyle('PRIMARY')
+			);
+		}
+		else
+		{
+			row = undefined
+			
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Could not find a linked Lichess Profile`)
+		}
 
-      await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		if(row != undefined)
+		{
+      		await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		}
+		else
+		{
+      		await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		}
   }
+
   else if(interaction.customId.startsWith("unlink-chesscom"))
   {
-	  await interaction.deferReply({ephemeral: true})
+		 await interaction.deferReply({ephemeral: true})
+		if(lichessAccount != null && lichessAccount != undefined)
+		{
+			queue[`chesscom-account-of-${interaction.user.id}`] = null
+			queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
+		
+			bUpdate = true
 
-      queue[`chesscom-account-of-${interaction.user.id}`] = null
-      queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = undefined
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Successfully unlinked your Chess.com Profile`)
 
-      bUpdate = true
+			row = new MessageActionRow()
+					.addComponents(
+					new MessageButton()
+					.setCustomId(`undo-unlink-chesscom-${chessComAccount}`)
+					.setLabel(`Relink as ${chessComAccount}`)
+					.setStyle('PRIMARY')
+			);
+		}
+		else
+		{
+			row = undefined
 
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`Successfully unlinked your Chess.com Profile`)
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Could not find a linked Chess.com Profile`)
+		}
 
-      await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		if(row != undefined)
+		{
+      		await interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		}
+		else
+		{
+      		await interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+		}
   }
 
   await settings.setMany(queue, true)

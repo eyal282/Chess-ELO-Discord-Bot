@@ -3,7 +3,7 @@
 
 const jsGay = require('./util.js')
 
-const { clientId, guildId, chessComClientId, chessComEndOfWebsite, myWebsite } = require('./config.json');
+const { clientId, guildId, chessComClientId, chessComEndOfWebsite, lichessEndOfWebsite, myWebsite } = require('./config.json');
 
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
@@ -199,6 +199,39 @@ client.on('interactionCreate', async interaction => {
 });
 
 
+// On Context Menu Command
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isContextMenu()) return;
+
+	const command = client.commands.get(interaction.commandName);
+
+	if (!command) return;
+
+	else if(!interaction.guild)
+	{
+			return interaction.reply({ content: 'This bot does not accept DM Context Menus', ephemeral: true });
+	}
+
+	try
+  	{
+		if(ephemeralCommands.indexOf(command) == -1)
+		{
+			await interaction.deferReply({ephemeral: false});
+		}
+		else
+		{
+			await interaction.deferReply({ephemeral: true});
+		}
+		
+		let goodies = {}
+
+		await command.execute(client, interaction, settings, goodies);
+	} catch (error) {
+		console.error(error);
+		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
+});
+
 client.on("roleCreate", role => {
   const guild = role.guild
 
@@ -347,7 +380,6 @@ client.on('interactionCreate', async(interaction) => {
    await interaction.deferReply({ephemeral: true})
    
   let bUpdate = false
-  let bCache = true
 
   let queue = {}
 
@@ -604,7 +636,7 @@ client.on('interactionCreate', async(interaction) => {
     return;
 
 	
- 
+  let bCache = true
   let bUpdate = false
 
   let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
@@ -658,47 +690,95 @@ client.on('interactionCreate', async(interaction) => {
   }
   else if(interaction.customId.startsWith("link-lichess"))
   {
+	  let state = jsGay.generateCodeVerifier()
+
 	  	await interaction.deferReply({ephemeral: true})
-      passport.use(new LichessStrategy({
-          clientID: `Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`,
-          callbackURL: `${myWebsite}/auth/lichess/callback/${code_challenge}`
-        },
-        function(accessToken, refreshToken, profile, cb)
-        {
-            if(profile.id)
-              return cb(null, profile.id);
 
-            else
-              return cb(404, "Authentication failed")
-        }
-      ));        
-       jsGay.app.get(`/auth/lichess/callback/${code_challenge}`,
-         passport.authenticate('lichess', { failureRedirect: '/fail' }),
-            async function(req, res) {
-              // Successful authentication, redirect home.
+		passport.use(new CustomStrategy(
+				async function(req, done)
+				{
+					let code = req.query.code
+					let state = req.query.state
 
-              res.redirect('/');
+					let lastState = await settings.get(`last-lichess-state-of-${interaction.user.id}`)
 
-              let userName = req.user
+					
 
-              await settings.set(`lichess-account-of-${interaction.user.id}`, userName)
+					if(state != lastState)
+					{
+						return;
+					}
 
-              await jsGay.updateProfileDataByInteraction(interaction, false)
-              
-              embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+					let body = `grant_type=authorization_code&client_id=Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}&redirect_uri=${myWebsite}${lichessEndOfWebsite}&code=${code}&code_verifier=${code_verifier}`
 
-              interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 
-              return
-            }
-      );
+					let response = await fetch(`https://lichess.org/api/token`, {
+					method: 'POST',
+					body: body,
+					headers: {'Content-Type': 'application/x-www-form-urlencoded' }
+					})
+
+					response = await response.json()
+
+					if(!response.access_token)
+						return;
+					
+ 					let result = await fetch(`https://lichess.org/api/account`, {
+						method: 'GET',
+						headers: {'Authorization': `Bearer ${response.access_token}`}
+
+					 }).then(response => {
+						if (response.status == 404) { // Not Found
+							return null
+						}
+						else if (response.status == 429) { // Rate Limit
+							return "Rate Limit"
+						}
+						else if (response.status == 200) { // Status OK
+							return response.json()
+						}
+        			})
+
+					if(result?.id)
+					{
+						let userName = result.id
+						
+						await settings.set(`lichess-account-of-${interaction.user.id}`, result.id)
+
+						done(null, "Success");
+					}
+
+					return;
+
+				})
+			);      
+		jsGay.app.get(lichessEndOfWebsite,
+			passport.authenticate("custom", { failureRedirect: '/fail' }),
+				async function(req, res) {
+				// Successful authentication, redirect home.
+
+				res.redirect('/');
+				
+				console.log(interaction.user.id)
+				await jsGay.updateProfileDataByInteraction(interaction, false)
+				
+				let userName = await settings.get(`lichess-account-of-${interaction.user.id}`)
+
+				embed = new MessageEmbed()
+					.setColor('#0099ff')
+					.setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${userName})`)
+				
+				interaction.editReply({ embeds: [embed], failIfNotExists: true, ephemeral: true }).catch(console.error)
+
+				return
+				}
+		);
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+	  queue[`last-lichess-state-of-${interaction.user.id}`] = state
 
       await settings.setMany(queue, true)
 
@@ -710,7 +790,7 @@ client.on('interactionCreate', async(interaction) => {
         .addComponents(
           new MessageButton()
             .setLabel(`Sign in with Lichess`)
-            .setURL(`${myWebsite}/auth/lichess/callback/${code_challenge}`)
+            .setURL(`https://lichess.org/oauth?response_type=code&redirect_uri=${myWebsite}${lichessEndOfWebsite}&code_challenge=${code_challenge}&code_challenge_method=S256&state=${state}&client_id=Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`)
             .setStyle('LINK')
       );
   
@@ -729,7 +809,7 @@ client.on('interactionCreate', async(interaction) => {
                 let code = req.query.code
                 let state = req.query.state
 
-				let lastState = await settings.get(`last-state-of-${interaction.user.id}`)
+				let lastState = await settings.get(`last-chesscom-state-of-${interaction.user.id}`)
 
                 if(state != lastState)
                     return;
@@ -788,7 +868,7 @@ client.on('interactionCreate', async(interaction) => {
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
-      queue[`last-state-of-${interaction.user.id}`] = state
+      queue[`last-chesscom-state-of-${interaction.user.id}`] = state
     
       await settings.setMany(queue, true)
 

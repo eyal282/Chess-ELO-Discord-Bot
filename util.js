@@ -524,19 +524,21 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
       let puzzleRating = -1
 
-      if (result.perfs.bullet && result.perfs.bullet.prov == undefined) bulletRating = result.perfs.bullet.rating
+	  if (result.perfs)
+	  {
+		if (result.perfs.bullet && result.perfs.bullet.prov == undefined) bulletRating = result.perfs.bullet.rating
 
-      if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
+		if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
 
-      if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
+		if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
 
-      if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
+		if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
 
-      if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = 
-		result.perfs.correspondence.rating
+		if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = 
+			result.perfs.correspondence.rating
 
-
-      if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
+      	if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
+	  }
 
 	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
 	  	bulletRating = -1

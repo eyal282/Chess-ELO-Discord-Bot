@@ -92,20 +92,23 @@ module.exports = {
         let rapidRating = "Unrated"
         let classicalRating = "Unrated"
 
-        if (result.perfs.correspondence)
-          corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "**(?)**"))
+		if(result.perfs)
+		{
+			if (result.perfs.correspondence)
+			corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "**(?)**"))
 
-        if (result.perfs.blitz)
-          blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "**(?)**"))
+			if (result.perfs.blitz)
+			blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "**(?)**"))
 
- 		if (result.perfs.bullet)
-          bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "**(?)**"))
+			if (result.perfs.bullet)
+			bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "**(?)**"))
 
-        if (result.perfs.rapid)
-          rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "**(?)**"))
+			if (result.perfs.rapid)
+			rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "**(?)**"))
 
-        if (result.perfs.classical)
-          corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
+			if (result.perfs.classical)
+			corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
+		}
 
 
         lichessEmbed = new MessageEmbed()

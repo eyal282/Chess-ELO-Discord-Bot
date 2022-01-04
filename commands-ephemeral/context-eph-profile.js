@@ -89,6 +89,7 @@ module.exports =
         let blitzRating = "Unrated"
         let rapidRating = "Unrated"
         let classicalRating = "Unrated"
+		let puzzleRating = "Unrated"
 
 		if(result.perfs)
 		{
@@ -106,6 +107,9 @@ module.exports =
 
 			if (result.perfs.classical)
 			corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
+
+ 			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
+			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "**(?)**"))
 		}
 
 
@@ -121,6 +125,7 @@ module.exports =
             { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation), inline: true },
             { name: '<:lichess_classical:909073486075527210> Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
             { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
+            { name: '<:lichess_puzzles:927950539617087519> Puzzles Rating', value: puzzleRating, inline: true },
           )
 
 		  .setFooter(`Note: Time Controls marked with X are disabled for this server.`)
@@ -144,6 +149,7 @@ module.exports =
         let blitzRating = "Unrated"
         let rapidRating = "Unrated"
 		let corresRating = "Unrated"
+		let puzzleRating = "Unrated"
 
     
         if (result.chess_bullet)
@@ -158,6 +164,10 @@ module.exports =
    		if (result.chess_daily)
           corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
 
+		if(result.tactics)
+		 	puzzleRating = emptyStr.concat(result.tactics.last.rating.toString())
+			
+
         chessComEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
@@ -170,8 +180,9 @@ module.exports =
             { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
+			 { name: '<:lichess_puzzles:927950539617087519> Puzzles Rating', value: puzzleRating, inline: true },
           )
-          .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.\nNote: Chess.com hides your puzzle rating from me.`)
+          .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.`)
       }
       else
       {

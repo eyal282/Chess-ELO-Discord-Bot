@@ -614,6 +614,36 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
             return null
           }
         })
+
+		result3 = await fetch(`https://www.chess.com/callback/member/stats/${chessComAccount}`).then(response => {
+          if (response.status == 404) { // Not Found
+            return null
+          }
+          else if (response.status == 200) { // Status OK
+            return response.json()
+          }
+          else if(response.status == 429) { // Rate Limit
+            return null
+          }
+        })
+		
+		let puzzleRating = -1
+
+		if(result3 != null)
+		{
+			for(let i=0;i < result3.stats.length;i++)
+			{
+				if(result3.stats[i].key == 'tactics' && result3.stats[i].stats && result3.stats[i].stats.rating)
+				{
+
+					puzzleRating = result3.stats[i].stats.rating
+				}
+			}
+		}
+
+		result.tactics.last = {}
+		result.tactics.last.rating = puzzleRating
+
       queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
 
 	  let bulletRating = -1
@@ -621,7 +651,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       let rapidRating = -1
       let corresRating = -1
 	  
-      let puzzleRating = -1
+      puzzleRating = -1
 
 
       if (result.chess_bullet && result.chess_bullet.last.rd < Constant_ProvisionalRD) bulletRating = result.chess_bullet.last.rating
@@ -632,7 +662,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
       if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
 
-      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.highest.rating
+      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.last.rating
 
 
 	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
@@ -649,6 +679,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 		  
       let chessComHighestRating = Math.max(bulletRating, blitzRating, rapidRating, corresRating)
 
+	  let chessComPuzzleRating = puzzleRating
+
       let value = chessComHighestRating
 
       try {
@@ -657,7 +689,9 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       }
       catch {}
       chessComHighestRating = value
+
       highestRating = Math.max(lichessHighestRating, chessComHighestRating)
+	  highestPuzzleRating = Math.max(lichessPuzzleRating, chessComPuzzleRating)
 
       if (result.title)
         chessTitle = result.title

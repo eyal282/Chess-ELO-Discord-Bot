@@ -106,7 +106,7 @@ module.exports =
 			rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "**(?)**"))
 
 			if (result.perfs.classical)
-			corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
+			classicalRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
 
  			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
 			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "**(?)**"))
@@ -164,7 +164,7 @@ module.exports =
    		if (result.chess_daily)
           corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
 
-		if(result.tactics)
+		if(result.tactics && result.tactics.last && result.tactics.last.rating && result.tactics.last.rating != -1)
 		 	puzzleRating = emptyStr.concat(result.tactics.last.rating.toString())
 			
 

@@ -256,7 +256,7 @@ client.on("roleUpdate", function(oldRole, newRole){
 });
 
 
-let targetInviteGuild = '889456328605577226'
+let targetInviteGuild = '927208009829068831'
 
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");

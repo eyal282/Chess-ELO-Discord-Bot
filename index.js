@@ -97,7 +97,7 @@ for (const file of commandFiles) {
 jsGay.setModSlashCommands(modCommands)
 
 
-deploySlashCommands() // Comment this line to avoid deploying the slash commands
+// deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
 // deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands

@@ -175,7 +175,7 @@ module.exports =
           .addFields(
 			  
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `${result.status == "premium" ? ' <:chess_com_diamond:909056645131288606> ' : ''}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
+            { name: `*Username:*`, value: `${result.status == "premium" ? ' <:chess_com_diamond:909056645131288606> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
             { name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },

@@ -1219,7 +1219,7 @@ function getEmojiFromTitle(title)
   if(!title)
     return ""
 
-  let finalTitle = "***" + title + "***"
+  let finalTitle = "**" + title + "**"
 
 
   finalTitle = finalTitle + " "

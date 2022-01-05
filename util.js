@@ -572,9 +572,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       highestRating = lichessHighestRating
       highestPuzzleRating = lichessPuzzleRating
 
-      if (result.title) {
+      if (result.title) 
         lichessTitle = result.title
-      }
     }
     
     if (chessComAccount == undefined) {
@@ -693,8 +692,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       highestRating = Math.max(lichessHighestRating, chessComHighestRating)
 	  highestPuzzleRating = Math.max(lichessPuzzleRating, chessComPuzzleRating)
 
-      if (result.title)
-        chessTitle = result.title
+      if (result2.title)
+        chessTitle = result2.title
     }
 
     let highestRatingRole = null;

@@ -13,8 +13,8 @@ const fetch = require('node-fetch');
 const jsGay = require('../util.js')
 
 let slashCommand = new SlashCommandBuilder()
-		.setName('verifyrole')
-		.setDescription('Adds a role that is given if player has any title.')
+		.setName('titledrole')
+		.setDescription('Adds a role that is given for members with any title.')
 
     .addRoleOption((option) =>
       option.setName('role').setDescription('The role to be given for titled members').setRequired(true))
@@ -33,15 +33,16 @@ module.exports =
       
       let newRole = interaction.options.getRole('role')
       
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole] = await jsGay.getCriticalData(interaction)
+      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await jsGay.getCriticalData(interaction)
       
-      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole)
+      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
 	  
 	  ratingRoles = obj.ratingRoles
 	  puzzleRatingRoles = obj.puzzleRatingRoles
 	  titleRoles = obj.titleRoles
 	  let guildRoles = obj.guildRoles
 	  verifyRole = obj.verifyRole
+	  titledRole = obj.titledRole
 
       let queue = {}
       
@@ -52,11 +53,11 @@ module.exports =
       }
       else
       {
-        queue[`guild-verify-role-${interaction.guild.id}`] = newRole.id
+        queue[`guild-titled-role-${interaction.guild.id}`] = newRole.id
 		
         embed = new MessageEmbed()
             .setColor('#0099ff')
-            .setDescription(`Successfully turned <@&${newRole.id}> into a verify role`)
+            .setDescription(`Successfully turned <@&${newRole.id}> into a titled role`)
 
       }
 

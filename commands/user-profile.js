@@ -172,14 +172,14 @@ module.exports = {
 		 	puzzleRating = emptyStr.concat(result.tactics.last.rating.toString())
 			
 
-        chessComEmbed = new MessageEmbed()
+                chessComEmbed = new MessageEmbed()
           .setColor('#0099ff')
           .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
           
           .addFields(
 			  
             { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `${result.status == "premium" ? ' <:chess_com_diamond:909056645131288606> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
+            { name: `*Username:*`, value: `${result.status == "premium" ? ` ${jsGay.getEmojiFromPremiumLevel(result.membership_level)}` : ''}${jsGay.getEmojiFromTitle(result.title)}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
             { name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
             { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },

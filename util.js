@@ -33,6 +33,10 @@ let Constant_ChessCom = 1
 
 let Constant_DefaultEmbedMessage = "Use the buttons below for linking your account to gain your rating roles!\n\nIf you want to link by editing your profile, you can still use /lichess and /chess"
 
+let Constant_DefaultSelectUniqueRoleMessage = "Use the menu below to pick a unique role. Only one role may be picked."
+
+let Constant_DefaultSelectManyRolesMessage = "Use the menu below to pick up to {MAX_ROLES} unique roles. Every unpicked role is deleted."
+
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
@@ -317,12 +321,12 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
           }
         })
 
-		result4 = await fetch(`https://www.chess.com/member/${chessComAccount}`).then(response => {
+		result4 = await fetch(`https://www.chess.com/callback/user/popup/${chessComAccount}`).then(response => {
           if (response.status == 404) { // Not Found
             return null
           }
           else if (response.status == 200) { // Status OK
-            return response.text()
+            return response.json()
           }
           else if(response.status == 429) { // Rate Limit
             return null
@@ -344,19 +348,9 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 		}
 
 		// Override the future result of chess.com for premiums
-		if(result4 != null && result.membership_level == undefined)
+		if(result4 != null && result4.membership != undefined && result4.membership.level != undefined)
 		{
-			if(result4.search("membership-diamond") != -1)
-				result.membership_level = 30
-
-			else if(result4.search("membership-platinum") != -1)
-				result.membership_level = 20
-
-			else if(result4.search("membership-gold") != -1)
-				result.membership_level = 10
-
-			else
-				result.membership_level = 0
+			result.membership_level = result4.membership.level
 		}
 
 		result.tactics.last = {}
@@ -973,13 +967,13 @@ function getEmojiFromPremiumLevel(level)
   if(!level)
     return ""
 
-  if(level == 30)
+  if(level == 50)
   	return "<:chess_com_diamond:909056645131288606>"
 
-  else if(level == 20)
+  else if(level == 40)
   	return "<:chess_com_platinum:931232604542353478>"
 
-  else if(level == 10)
+  else if(level == 30)
   	return "<:chess_com_gold:931232604521373776>"
 
   return ""
@@ -1180,4 +1174,4 @@ function areBitsContained (high, low) {
 };
 client.login(token)
 
-module.exports = { setModSlashCommands, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, titleList }
+module.exports = { setModSlashCommands, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList }

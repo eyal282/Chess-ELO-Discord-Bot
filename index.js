@@ -1,5 +1,5 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
-
+	
 
 const jsGay = require('./util.js')
 
@@ -97,7 +97,7 @@ for (const file of commandFiles) {
 jsGay.setModSlashCommands(modCommands)
 
 
-// deploySlashCommands() // Comment this line to avoid deploying the slash commands
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
 // deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
@@ -978,6 +978,121 @@ client.on('interactionCreate', async(interaction) => {
     jsGay.updateProfileDataByInteraction(interaction, bCache)
   }
 });
+
+
+// On Select Role Menu Pressed
+client.on('interactionCreate', async(interaction) => {
+	if (!interaction.isSelectMenu())
+   	 return;
+
+	if(!interaction.customId == "select-role")
+		return;
+
+
+  	let roleID = interaction.values[0]
+
+  	let options = interaction.component.options
+
+	let fullRolesCache = interaction.member.roles.cache
+
+    let fullRolesArray = Array.from(fullRolesCache.keys());
+
+	// Remove every role the user has in the select menu before we give every role he selected.
+	// Because options also contain values, we can use this moment to strike down any role that we cannot access.
+  	for(let i=0;i < options.length;i++)
+	{
+		let roleID = options[i].value
+
+		let role = interaction.guild.roles.cache.get(roleID);
+
+		if(!role)
+		{
+  			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Error: role ${options[i].label} was not found, please recreate the menu!`)
+
+  			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)		
+		}
+		else if(!role.editable)
+		{
+  			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Error: I cannot give / remove the role <@&${role.id}> to other players. Please ensure the role is below my highest role`)
+
+  			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)		
+		}
+
+		if(role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
+		{
+  			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Error: The role <@&${role.id}> has moderation capabilities, and cannot be given or taken`)
+
+  			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)	
+		}
+        let index = fullRolesArray.indexOf(role.id)
+
+        if(index != -1)
+          fullRolesArray.splice(index, 1);		
+	}
+
+	let selectedValues = interaction.values
+
+	for(let i=0;i < selectedValues.length;i++)
+	{
+		fullRolesArray.push(selectedValues[i])
+	}
+
+
+	// Don't set if nothing was changed.
+	if (fullRolesArray != Array.from(fullRolesCache.keys()))
+	{
+		try
+		{
+			interaction.member.roles.set(fullRolesArray).catch(() => null)
+		}
+		catch {}
+	}
+
+
+	if(interaction.values.length == 0)
+	{
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription(`Successfully removed all roles you have in this menu.`)
+
+			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+	}
+	else if(interaction.values.length == 1)
+	{
+
+  		embed = new MessageEmbed()
+			.setColor('#0099ff')
+			.setDescription(`Successfully received <@&${interaction.values[0]}>, and removed all unselected roles in the menu.`)
+	}
+	else
+	{
+
+  		embed = new MessageEmbed()
+			.setColor('#0099ff')
+			.setDescription(`Successfully received all selected roles, and removed all unselected roles in the menu.`)
+	}
+
+  	interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+
+})
+
 
 // All messages.
 client.on("messageCreate", async message => {

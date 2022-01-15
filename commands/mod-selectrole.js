@@ -56,79 +56,82 @@ module.exports = {
 	  let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
 		
 	  if (!isAdmin) {
-			jsGay.replyAccessDeniedByInteraction(interaction)
+			return jsGay.replyAccessDeniedByInteraction(interaction)
 	  }
-
-	  let message = interaction.options.getString('message');
-
-	  let minRoles = interaction.options.getInteger('min_roles');
-	  let maxRoles = interaction.options.getInteger('max_roles');
-
-	  if(minRoles == 1 && maxRoles == 1 || minRoles > maxRoles)
+	  else
 	  {
-		minRoles = null;
-		maxRoles = null;
-	  }
-	  let args = interaction.options.getString('roles').replace(/`/g, "").trim().split(/ +/g)
-	
-	  if(!message)
-	  {
-		if(minRoles == null && maxRoles == null)
-	  		message = jsGay.Constant_DefaultSelectUniqueRoleMessage
 
-		else
-			message = jsGay.Constant_DefaultSelectManyRolesMessage
-	  }
-	
-	  message = message.replaceAll("///n", '\n');
-	  message = message.replaceAll("{MAX_ROLES}", maxRoles);
-		  
-      embed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setDescription(message)
+		let message = interaction.options.getString('message');
 
-	  let selectMenu = new MessageSelectMenu()
-		  	.setCustomId('select-role')
-			.setPlaceholder('Nothing selected')
-			.setMinValues(minRoles)
-			.setMaxValues(maxRoles)
+		let minRoles = interaction.options.getInteger('min_roles');
+		let maxRoles = interaction.options.getInteger('max_roles');
 
-	  let bAnyRoles = false;
-
-	  for(let i=0;i < args.length;i++)
-	  {
-		let role = jsGay.getRoleFromMentionString(interaction.guild, args[i])
-
-		if(role)
+		if(minRoles == 1 && maxRoles == 1 || minRoles > maxRoles)
 		{
-			bAnyRoles = true
-
-			selectMenu.addOptions([
-				{
-					label: role.name,
-					value: role.id,
-				}])
+			minRoles = null;
+			maxRoles = null;
 		}
-	  }
-	  
-	  if(!bAnyRoles)
-	  {
+		let args = interaction.options.getString('roles').replace(/`/g, "").trim().split(/ +/g)
+		
+		if(!message)
+		{
+			if(minRoles == null && maxRoles == null)
+				message = jsGay.Constant_DefaultSelectUniqueRoleMessage
+
+			else
+				message = jsGay.Constant_DefaultSelectManyRolesMessage
+		}
+		
+		message = message.replaceAll("///n", '\n');
+		message = message.replaceAll("{MAX_ROLES}", maxRoles);
+			
 		embed = new MessageEmbed()
-	        .setColor('#0099ff')
-        	.setDescription("Could not find any valid roles!")
+			.setColor('#0099ff')
+			.setDescription(message)
 
-		return interaction.editReply({ embeds: [embed], failIfNotExists: false})
+		let selectMenu = new MessageSelectMenu()
+				.setCustomId('select-role')
+				.setPlaceholder('Nothing selected')
+				.setMinValues(minRoles)
+				.setMaxValues(maxRoles)
+
+		let bAnyRoles = false;
+
+		for(let i=0;i < args.length;i++)
+		{
+			let role = jsGay.getRoleFromMentionString(interaction.guild, args[i])
+
+			if(role)
+			{
+				bAnyRoles = true
+
+				selectMenu.addOptions([
+					{
+						label: role.name,
+						value: role.id,
+					}])
+			}
+		}
+		
+		if(!bAnyRoles)
+		{
+			embed = new MessageEmbed()
+				.setColor('#0099ff')
+				.setDescription("Could not find any valid roles!")
+
+			return interaction.editReply({ embeds: [embed], failIfNotExists: false})
+		}
+		row = new MessageActionRow()
+			.addComponents(selectMenu)
+
+		queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+		queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+		queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+		queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+		await settings.setMany(queue, true)
+
+		interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false})
 	  }
-	  row = new MessageActionRow()
-	  	.addComponents(selectMenu)
-
-      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
-      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
-      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
-      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
-
-      await settings.setMany(queue, true)
-
-      interaction.editReply({ embeds: [embed], components: [row], failIfNotExists: false})
     }
 };

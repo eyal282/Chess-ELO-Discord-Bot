@@ -97,10 +97,10 @@ for (const file of commandFiles) {
 jsGay.setModSlashCommands(modCommands)
 
 
-deploySlashCommands() // Comment this line to avoid deploying the slash commands
+//deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 function deploySlashCommands()
 {
@@ -255,56 +255,10 @@ client.on("roleUpdate", function(oldRole, newRole){
 	}
 });
 
-
-let targetInviteGuild = '927208009829068831'
-
 client.on('ready', () => {
     console.log("Chess ELO Bot has been loaded.");
 
     client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
-
-    setTimeout(async () => {
-	
-      const Guilds = client.guilds.cache
-
-      // For top.gg
-      let GuildsMap = Guilds.map(guild => parseInt(guild.id))
-
-      console.log(GuildsMap)
-
-      let uniqueGuildOwners = []
-      
-      let GuildsArray = Array.from(Guilds.values());
-      for(let i=0;i < GuildsArray.length;i++)
-      {
-        let guild = GuildsArray[i]
-        let ownerMember = await guild.fetchOwner()
-        let ownerUser = ownerMember.user
-        let fullDiscordUsername = ownerUser.username + "#" + ownerUser.discriminator
-
-        if(!uniqueGuildOwners.includes(fullDiscordUsername))
-          uniqueGuildOwners.push(fullDiscordUsername)
-
-		await jsGay.updateSlashCommandPermissionsByGuild(guild)
-
-        console.log(`${guild.id} ---> ${guild.name} ---> ${fullDiscordUsername}`);
-
-		if(guild.id == targetInviteGuild)
-		{			
-			await guild.fetch().then(async (guild) => {
-			
-				const invitechannels = guild.channels.cache.filter(c=> c.type == 'GUILD_TEXT' && c.permissionsFor(guild.me).has('CREATE_INSTANT_INVITE'));
-
-				await invitechannels.first().createInvite({maxAge: 0, maxUses: 0, unique: false})
-					.then(invite=> console.log(`Create Invite for ${guild.name}:\nhttps://discord.gg/${invite.code}`)).catch(() => console.log("I cannot access this"))
-
-			}).catch(console.error);
-		}
-      }
-
-      console.log(`Guilds with unique owners count: ${uniqueGuildOwners.length}\nBot is fully loaded and completely ready to use!`)
-      
-    }, 2500);
 });
 
 // Someone joined the guild, we will give him the roles if he already linked.
@@ -461,7 +415,7 @@ client.on('interactionCreate', async(interaction) => {
             // result.profile.location
             let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-            if(result.profile?.location?.includes(fullDiscordUsername) || result.profile?.bio?.includes(fullDiscordUsername))
+            if((result.profile?.location && result.profile.location.includes(fullDiscordUsername)) || (result.profile?.bio && result.profile.bio.includes(fullDiscordUsername)))
             {
                 queue[`lichess-account-of-${message.author.id}`] = result.username
                 queue[`cached-lichess-account-data-of-${message.author.id}`] = result
@@ -1105,5 +1059,3 @@ client.on("messageCreate", async message => {
         jsGay.updateProfileDataByMessage(message, false)
     }
 });
-
-module.exports = { client }

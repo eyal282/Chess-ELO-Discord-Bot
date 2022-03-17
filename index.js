@@ -1,6 +1,8 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
 	
 
+const debugMode = false
+
 const jsGay = require('./util.js')
 
 const { clientId, guildId, chessComClientId, chessComEndOfWebsite, lichessEndOfWebsite, myWebsite } = require('./config.json');
@@ -29,7 +31,15 @@ const CustomStrategy = require('passport-custom').Strategy;
 const lichess_secret = process.env['LICHESS_OAUTH2']
 
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
-//const client = new Discord.Client({ partials: ["MESSAGE", "USER", "REACTION"] });
+
+const { SlashCommandBuilder } = require('@discordjs/builders');
+
+const fs = require('fs');
+
+//deploySlashCommands() // Comment this line to avoid deploying the slash commands
+
+
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 const client = jsGay.client
 
@@ -43,28 +53,30 @@ let defaultPrefix = "!"
 
 let settings = jsGay.settings
 
-settings.defer.then( async () => {
-    let size = await settings.size;
-    console.log(`Connected, there are ${size} rows in the database.`);
-});
-
-client.on('ready', () => {
+client.on('ready', async () => {
+	
+	await settings.defer.then( async () => {
+	    let size = await settings.size;
+	    console.log(`Connected, there are ${size} rows in the database.`);
+	});
   
-  jsGay.app.use(passport.initialize());
-  jsGay.app.use(passport.session());
+  	await jsGay.app.use(passport.initialize());
+  	await jsGay.app.use(passport.session());
   
-  passport.serializeUser(function(user, done) {
-    done(null, user);
-  });
+  	await passport.serializeUser(function(user, done) {
+	    done(null, user);
+  	});
 
-  passport.deserializeUser(function(user, done) {
-    done(null, user);
-  });
+  	await passport.deserializeUser(function(user, done) {
+    	done(null, user);
+  	});
+
+
+    await client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
+
+	console.log("\033[0;32mChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use");
+
 });
-
-const { SlashCommandBuilder } = require('@discordjs/builders');
-
-const fs = require('fs');
 
 client.commands = new Collection();
 let commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -95,12 +107,6 @@ for (const file of commandFiles) {
 }
 
 jsGay.setModSlashCommands(modCommands)
-
-
-//deploySlashCommands() // Comment this line to avoid deploying the slash commands
-
-
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 function deploySlashCommands()
 {
@@ -255,11 +261,7 @@ client.on("roleUpdate", function(oldRole, newRole){
 	}
 });
 
-client.on('ready', () => {
-    console.log("Chess ELO Bot has been loaded.");
 
-    client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
-});
 
 // Someone joined the guild, we will give him the roles if he already linked.
 client.on("guildMemberAdd", async function(member){
@@ -1048,6 +1050,12 @@ client.on('interactionCreate', async(interaction) => {
 })
 
 
+if(debugMode)
+{
+	client.on("debug", async info => {
+		console.log(info)
+	});
+}
 // All messages.
 client.on("messageCreate", async message => {
     if (message.author.bot) return;

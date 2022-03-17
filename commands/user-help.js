@@ -46,11 +46,6 @@ module.exports = {
 	  if(verifyRole != undefined)
 	  	currentVerifyRole = `<@&${verifyRole}>`
 
-	  let currentTitledRole = `None`
-
-	  if(titledRole != undefined)
-	  	currentTitledRole = `<@&${titledRole}>`
-
       result = jsGay.addCommandToHelp(result, prefix, `embed ---> Sets up an embed for linking accounts. Best used by moderators`)
       result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
@@ -58,7 +53,6 @@ module.exports = {
       result = jsGay.addCommandToHelp(result, prefix, `lookup [username] ---> Checks every match **within the bot** for a target username in Lichess / Chess.com`)
       result = jsGay.addCommandToHelp(result, prefix, `timecontrols [bullet] [blitz] [...] ---> Toggles which time controls the bot will use`)
 	  result = jsGay.addCommandToHelp(result, prefix, `verifyrole [@role] ---> Sets a role to be a verified role. Delete the role to disable. Current role: ${currentVerifyRole}`)
-	  result = jsGay.addCommandToHelp(result, prefix, `titledrole [@role] ---> Sets a role to be a titled role. Delete the role to disable. Current role: ${currentTitledRole}`)
       result = jsGay.addCommandToHelp(result, prefix, `addelo [elo] [@role] ---> Adds a new role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addpuzzleelo [elo] [@role] ---> Adds a new puzzle role milestone`)
       result = jsGay.addCommandToHelp(result, prefix, `addtitle [title] [@role] ---> Adds a new role by title. Example: ${prefix}addtitle GM @Grandmaster IM @InterMaster NM @NatMaster`)
@@ -73,6 +67,7 @@ module.exports = {
       result = jsGay.addCommandToHelp(result, prefix, `setchessequation [equation] ---> Sets the equation for inflating or deflating chess.com rating, x = User's current rating. Default: '${jsGay.Constant_chessComDefaultRatingEquation}'. Current: '${chessComRatingEquation}'`)
       result = jsGay.addCommandToHelp(result, prefix, `addmod [@role] ---> Adds a role as a Moderator`)
       result = jsGay.addCommandToHelp(result, prefix, `resetmod ---> Resets all Moderators.`)
+	  result = jsGay.addCommandToHelp(result, prefix, `selectrole ---> Creates a message with reaction role style menu. This is not related to Chess, but could be useful.`)
 	  result = jsGay.addCommandToHelp(result, prefix, `privacy ---> Privacy policy`)
       result = jsGay.addCommandToHelp(result, prefix, `invite ---> Invite Link`)
       result = jsGay.addCommandToHelp(result, prefix, `ping ---> Lag of the bot`)

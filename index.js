@@ -39,7 +39,7 @@ const fs = require('fs');
 //deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+//deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 const client = jsGay.client
 
@@ -53,6 +53,11 @@ let defaultPrefix = "!"
 
 let settings = jsGay.settings
 
+/*
+setInterval( () => {
+  process.kill(1, 'SIGINT');
+}, 3600000)
+*/
 client.on('ready', async () => {
 	
 	await settings.defer.then( async () => {
@@ -170,6 +175,10 @@ function deployGlobalSlashCommands()
     .then(() => console.log('Successfully registered global application commands.'))
     .catch(console.error);
 }
+
+client.on("debug", function(info){
+    console.log(`debug -> ${info}`);
+});
 
 // On Slash Command
 client.on('interactionCreate', async interaction => {

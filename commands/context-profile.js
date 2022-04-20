@@ -14,7 +14,7 @@ const jsGay = require('../util.js')
 
 let contextMenu = new ContextMenuCommandBuilder()
 		.setType(ApplicationCommandType.User)
-		.setName('Profile')
+		.setName('Profile Ephemeral')
 		.setDefaultPermission(true)
 
 
@@ -70,131 +70,135 @@ module.exports =
 	  let guildRoles = obj.guildRoles
 	  verifyRole = obj.verifyRole
 	  titledRole = obj.titledRole
-  
+
+	 embed = new MessageEmbed()
+	          .setColor('#0099ff')
+			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.avatarURL())
+		  	  .setFooter(`Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`)
+		
       interaction.user = trueUser
       interaction.member = trueMember
 
-      let ephemeral = interaction.options.getBoolean('ephemeral');
+		let description = "";
+	  
+	  	description += `<:lichess_logo:898198362455687218> Lichess: `
 
-      // Soon chess.com steals every variable here.
-      let result = lichessAccountData
-      
+	  	// Soon chess.com data replaces this variable.
+	  	let result = lichessAccountData;
+	  
+		if(result == null)
+			description += ` Profile not linked.`
 
-      let lichessEmbed
-      let chessComEmbed
-
-      if(result)
-      {
-		let emptyStr = ""
-        let corresRating = "Unrated"
-		let bulletRating = "Unrated"
-        let blitzRating = "Unrated"
-        let rapidRating = "Unrated"
-        let classicalRating = "Unrated"
-		let puzzleRating = "Unrated"
-
-		if(result.perfs)
+		else
 		{
-			if (result.perfs.correspondence)
-			corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "**(?)**"))
+			let emptyStr = ""
+	        let corresRating = "**Unrated**"
+			let bulletRating = "**Unrated**"
+	        let blitzRating = "**Unrated**"
+	        let rapidRating = "**Unrated**"
+	        let classicalRating = "**Unrated**"
+			let puzzleRating = "**Unrated**"
+	
+			if(result.perfs)
+			{
+				if (result.perfs.correspondence)
+				corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", "**", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "(?)"), "**")
+	
+				if (result.perfs.blitz)
+				blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", "**", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "(?)"), "**")
+	
+				if (result.perfs.bullet)
+				bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", "**", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "(?)"), "**")
+	
+				if (result.perfs.rapid)
+				rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", "**", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "(?)"), "**")
+	
+				if (result.perfs.classical)
+				classicalRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", "**", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "**" : "(?)"), "**")
+	
+	 			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
+				puzzleRating = emptyStr.concat("**", result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"), "**")
+			}
+				// Username
+				description += `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${result.username}](${result.url}) `
+	
+				// Bullet
+				description += `<:lichess_bullet:909072316019916850> Bullet: ${jsGay.addStarForBestRating(highestRating, bulletRating, lichessRatingEquation)} `
+	
+				// Blitz
+				description += `<:lichess_blitz:909072315806003243> Blitz: ${jsGay.addStarForBestRating(highestRating, blitzRating, lichessRatingEquation)} `
+	
+				// Rapid
+				description += `<:lichess_rapid:909072316128956476> Rapid: ${jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation)} `
+	
+				// Classical
+				description += `<:lichess_classical:909073486075527210> Classical: ${jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation)} `
+	
+				// Daily
+				description += `<:lichess_correspondence:909072696090976267> Daily: ${jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation)} `
 
-			if (result.perfs.blitz)
-			blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "**(?)**"))
+				// Puzzles
+				description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
 
-			if (result.perfs.bullet)
-			bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "**(?)**"))
-
-			if (result.perfs.rapid)
-			rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "**(?)**"))
-
-			if (result.perfs.classical)
-			classicalRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "**(?)**"))
-
- 			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
-			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "**(?)**"))
+			
 		}
 
+	  	description += `\n\n<:chess_com_logo:898211680604016690> Chess.com: `
 
-        lichessEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle(`<:lichess_logo:898198362455687218> Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-    
-          .addFields(
-            { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${jsGay.getEmojiFromTitle(result.title)}[${result.username}](${result.url})` },
-			{ name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, lichessRatingEquation), inline: true },
-            { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, lichessRatingEquation), inline: true },
-            { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, lichessRatingEquation), inline: true },
-            { name: '<:lichess_classical:909073486075527210> Classical Rating', value: jsGay.addStarForBestRating(highestRating, classicalRating, lichessRatingEquation), inline: true },
-            { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, lichessRatingEquation), inline: true },
-            { name: '<:lichess_puzzles:927950539617087519> Puzzles Rating', value: puzzleRating, inline: true },
-          )
+	  	// Now chess.com steals every variable!
+	    result = chessComAccountData
+		if(chessComAccountData == null)
+			description += ` Profile not linked.`
 
-		  .setFooter(`Note: Time Controls marked with X are disabled for this server.`)
-      }
-      else
-      {
-        lichessEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle(`<:lichess_logo:898198362455687218> Lichess Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          .setDescription('Could not find any stats for user.')
-      }
+		else
+		{
+	
+			let emptyStr = ""
+			let bulletRating = "**Unrated**"
+	        let blitzRating = "**Unrated**"
+	        let rapidRating = "**Unrated**"
+			let corresRating = "**Unrated**"
+			let puzzleRating = "**Unrated**"
+	
+	    
+	        if (result.chess_bullet)
+	            bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", "**", result.chess_bullet.last.rating.toString(), (result.chess_bullet.last.rd < jsGay.Constant_ProvisionalRD ? "" : "(?)"), "**")
+	
+	        if (result.chess_blitz)
+	            blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", "**", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < jsGay.Constant_ProvisionalRD ? "" : "(?)"), "**")
+	
+	        if (result.chess_rapid)
+	          rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", "**", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < jsGay.Constant_ProvisionalRD ? "" : "(?)"), "**")
+	
+	   		if (result.chess_daily)
+	          corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", "**", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "(?)"), "**")
+	
+			if(result.tactics && result.tactics.last && result.tactics.last.rating && result.tactics.last.rating != -1)
+			 	puzzleRating = emptyStr.concat("**", result.tactics.last.rating.toString(), "**")
 
-      // Now chess.com steals every variable!
-
-      result = chessComAccountData
-
-      if(result)
-      {
-		let emptyStr = ""
-		let bulletRating = "Unrated"
-        let blitzRating = "Unrated"
-        let rapidRating = "Unrated"
-		let corresRating = "Unrated"
-		let puzzleRating = "Unrated"
-
-    
-        if (result.chess_bullet)
-            bulletRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BulletBitwise) ? "" : ":x:", result.chess_bullet.last.rating.toString(), (result.chess_bullet.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
-
-        if (result.chess_blitz)
-            blitzRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_BlitzBitwise) ? "" : ":x:", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
-
-        if (result.chess_rapid)
-          rapidRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_RapidBitwise) ? "" : ":x:", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
-
-   		if (result.chess_daily)
-          corresRating = emptyStr.concat(jsGay.areBitsContained(timeControlsBitwise, jsGay.Constant_CorresBitwise) ? "" : ":x:", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < jsGay.Constant_ProvisionalRD ? "" : "**(?)**"))
-
-		if(result.tactics && result.tactics.last && result.tactics.last.rating && result.tactics.last.rating != -1)
-		 	puzzleRating = emptyStr.concat(result.tactics.last.rating.toString())
+			// Username
+			description += `${result.status == "premium" ? ` ${jsGay.getEmojiFromPremiumLevel(result.membership_level)}` : ''}${jsGay.getEmojiFromTitle(result.title)}[${chessComAccount}](https://www.chess.com/member/${chessComAccount}) `
 			
+			// Bullet
+			description += `<:lichess_bullet:909072316019916850> Bullet: ${jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation)} `
 
-        chessComEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          
-          .addFields(
-			  
-            { name: '\u200B', value: '\u200B' },
-            { name: `*Username:*`, value: `${result.status == "premium" ? ` ${jsGay.getEmojiFromPremiumLevel(result.membership_level)}` : ''}${jsGay.getEmojiFromTitle(result.title)}[${chessComAccount}](https://www.chess.com/member/${chessComAccount})` },
-            { name: '<:lichess_bullet:909072316019916850> Bullet Rating', value: jsGay.addStarForBestRating(highestRating, bulletRating, chessComRatingEquation), inline: true },
-            { name: '<:lichess_blitz:909072315806003243> Blitz Rating', value: jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation), inline: true },
-            { name: '<:lichess_rapid:909072316128956476> Rapid Rating', value: jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation), inline: true },
-            { name: '<:lichess_correspondence:909072696090976267> Correspondence Rating', value: jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation), inline: true },
-			 { name: '<:lichess_puzzles:927950539617087519> Puzzles Rating', value: puzzleRating, inline: true },
-          )
-          .setFooter(`Note: Time Controls marked with X are disabled for this server.\nNote: Provisional rating is artifically calculated by Lichess standards.`)
-      }
-      else
-      {
-        chessComEmbed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle(`<:chess_com_logo:898211680604016690> Chess.com Stats of ${jsGay.getUserFullDiscordName(fakeUser)}`)
-          .setDescription('Could not find any stats for user.')
+			// Blitz
+			description += `<:lichess_blitz:909072315806003243> Blitz: ${jsGay.addStarForBestRating(highestRating, blitzRating, chessComRatingEquation)} `
 
-      }
-      interaction.editReply({ embeds: [lichessEmbed, chessComEmbed], failIfNotExists: false, ephemeral: ephemeral })
+			// Rapid
+			description += `<:lichess_rapid:909072316128956476> Rapid: ${jsGay.addStarForBestRating(highestRating, rapidRating, chessComRatingEquation)} `
+
+
+			// Daily
+			description += `<:lichess_correspondence:909072696090976267> Daily: ${jsGay.addStarForBestRating(highestRating, corresRating, chessComRatingEquation)} `
+
+			// Puzzles
+			description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
+		}
+	  
+	  embed.setDescription(description);
+	  
+      interaction.editReply({ embeds: [embed], failIfNotExists: false})
   }
 }
 

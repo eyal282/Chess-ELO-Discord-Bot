@@ -170,53 +170,53 @@ async function generateEmbedForProfileByInteraction(interaction)
 	else
 	{
 		let emptyStr = ""
-		let corresRating = "**Unrated**"
-		let bulletRating = "**Unrated**"
-		let blitzRating = "**Unrated**"
-		let rapidRating = "**Unrated**"
-		let classicalRating = "**Unrated**"
-		let puzzleRating = "**Unrated**"
+		let corresRating = "Unrated"
+		let bulletRating = "Unrated"
+		let blitzRating = "Unrated"
+		let rapidRating = "Unrated"
+		let classicalRating = "Unrated"
+		let puzzleRating = "Unrated"
 
 		if(result.perfs)
 		{
 			if (result.perfs.correspondence)
-			corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", "**", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "(?)"), "**")
+			corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.blitz)
-			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", "**", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "(?)"), "**")
+			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.bullet)
-			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", "**", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "(?)"), "**")
+			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.rapid)
-			rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", "**", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "(?)"), "**")
+			rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.classical)
-			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", "**", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "**" : "(?)"), "**")
+			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "**" : "(?)"))
 
 			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
-			puzzleRating = emptyStr.concat("**", result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"), "**")
+			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"))
 		}
 			// Username
 			description += `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${getEmojiFromTitle(result.title)}**[${result.username}](${result.url})**\n`
 
 			// Bullet
-			description += `<:lichess_bullet:909072316019916850> Bullet: ${addStarForBestRating(highestRating, bulletRating, lichessRatingEquation)} \\|\\| `
+			description += `<:lichess_bullet:909072316019916850> Bullet: **${addStarForBestRating(highestRating, bulletRating, lichessRatingEquation)}** \\|\\| `
 
 			// Blitz
-			description += `<:lichess_blitz:909072315806003243> Blitz: ${addStarForBestRating(highestRating, blitzRating, lichessRatingEquation)} \\|\\| `
+			description += `<:lichess_blitz:909072315806003243> Blitz: **${addStarForBestRating(highestRating, blitzRating, lichessRatingEquation)}** \\|\\| `
 
 			// Rapid
-			description += `<:lichess_rapid:909072316128956476> Rapid: ${addStarForBestRating(highestRating, rapidRating, lichessRatingEquation)}\n`
+			description += `<:lichess_rapid:909072316128956476> Rapid: **${addStarForBestRating(highestRating, rapidRating, lichessRatingEquation)}**\n`
 
 			// Classical
-			description += `<:lichess_classical:909073486075527210> Classical: ${addStarForBestRating(highestRating, classicalRating, lichessRatingEquation)} \\|\\| `
+			description += `<:lichess_classical:909073486075527210> Classical: **${addStarForBestRating(highestRating, classicalRating, lichessRatingEquation)}** \\|\\| `
 
 			// Daily
-			description += `<:lichess_correspondence:909072696090976267> Daily: ${addStarForBestRating(highestRating, corresRating, lichessRatingEquation)} \\|\\| `
+			description += `<:lichess_correspondence:909072696090976267> Daily: **${addStarForBestRating(highestRating, corresRating, lichessRatingEquation)}** \\|\\| `
 
 			// Puzzles
-			description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
+			description += `<:lichess_puzzles:927950539617087519> Puzzles: **${puzzleRating}** `
 
 		
 	}
@@ -232,46 +232,46 @@ async function generateEmbedForProfileByInteraction(interaction)
 	{
 
 		let emptyStr = ""
-		let bulletRating = "**Unrated**"
-		let blitzRating = "**Unrated**"
-		let rapidRating = "**Unrated**"
-		let corresRating = "**Unrated**"
-		let puzzleRating = "**Unrated**"
+		let bulletRating = "Unrated"
+		let blitzRating = "Unrated"
+		let rapidRating = "Unrated"
+		let corresRating = "Unrated"
+		let puzzleRating = "Unrated"
 
 	
 		if (result.chess_bullet)
-			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", "**", result.chess_bullet.last.rating.toString(), (result.chess_bullet.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", result.chess_bullet.last.rating.toString(), (result.chess_bullet.last.rd < Constant_ProvisionalRD ? "" : "(?)"))
 
 		if (result.chess_blitz)
-			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", "**", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < Constant_ProvisionalRD ? "" : "(?)"))
 
 		if (result.chess_rapid)
-		  rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", "**", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+		  rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < Constant_ProvisionalRD ? "" : "(?)"))
 
 		if (result.chess_daily)
-		  corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", "**", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+		  corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < Constant_ProvisionalRD ? "" : "(?)"))
 
 		if(result.tactics && result.tactics.last && result.tactics.last.rating && result.tactics.last.rating != -1)
-			puzzleRating = emptyStr.concat("**", result.tactics.last.rating.toString(), "**")
+			puzzleRating = emptyStr.concat(result.tactics.last.rating.toString())
 
 		// Username
 		description += `${result.status == "premium" ? ` ${getEmojiFromPremiumLevel(result.membership_level)}` : ''}${getEmojiFromTitle(result.title)}**[${chessComAccount}](https://www.chess.com/member/${chessComAccount})**\n`
 		
 		// Bullet
-		description += `<:lichess_bullet:909072316019916850> Bullet: ${addStarForBestRating(highestRating, bulletRating, chessComRatingEquation)} \\|\\| `
+		description += `<:lichess_bullet:909072316019916850> Bullet: **${addStarForBestRating(highestRating, bulletRating, chessComRatingEquation)}** \\|\\| `
 
 		// Blitz
-		description += `<:lichess_blitz:909072315806003243> Blitz: ${addStarForBestRating(highestRating, blitzRating, chessComRatingEquation)} \\|\\| `
+		description += `<:lichess_blitz:909072315806003243> Blitz: **${addStarForBestRating(highestRating, blitzRating, chessComRatingEquation)}** \\|\\| `
 
 		// Rapid
-		description += `<:lichess_rapid:909072316128956476> Rapid: ${addStarForBestRating(highestRating, rapidRating, chessComRatingEquation)}\n`
+		description += `<:lichess_rapid:909072316128956476> Rapid: **${addStarForBestRating(highestRating, rapidRating, chessComRatingEquation)}**\n`
 
 
 		// Daily
-		description += `<:lichess_correspondence:909072696090976267> Daily: ${addStarForBestRating(highestRating, corresRating, chessComRatingEquation)} \\|\\| `
+		description += `<:lichess_correspondence:909072696090976267> Daily: **${addStarForBestRating(highestRating, corresRating, chessComRatingEquation)}** \\|\\| `
 
 		// Puzzles
-		description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
+		description += `<:lichess_puzzles:927950539617087519> Puzzles: **${puzzleRating}** `
 	}
 	  
 	embed.setDescription(description);

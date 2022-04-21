@@ -127,6 +127,158 @@ async function setModSlashCommands(commandsArray)
 	modCommands = commandsArray
 }
 
+async function generateEmbedForProfileByInteraction(interaction)
+{
+	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interaction)
+	  
+	let obj = await wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
+	
+	ratingRoles = obj.ratingRoles
+	puzzleRatingRoles = obj.puzzleRatingRoles
+	titleRoles = obj.titleRoles
+	let guildRoles = obj.guildRoles
+	verifyRole = obj.verifyRole
+	titledRole = obj.titledRole
+	
+  	let highestRating
+
+	let timestamp1 = await settings.get(`last-updated-${interaction.user.id}`)
+	
+	if ((timestamp1 == undefined || timestamp1 + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp1 + 10 * 1000 < Date.now())))
+	{
+		highestRating = await updateProfileDataByInteraction(interaction, false)
+	}
+	else
+	{
+		highestRating = await 						updateProfileDataByInteraction(interaction, true)
+	}
+	let embed = new MessageEmbed()
+	          .setColor('#0099ff')
+			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.avatarURL())
+		  	  .setFooter(`Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`)
+	
+	let description = "";
+	  
+	description += `<:lichess_logo:898198362455687218> Lichess: `
+
+	// Soon chess.com data replaces this variable.
+	let result = lichessAccountData;
+  
+	if(result == null)
+		description += ` Profile not linked.`
+
+	else
+	{
+		let emptyStr = ""
+		let corresRating = "**Unrated**"
+		let bulletRating = "**Unrated**"
+		let blitzRating = "**Unrated**"
+		let rapidRating = "**Unrated**"
+		let classicalRating = "**Unrated**"
+		let puzzleRating = "**Unrated**"
+
+		if(result.perfs)
+		{
+			if (result.perfs.correspondence)
+			corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", "**", result.perfs.correspondence.rating.toString(), (result.perfs.correspondence.prov == undefined ? "" : "(?)"), "**")
+
+			if (result.perfs.blitz)
+			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", "**", result.perfs.blitz.rating.toString(), (result.perfs.blitz.prov == undefined ? "" : "(?)"), "**")
+
+			if (result.perfs.bullet)
+			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", "**", result.perfs.bullet.rating.toString(), (result.perfs.bullet.prov == undefined ? "" : "(?)"), "**")
+
+			if (result.perfs.rapid)
+			rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", "**", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "(?)"), "**")
+
+			if (result.perfs.classical)
+			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", "**", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "**" : "(?)"), "**")
+
+			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
+			puzzleRating = emptyStr.concat("**", result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"), "**")
+		}
+			// Username
+			description += `${result.patron ? ' <:lichess_patron:898198175633010708> ' : ''}${getEmojiFromTitle(result.title)}**[${result.username}](${result.url})**\n`
+
+			// Bullet
+			description += `<:lichess_bullet:909072316019916850> Bullet: ${addStarForBestRating(highestRating, bulletRating, lichessRatingEquation)} \\|\\| `
+
+			// Blitz
+			description += `<:lichess_blitz:909072315806003243> Blitz: ${addStarForBestRating(highestRating, blitzRating, lichessRatingEquation)} \\|\\| `
+
+			// Rapid
+			description += `<:lichess_rapid:909072316128956476> Rapid: ${addStarForBestRating(highestRating, rapidRating, lichessRatingEquation)}\n`
+
+			// Classical
+			description += `<:lichess_classical:909073486075527210> Classical: ${addStarForBestRating(highestRating, classicalRating, lichessRatingEquation)} \\|\\| `
+
+			// Daily
+			description += `<:lichess_correspondence:909072696090976267> Daily: ${addStarForBestRating(highestRating, corresRating, lichessRatingEquation)} \\|\\| `
+
+			// Puzzles
+			description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
+
+		
+	}
+
+	description += `\n\n<:chess_com_logo:898211680604016690> Chess.com: `
+
+	// Now chess.com steals every variable!
+	result = chessComAccountData
+	if(chessComAccountData == null)
+		description += ` Profile not linked.`
+
+	else
+	{
+
+		let emptyStr = ""
+		let bulletRating = "**Unrated**"
+		let blitzRating = "**Unrated**"
+		let rapidRating = "**Unrated**"
+		let corresRating = "**Unrated**"
+		let puzzleRating = "**Unrated**"
+
+	
+		if (result.chess_bullet)
+			bulletRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BulletBitwise) ? "" : ":x:", "**", result.chess_bullet.last.rating.toString(), (result.chess_bullet.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+
+		if (result.chess_blitz)
+			blitzRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_BlitzBitwise) ? "" : ":x:", "**", result.chess_blitz.last.rating.toString(), (result.chess_blitz.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+
+		if (result.chess_rapid)
+		  rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", "**", result.chess_rapid.last.rating.toString(), (result.chess_rapid.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+
+		if (result.chess_daily)
+		  corresRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_CorresBitwise) ? "" : ":x:", "**", result.chess_daily.last.rating.toString(), (result.chess_daily.last.rd < Constant_ProvisionalRD ? "" : "(?)"), "**")
+
+		if(result.tactics && result.tactics.last && result.tactics.last.rating && result.tactics.last.rating != -1)
+			puzzleRating = emptyStr.concat("**", result.tactics.last.rating.toString(), "**")
+
+		// Username
+		description += `${result.status == "premium" ? ` ${getEmojiFromPremiumLevel(result.membership_level)}` : ''}${getEmojiFromTitle(result.title)}**[${chessComAccount}](https://www.chess.com/member/${chessComAccount})**\n`
+		
+		// Bullet
+		description += `<:lichess_bullet:909072316019916850> Bullet: ${addStarForBestRating(highestRating, bulletRating, chessComRatingEquation)} \\|\\| `
+
+		// Blitz
+		description += `<:lichess_blitz:909072315806003243> Blitz: ${addStarForBestRating(highestRating, blitzRating, chessComRatingEquation)} \\|\\| `
+
+		// Rapid
+		description += `<:lichess_rapid:909072316128956476> Rapid: ${addStarForBestRating(highestRating, rapidRating, chessComRatingEquation)}\n`
+
+
+		// Daily
+		description += `<:lichess_correspondence:909072696090976267> Daily: ${addStarForBestRating(highestRating, corresRating, chessComRatingEquation)} \\|\\| `
+
+		// Puzzles
+		description += `<:lichess_puzzles:927950539617087519> Puzzles: ${puzzleRating} `
+	}
+	  
+	embed.setDescription(description);
+
+	return embed;
+}
+
 // You can sneak a fake message if you assign .guild, .author and .member
 async function updateProfileDataByMessage(message, useCacheOnly)
 {
@@ -1176,4 +1328,4 @@ function areBitsContained (high, low) {
 
 client.login(token)
 
-module.exports = { setModSlashCommands, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList }
+module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList }

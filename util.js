@@ -159,7 +159,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 	
 	let description = "";
 	  
-	description += `<:lichess_logo:898198362455687218> Lichess: `
+	description += `<:lichess_logo:898198362455687218> **Lichess:** `
 
 	// Soon chess.com data replaces this variable.
 	let result = lichessAccountData;
@@ -221,7 +221,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 		
 	}
 
-	description += `\n\n<:chess_com_logo:898211680604016690> Chess.com: `
+	description += `\n\n<:chess_com_logo:898211680604016690> **Chess.com:** `
 
 	// Now chess.com steals every variable!
 	result = chessComAccountData

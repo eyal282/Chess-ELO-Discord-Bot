@@ -177,7 +177,13 @@ function deployGlobalSlashCommands()
 }
 
 client.on("debug", function(info){
-    console.log(`debug -> ${info}`);
+	const regex = /Limit +: +(.+)/;
+	const found = info.match(regex);
+
+	if(found && found[1] == Infinity)
+	{
+		process.kill(1, 'SIGINT');
+	}
 });
 
 // On Slash Command

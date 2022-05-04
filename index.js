@@ -53,11 +53,6 @@ let defaultPrefix = "!"
 
 let settings = jsGay.settings
 
-/*
-setInterval( () => {
-  process.kill(1, 'SIGINT');
-}, 3600000)
-*/
 client.on('ready', async () => {
 	
 	await settings.defer.then( async () => {
@@ -80,6 +75,10 @@ client.on('ready', async () => {
     await client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
 
 	console.log("\033[0;32mChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use");
+
+	let channel = await jsGay.getDebugChannel();
+
+	await channel.send("Bot loaded");
 
 });
 
@@ -182,10 +181,16 @@ client.on("debug", function(info){
 
 	if(found && found[1] == Infinity)
 	{
+		// Cannot send messages, await will be done forever.
+		//await jsGay.getDebugChannel().send("IP Banned. Killing process...");
+		
 		process.kill(1, 'SIGINT');
 	}
 });
 
+process.on('unhandledRejection', async error => {
+    await jsGay.getDebugChannel().send("Found Error:\n" + error);
+});
 // On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return;

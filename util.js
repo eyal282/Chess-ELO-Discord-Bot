@@ -156,7 +156,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 	}
 	let embed = new MessageEmbed()
 	          .setColor('#0099ff')
-			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.avatarURL())
+			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.displayAvatarURL({dynamic : true}))
 		  	  .setFooter(`Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`)
 	
 	let description = "";

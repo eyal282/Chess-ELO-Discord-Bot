@@ -14,7 +14,7 @@ const jsGay = require('../util.js')
 
 let contextMenu = new ContextMenuCommandBuilder()
 		.setType(ApplicationCommandType.User)
-		.setName('Profile Ephemeral')
+		.setName('Profile')
 		.setDefaultPermission(true)
 
 

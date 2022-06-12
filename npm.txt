@@ -14,3 +14,5 @@ Connected, there are 5853 rows in the database.
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
+Sterling_Boirelle
+the client joins a guild: 972919822738399232 ---> bothub

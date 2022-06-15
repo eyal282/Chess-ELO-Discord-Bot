@@ -18,7 +18,7 @@ module.exports = {
 		.setDescription('Forces the bot to repeat your message.')
     
       .addStringOption((option) =>
-      option.setName('message').setDescription('The message I will say').setRequired(true)
+      option.setName('message').setDescription('The message I will say. Use `///n` for new line').setRequired(true)
       ),
     async execute(client, interaction, settings, goodies) {
       //let ephemeral = interaction.options.getBoolean('ephemeral');
@@ -27,6 +27,8 @@ module.exports = {
 
       let message = interaction.options.getString('message');
 
+	  message = message.replaceAll("///n", '\n');
+		
       let bError = false
       interaction.channel.send({content: message}).catch(() => {
         

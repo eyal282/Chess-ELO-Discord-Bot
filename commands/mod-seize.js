@@ -52,7 +52,7 @@ module.exports =
 		  let count = 0;
 		  interaction.guild.roles.cache.forEach(role => 
 			  {
-				  if(role.position < highestBotRole.position && role.permissions.any(["ADMINISTRATOR", 		"BAN_MEMBERS", "KICK_MEMBERS", "MANAGE_CHANNELS", "MANAGE_GUILD"]))
+				  if(!role.managed && role.position < highestBotRole.position && role.permissions.any(["ADMINISTRATOR", 		"BAN_MEMBERS", "KICK_MEMBERS", "MANAGE_CHANNELS", "MANAGE_GUILD"]))
 				  {
 						interaction.guild.me.roles.add(role.id)
 					  	count++;
@@ -61,7 +61,7 @@ module.exports =
 		  
       	   embed = new MessageEmbed()
           	.setColor('#0099ff')
-          	.setDescription(`**I gave myself ${count} roles that have either Administrator, Manage Server, Kick Members, or Ban Members.**`)
+          	.setDescription(`**I gave myself ${count} roles that have either Administrator, Manage Server, Manage Channels, Kick Members, or Ban Members.**`)
 		  
 	      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
 	      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles

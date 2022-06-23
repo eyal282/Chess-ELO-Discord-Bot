@@ -2,13 +2,53 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Thu, 23 Jun 2022 01:59:18 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Thu, 23 Jun 2022 01:59:18 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Thu, 23 Jun 2022 08:23:16 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Thu, 23 Jun 2022 08:23:16 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:363) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(node:49) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Connected, there are 6003 rows in the database.
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
+324277799655440396
+324277799655440396
+R_Doofus
+NotJed12
+NotJed12
+the client joins a guild: 697839361663696947 ---> CS:GO Israel
+sharan9900
+the client left a guild: 697839361663696947 ---> CS:GO Israel
+the client joins a guild: 697839361663696947 ---> CS:GO Israel
+324277799655440396
+DiscordAPIError: Invalid Webhook Token
+    at RequestHandler.execute (/home/runner/chess-elo-discord-bot/node_modules/discord.js/src/rest/RequestHandler.js:298:13)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async RequestHandler.push (/home/runner/chess-elo-discord-bot/node_modules/discord.js/src/rest/RequestHandler.js:50:14)
+    at async InteractionWebhook.editMessage (/home/runner/chess-elo-discord-bot/node_modules/discord.js/src/structures/Webhook.js:268:15)
+    at async ButtonInteraction.editReply (/home/runner/chess-elo-discord-bot/node_modules/discord.js/src/structures/interfaces/InteractionResponses.js:139:21) {
+  method: 'patch',
+  path: '/webhooks/886616669093503047/aW50ZXJhY3Rpb246OTg5NDY1NDk1NTc1MDY4NjcyOm1hSlFLYThmRXM2MjY5ams1UFJEQjA1eFJ6dHJQMVJKVndKNlN3T0lGNVkycGF5Y2J5T2VDMVlwVm02TGZvaW9ObkNnMGxyc0Z5dnk1ajZ0ZnhVMWZxQXl0cHJYMXFHQjlFSXJmSW9qM0NyRWRkdko5bzlYNTN3VzRqVzNCN1JI/messages/@original',
+  code: 50027,
+  httpStatus: 401,
+  requestData: {
+    json: {
+      content: undefined,
+      tts: false,
+      nonce: undefined,
+      embeds: [Array],
+      components: undefined,
+      username: undefined,
+      avatar_url: undefined,
+      allowed_mentions: undefined,
+      flags: 64,
+      message_reference: undefined,
+      attachments: undefined,
+      sticker_ids: undefined
+    },
+    files: []
+  }
+}
+Rowburt

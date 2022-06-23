@@ -18,16 +18,16 @@ let slashCommand = new SlashCommandBuilder()
 		.setDescription('Deletes all roles below the bot that either got 3+ numbers in their names or get created with /setup')
 		
 		.addBooleanOption((option) =>
-      option.setName('sure1').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+      option.setName('sure1').setDescription('ARE YOU SURE YOU WANT TO DELETE EVERY RELEVANT ROLE?').setRequired(true))
 
 		.addBooleanOption((option) =>
-      option.setName('sure2').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+      option.setName('sure2').setDescription('ARE YOU SURE YOU WANT TO DELETE EVERY RELEVANT ROLE?').setRequired(true))
 
 		.addBooleanOption((option) =>
-      option.setName('sure3').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+      option.setName('sure3').setDescription('ARE YOU SURE YOU WANT TO DELETE EVERY RELEVANT ROLE?').setRequired(true))
 
 		.addBooleanOption((option) =>
-      option.setName('sure4').setDescription('Are you sure you want to delete every relevant role?').setRequired(true))
+      option.setName('sure4').setDescription('ARE YOU SURE YOU WANT TO DELETE EVERY RELEVANT ROLE?').setRequired(true))
 
 module.exports =
 {

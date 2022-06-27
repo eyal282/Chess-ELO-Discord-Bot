@@ -1038,7 +1038,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                     let role = roles.get(ratingRoles[i].id)
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
                     {
                         ratingRoles.splice(i, 1)
                         i--
@@ -1050,7 +1061,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                     let role = roles.get(puzzleRatingRoles[i].id)
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
                     {
                       puzzleRatingRoles.splice(i, 1)
                       i--
@@ -1062,7 +1084,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
 
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
                     {
                       titleRoles.splice(i, 1)
                       i--
@@ -1072,13 +1105,36 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
 				let role = roles.get(verifyRole)
 
 				// if role doesn't exist or is above bot.
-				if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
+					
 					verifyRole = undefined
 
 				role = roles.get(titledRole)
 
 				// if role doesn't exist or is above bot.
-				if (role == undefined || highestBotRole.rawPosition < role.rawPosition)
+				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
+		Permissions.FLAGS.BAN_MEMBERS,
+		Permissions.FLAGS.MANAGE_CHANNELS,
+		Permissions.FLAGS.MANAGE_GUILD,
+		Permissions.FLAGS.MANAGE_MESSAGES,
+		Permissions.FLAGS.MUTE_MEMBERS, 
+		Permissions.FLAGS.MOVE_MEMBERS, 
+		Permissions.FLAGS.MANAGE_NICKNAMES, 
+		Permissions.FLAGS.MANAGE_ROLES, 
+		Permissions.FLAGS.MANAGE_WEBHOOKS, 
+		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.FLAGS.MANAGE_THREADS]))
 					titledRole = undefined
             }
         })

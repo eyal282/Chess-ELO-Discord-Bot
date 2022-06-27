@@ -71,6 +71,6 @@ module.exports = {
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
-		//await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
+		await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
     }
 };

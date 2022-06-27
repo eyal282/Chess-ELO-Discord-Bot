@@ -2,6 +2,7 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Mon, 27 Jun 2022 16:19:01 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Mon, 27 Jun 2022 16:19:01 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Mon, 27 Jun 2022 16:23:25 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Mon, 27 Jun 2022 16:23:25 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
+Example app listening at http://localhost:3000

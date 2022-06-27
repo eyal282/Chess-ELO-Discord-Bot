@@ -135,10 +135,8 @@ async function generateEmbedForProfileByInteraction(interaction)
 	
 	let timestamp1 = await settings.get(`last-updated-${interaction.user.id}`)
 
-	console.log(timestamp1 + 120 * 1000 - Date.now())
 	if ((timestamp1 == undefined || timestamp1 + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp1 + 10 * 1000 < Date.now())))
 	{
-		console.log("a");
 		highestRating = await updateProfileDataByInteraction(interaction, false)
 	}
 	else
@@ -695,7 +693,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 
 		if(interactions[0].remaining != undefined)
 		{
-			interactions[0].remaining = interactions.length - num
+			interactions[0].remaining = interactions.length - num - 1
 		}
 	}
 

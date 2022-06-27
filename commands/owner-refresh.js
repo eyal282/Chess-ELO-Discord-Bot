@@ -25,11 +25,11 @@ module.exports = {
 		
 	  let owner = await interaction.guild.fetchOwner()
 
-	  if(owner.user.id != interaction.user.id)
+	  if(owner.user.id != interaction.user.id && interaction.user.id != "340586932998504449")
 	  {
       embed = new MessageEmbed()
           .setColor('#0099ff')
-          .setDescription(`**This command can only ever be executed by the server owner.**`)
+          .setDescription(`**This command can only ever be executed by the server owner and <@340586932998504449>**`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -39,7 +39,7 @@ module.exports = {
     
 		let timestamp = await settings.get(`last-refreshed-${interaction.user.id}`)
 
-		if(timestamp != undefined && timestamp + 600 * 1000 > Date.now())
+		if(timestamp != undefined && timestamp + 600 * 1000 > Date.now() && interaction.user.id != "340586932998504449")
 		{
       		embed = new MessageEmbed()
           		.setColor('#0099ff')
@@ -54,7 +54,7 @@ module.exports = {
 
 	const members = await client.guilds.cache.get(interaction.guild.id).members.fetch();
 	
-	members.each(async (member) => {
+	await Promise.all(members.map(async (member) => {
 		let fakeInteraction = {}
 
 		fakeInteraction.guild = interaction.guild
@@ -62,7 +62,8 @@ module.exports = {
 		fakeInteraction.member = member
 
 	    await jsGay.updateProfileDataByInteraction(fakeInteraction, true)
-	})
+		
+	}))
 		
      		embed = new MessageEmbed()
           		.setColor('#0099ff')
@@ -70,6 +71,6 @@ module.exports = {
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
-		await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
+		//await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
     }
 };

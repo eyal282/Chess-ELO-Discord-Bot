@@ -194,7 +194,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 			rapidRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_RapidBitwise) ? "" : ":x:", result.perfs.rapid.rating.toString(), (result.perfs.rapid.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.classical)
-			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "**" : "(?)"))
+			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "(?)"))
 
 			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
 			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"))
@@ -451,7 +451,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
     }
     if(result != null)
     {
-		result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
+		let result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
           if (response.status == 404) { // Not Found
             return null
           }
@@ -463,7 +463,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
           }
         })
 
-		result3 = await fetch(`https://www.chess.com/callback/member/stats/${chessComAccount}`).then(response => {
+		let result3 = await fetch(`https://www.chess.com/callback/member/stats/${chessComAccount}`).then(response => {
           if (response.status == 404) { // Not Found
             return null
           }
@@ -475,7 +475,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
           }
         })
 
-		result4 = await fetch(`https://www.chess.com/callback/user/popup/${chessComAccount}`).then(response => {
+		let result4 = await fetch(`https://www.chess.com/callback/user/popup/${chessComAccount}`).then(response => {
           if (response.status == 404) { // Not Found
             return null
           }
@@ -510,7 +510,14 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 		result.tactics.last = {}
 		result.tactics.last.rating = puzzleRating
 
-      queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
+		if(result2 != null)
+		{
+      	queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
+		}
+		else
+		{
+			queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result;
+		}
 
 	  let bulletRating = -1
       let blitzRating = -1
@@ -559,7 +566,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
       highestRating = Math.max(lichessHighestRating, chessComHighestRating)
 	  highestPuzzleRating = Math.max(lichessPuzzleRating, chessComPuzzleRating)
 
-      if (result2.title)
+      if (result2 && result2.title)
         chessTitle = result2.title
     }
 

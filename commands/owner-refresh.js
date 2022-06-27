@@ -52,25 +52,54 @@ module.exports = {
 			
 		}
 
-	const members = await client.guilds.cache.get(interaction.guild.id).members.fetch();
-	
-	await Promise.all(members.map(async (member) => {
-		let fakeInteraction = {}
-
-		fakeInteraction.guild = interaction.guild
-		fakeInteraction.user = member.user
-		fakeInteraction.member = member
-
-	    await jsGay.updateProfileDataByInteraction(fakeInteraction, true)
-		
-	}))
-		
-     		embed = new MessageEmbed()
-          		.setColor('#0099ff')
-          		.setDescription(`**Sucessfully refreshed every player's role.**`)
-
-      interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
-
 		await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
+
+		const members = await client.guilds.cache.get(interaction.guild.id).members.fetch();
+	
+		let interactions = [];
+
+		let percents = 0
+
+		let memberCount = members.size;
+		
+		await Promise.all(members.map(async (member) => {
+			let fakeInteraction = {}
+	
+			fakeInteraction.guild = interaction.guild
+			fakeInteraction.user = member.user
+			fakeInteraction.member = member
+
+			// This is unique to updateProfileDataByInteractionsArray, is the amount of members remaining
+			fakeInteraction.remaining = memberCount
+	
+			interactions.push(fakeInteraction)
+		}))
+
+		jsGay.updateProfileDataByInteractionsArray(interactions, true)
+
+		let interval = setInterval(() =>
+			{
+				let remaining = interactions[0].remaining
+
+				if(remaining <= 0)
+				{
+					embed = new MessageEmbed()
+						.setColor('#0099ff')
+						.setDescription(`**Sucessfully refreshed everybody's roles.**`)
+					
+					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
+
+					clearInterval(interval)
+				}
+				else
+				{
+					embed = new MessageEmbed()
+						.setColor('#0099ff')
+						.setDescription(`**Refreshing roles...\nProgress: ${(((memberCount - remaining) / memberCount) * 100.0).toFixed(2)}%**`)
+					
+					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
+				}
+			}, 3000)
+
     }
 };

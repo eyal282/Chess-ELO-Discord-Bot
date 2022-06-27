@@ -131,6 +131,21 @@ async function setModSlashCommands(commandsArray)
 
 async function generateEmbedForProfileByInteraction(interaction)
 {
+	let highestRating = -1;
+	
+	let timestamp1 = await settings.get(`last-updated-${interaction.user.id}`)
+
+	console.log(timestamp1 + 120 * 1000 - Date.now())
+	if ((timestamp1 == undefined || timestamp1 + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp1 + 10 * 1000 < Date.now())))
+	{
+		console.log("a");
+		highestRating = await updateProfileDataByInteraction(interaction, false)
+	}
+	else
+	{
+		highestRating = await 						updateProfileDataByInteraction(interaction, true)
+	}
+	
 	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interaction)
 	  
 	let obj = await wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
@@ -141,19 +156,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 	let guildRoles = obj.guildRoles
 	verifyRole = obj.verifyRole
 	titledRole = obj.titledRole
-	
-  	let highestRating
 
-	let timestamp1 = await settings.get(`last-updated-${interaction.user.id}`)
-	
-	if ((timestamp1 == undefined || timestamp1 + 120 * 1000 < Date.now() || (isBotSelfHosted() && timestamp1 + 10 * 1000 < Date.now())))
-	{
-		highestRating = await updateProfileDataByInteraction(interaction, false)
-	}
-	else
-	{
-		highestRating = await 						updateProfileDataByInteraction(interaction, true)
-	}
 	let embed = new MessageEmbed()
 	          .setColor('#0099ff')
 			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.displayAvatarURL({dynamic : true}))
@@ -290,7 +293,7 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 	fakeInteraction.user = message.author
 	fakeInteraction.member = message.member
 
-	updateProfileDataByInteraction(fakeInteraction, useCacheOnly)
+	await updateProfileDataByInteraction(fakeInteraction, useCacheOnly)
 
 }
 
@@ -298,368 +301,414 @@ async function updateProfileDataByMessage(message, useCacheOnly)
 // You can sneak a fake interaction if you assign .guild, .user and .member
 async function updateProfileDataByInteraction(interaction, useCacheOnly)
 {
-    if(!interaction.guild.me.permissions.has('MANAGE_ROLES'))
-        return;
+	let interactions = [];
 
-    let queue = []
+	interactions.push(interaction);
 
-    let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interaction)
+	await updateProfileDataByInteractionsArray(interactions, useCacheOnly);
+}
 
-	let obj = await wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
+// This returns the best rating AFTER formula.
+// You can sneak a fake interaction if you assign .guild, .user and .member
+async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
+{
+    if(!interactions[0].guild.me.permissions.has('MANAGE_ROLES'))
+        return -1;
 
-	ratingRoles = obj.ratingRoles
-	puzzleRatingRoles = obj.puzzleRatingRoles
-	titleRoles = obj.titleRoles
-	let guildRoles = obj.guildRoles
-	verifyRole = obj.verifyRole
-	titledRole = obj.titledRole
+	let highestRating = -1
+	
+	let queues = []
 
-    try {
-      Parser.evaluate(lichessRatingEquation, { x: 1000 })
-      Parser.evaluate(lichessRatingEquation, { x: 0 })
-      Parser.evaluate(lichessRatingEquation, { x: -1 })
+	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[0])
 
-      Parser.evaluate(chessComRatingEquation, { x: 1000 })
-      Parser.evaluate(chessComRatingEquation, { x: 0 })
-      Parser.evaluate(chessComRatingEquation, { x: -1 })
-    }
-    catch {}
+	
+	try {
+	  Parser.evaluate(lichessRatingEquation, { x: 1000 })
+	  Parser.evaluate(lichessRatingEquation, { x: 0 })
+	  Parser.evaluate(lichessRatingEquation, { x: -1 })
 
-    queue[`last-updated-${interaction.user.id}`] = Date.now()
-
-    let result
-
-    if (lichessAccount == undefined) {
-      result = null;
-    }
-    else
-    {
-      if(useCacheOnly) 
-      {
-        result = lichessAccountData
-      }
-      else
-      {
-        result = await fetch(`https://lichess.org/api/user/${lichessAccount}`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-      }
-    }
-    
-    let highestRating = -1
-    let highestPuzzleRating = -1
-    let lichessHighestRating = -1
-    let lichessPuzzleRating = -1
-    let lichessTitle = ""
-    let chessTitle = ""
-    
-    if(result != null)
-    {
-      queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
-
-	  let bulletRating = -1
-      let blitzRating = -1
-      let rapidRating = -1
-      let classicalRating = -1
-	  let corresRating = -1
-
-      let puzzleRating = -1
-
-	  if (result.perfs)
-	  {
-		if (result.perfs.bullet && result.perfs.bullet.prov == undefined) bulletRating = result.perfs.bullet.rating
-
-		if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
-
-		if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
-
-		if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
-
-		if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = 
-			result.perfs.correspondence.rating
-
-      	if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
-	  }
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
-	  	bulletRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
-	  	blitzRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
-	  	rapidRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise))
-	  	classicalRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
-	  	corresRating = -1
-
-      lichessHighestRating = Math.max(bulletRating, blitzRating, rapidRating, classicalRating, corresRating)
-      lichessPuzzleRating = puzzleRating
-
-      let value = lichessHighestRating
-
-      try {
-
-		if(value != -1)
-        	value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
-      }
-
-      catch { console.log(error)}
-
-      lichessHighestRating = value
-      highestRating = lichessHighestRating
-      highestPuzzleRating = lichessPuzzleRating
-
-      if (result.title) 
-        lichessTitle = result.title
-    }
-    
-    if (chessComAccount == undefined) {
-      result = null;
-    }
-    else
-    {
-      if(useCacheOnly) 
-      {
-        result = chessComAccountData
-      }
-      else
-      {
-        result = await fetch(`https://api.chess.com/pub/player/${chessComAccount}/stats`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-      }
-    }
-    if(result != null)
-    {
-		let result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-
-		let result3 = await fetch(`https://www.chess.com/callback/member/stats/${chessComAccount}`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
-
-		let result4 = await fetch(`https://www.chess.com/callback/user/popup/${chessComAccount}`).then(response => {
-          if (response.status == 404) { // Not Found
-            return null
-          }
-          else if (response.status == 200) { // Status OK
-            return response.json()
-          }
-          else if(response.status == 429) { // Rate Limit
-            return null
-          }
-        })
+	  Parser.evaluate(chessComRatingEquation, { x: 1000 })
+	  Parser.evaluate(chessComRatingEquation, { x: 0 })
+	  Parser.evaluate(chessComRatingEquation, { x: -1 })
+	}
+	catch {}
+	
 		
-		let puzzleRating = -1
+	let obj = await wipeDeletedRolesFromDB(interactions[0], ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
 
-		if(result3 != null)
+	for(let num=0;num < interactions.length;num++)
+	{
+		let queue = []
+		
+		let interaction = interactions[num];	
+
+		highestRating = -1
+
+		if(num > 0)
 		{
-			for(let i=0;i < result3.stats.length;i++)
-			{
-				if(result3.stats[i].key == 'tactics' && result3.stats[i].stats && result3.stats[i].stats.rating)
-				{
+			 let [ratingRoles, puzzleRatingRoles, titleRoles, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[num])
+		}
+	
+		ratingRoles = obj.ratingRoles
+		puzzleRatingRoles = obj.puzzleRatingRoles
+		titleRoles = obj.titleRoles
+		let guildRoles = obj.guildRoles
+		verifyRole = obj.verifyRole
+		titledRole = obj.titledRole
 
-					puzzleRating = result3.stats[i].stats.rating
+	
+	    queue[`last-updated-${interaction.user.id}`] = Date.now()
+	
+	    let result
+	
+	    if (lichessAccount == undefined) {
+	      result = null;
+	    }
+	    else
+	    {
+	      if(useCacheOnly) 
+	      {
+	        result = lichessAccountData
+	      }
+	      else
+	      {
+	        result = await fetch(`https://lichess.org/api/user/${lichessAccount}`).then(response => {
+	          if (response.status == 404) { // Not Found
+	            return null
+	          }
+	          else if (response.status == 200) { // Status OK
+	            return response.json()
+	          }
+	          else if(response.status == 429) { // Rate Limit
+	            return null
+	          }
+	        })
+	      }
+	    }
+	
+	    let highestPuzzleRating = -1
+	    let lichessHighestRating = -1
+	    let lichessPuzzleRating = -1
+	    let lichessTitle = ""
+	    let chessTitle = ""
+
+	    if(result != null)
+	    {
+	      queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
+	
+		  let bulletRating = -1
+	      let blitzRating = -1
+	      let rapidRating = -1
+	      let classicalRating = -1
+		  let corresRating = -1
+	
+	      let puzzleRating = -1
+	
+		  if (result.perfs)
+		  {
+			if (result.perfs.bullet && result.perfs.bullet.prov == undefined) bulletRating = result.perfs.bullet.rating
+	
+			if (result.perfs.blitz && result.perfs.blitz.prov == undefined) blitzRating = result.perfs.blitz.rating
+	
+			if (result.perfs.rapid && result.perfs.rapid.prov == undefined) rapidRating = result.perfs.rapid.rating
+	
+			if (result.perfs.classical && result.perfs.classical.prov == undefined) classicalRating = result.perfs.classical.rating
+	
+			if (result.perfs.correspondence && result.perfs.correspondence.prov == undefined) corresRating = 
+				result.perfs.correspondence.rating
+	
+	      	if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined) puzzleRating = result.perfs.puzzle.rating
+		  }
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
+		  	bulletRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
+		  	blitzRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
+		  	rapidRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise))
+		  	classicalRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
+		  	corresRating = -1
+	
+	      lichessHighestRating = Math.max(bulletRating, blitzRating, rapidRating, classicalRating, corresRating)
+	      lichessPuzzleRating = puzzleRating
+	
+	      let value = lichessHighestRating
+	
+	      try {
+	
+			if(value != -1)
+	        	value = Math.round(Parser.evaluate(lichessRatingEquation, { x: lichessHighestRating }))
+	      }
+	
+	      catch { console.log(error)}
+	
+	      lichessHighestRating = value
+	      highestRating = lichessHighestRating
+	      highestPuzzleRating = lichessPuzzleRating
+	
+	      if (result.title) 
+	        lichessTitle = result.title
+	    }
+	    
+	    if (chessComAccount == undefined) {
+	      result = null;
+	    }
+	    else
+	    {
+	      if(useCacheOnly) 
+	      {
+	        result = chessComAccountData
+	      }
+	      else
+	      {
+	        result = await fetch(`https://api.chess.com/pub/player/${chessComAccount}/stats`).then(response => {
+	          if (response.status == 404) { // Not Found
+	            return null
+	          }
+	          else if (response.status == 200) { // Status OK
+	            return response.json()
+	          }
+	          else if(response.status == 429) { // Rate Limit
+	            return null
+	          }
+	        })
+	      }
+	    }
+	    if(result != null)
+	    {
+			let result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
+	          if (response.status == 404) { // Not Found
+	            return null
+	          }
+	          else if (response.status == 200) { // Status OK
+	            return response.json()
+	          }
+	          else if(response.status == 429) { // Rate Limit
+	            return null
+	          }
+	        })
+	
+			let result3 = await fetch(`https://www.chess.com/callback/member/stats/${chessComAccount}`).then(response => {
+	          if (response.status == 404) { // Not Found
+	            return null
+	          }
+	          else if (response.status == 200) { // Status OK
+	            return response.json()
+	          }
+	          else if(response.status == 429) { // Rate Limit
+	            return null
+	          }
+	        })
+	
+			let result4 = await fetch(`https://www.chess.com/callback/user/popup/${chessComAccount}`).then(response => {
+	          if (response.status == 404) { // Not Found
+	            return null
+	          }
+	          else if (response.status == 200) { // Status OK
+	            return response.json()
+	          }
+	          else if(response.status == 429) { // Rate Limit
+	            return null
+	          }
+	        })
+			
+			let puzzleRating = -1
+	
+			if(result3 != null)
+			{
+				for(let i=0;i < result3.stats.length;i++)
+				{
+					if(result3.stats[i].key == 'tactics' && result3.stats[i].stats && result3.stats[i].stats.rating)
+					{
+	
+						puzzleRating = result3.stats[i].stats.rating
+					}
 				}
 			}
-		}
-
-		// Override the future result of chess.com for premiums
-		if(result4 != null && result4.membership != undefined && result4.membership.level != undefined)
-		{
-			result.membership_level = result4.membership.level
-		}
-
-		result.tactics.last = {}
-		result.tactics.last.rating = puzzleRating
-
-		if(result2 != null)
-		{
-      	queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
-		}
-		else
-		{
-			queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result;
-		}
-
-	  let bulletRating = -1
-      let blitzRating = -1
-      let rapidRating = -1
-      let corresRating = -1
-	  
-      puzzleRating = -1
-
-
-      if (result.chess_bullet && result.chess_bullet.last.rd < Constant_ProvisionalRD) bulletRating = result.chess_bullet.last.rating
-
-      if (result.chess_blitz && result.chess_blitz.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
-
-      if (result.chess_rapid && result.chess_rapid.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
-
-      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
-
-      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.last.rating
-
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
-	  	bulletRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
-	  	blitzRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
-	  	rapidRating = -1
-
-	  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
-	  	corresRating = -1
-		  
-      let chessComHighestRating = Math.max(bulletRating, blitzRating, rapidRating, corresRating)
-
-	  let chessComPuzzleRating = puzzleRating
-
-      let value = chessComHighestRating
-
-      try {
-		if(value != -1)
-        	value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
-      }
-      catch {}
-      chessComHighestRating = value
-
-      highestRating = Math.max(lichessHighestRating, chessComHighestRating)
-	  highestPuzzleRating = Math.max(lichessPuzzleRating, chessComPuzzleRating)
-
-      if (result2 && result2.title)
-        chessTitle = result2.title
-    }
-
-    let highestRatingRole = null;
-    let highestPuzzleRatingRole = null;
-    let highestTitleRole = null;
-
-    let fullRolesCache = interaction.member.roles.cache
-
-    if (fullRolesCache)
-    {
-      let fullRolesArray = Array.from(fullRolesCache.keys());
-
-	  // Now we remove every rating role from the user and readd the right role for a lot of lines here:
-
-      for (let i = 0; i < ratingRoles.length; i++)
-      {
-        if (highestRating >= ratingRoles[i].rating)
-          highestRatingRole = ratingRoles[i].id;
-
-        let index = fullRolesArray.indexOf(ratingRoles[i].id)
-
-        if(index != -1)
-          fullRolesArray.splice(index, 1);
-      }
-
-      for (let i = 0; i < puzzleRatingRoles.length; i++)
-      {
-        if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
-          highestPuzzleRatingRole = puzzleRatingRoles[i].id;
-
-        let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
-
-        if(index != -1)
-          fullRolesArray.splice(index, 1);
-      }
-
-      for (let i = 0; i < titleRoles.length; i++) {
-        if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
-          highestTitleRole = titleRoles[i].id;
-
-        let index = fullRolesArray.indexOf(titleRoles[i].id)
-
-        if (index != -1)
-          fullRolesArray.splice(index, 1);
-      }
 	
-	  let index = fullRolesArray.indexOf(verifyRole)
+			// Override the future result of chess.com for premiums
+			if(result4 != null && result4.membership != undefined && result4.membership.level != undefined)
+			{
+				result.membership_level = result4.membership.level
+			}
+	
+			result.tactics.last = {}
+			result.tactics.last.rating = puzzleRating
+	
+			if(result2 != null)
+			{
+	      	queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
+			}
+			else
+			{
+				queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result;
+			}
+	
+		  let bulletRating = -1
+	      let blitzRating = -1
+	      let rapidRating = -1
+	      let corresRating = -1
+		  
+	      puzzleRating = -1
+	
+	
+	      if (result.chess_bullet && result.chess_bullet.last.rd < Constant_ProvisionalRD) bulletRating = result.chess_bullet.last.rating
+	
+	      if (result.chess_blitz && result.chess_blitz.last.rd < Constant_ProvisionalRD) blitzRating = result.chess_blitz.last.rating
+	
+	      if (result.chess_rapid && result.chess_rapid.last.rd < Constant_ProvisionalRD) rapidRating = result.chess_rapid.last.rating
+	
+	      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
+	
+	      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.last.rating
+	
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
+		  	bulletRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_BlitzBitwise))
+		  	blitzRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_RapidBitwise))
+		  	rapidRating = -1
+	
+		  if(!areBitsContained(timeControlsBitwise, Constant_CorresBitwise))
+		  	corresRating = -1
+			  
+	      let chessComHighestRating = Math.max(bulletRating, blitzRating, rapidRating, corresRating)
+	
+		  let chessComPuzzleRating = puzzleRating
+	
+	      let value = chessComHighestRating
+	
+	      try {
+			if(value != -1)
+	        	value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
+	      }
+	      catch {}
+	      chessComHighestRating = value
+	
+	      highestRating = Math.max(lichessHighestRating, chessComHighestRating)
+		  highestPuzzleRating = Math.max(lichessPuzzleRating, chessComPuzzleRating)
+	
+	      if (result2 && result2.title)
+	        chessTitle = result2.title
+	    }
+	
+	    let highestRatingRole = null;
+	    let highestPuzzleRatingRole = null;
+	    let highestTitleRole = null;
+	
+	    let fullRolesCache = interaction.member.roles.cache
+	
+	    if (fullRolesCache)
+	    {
+	      let fullRolesArray = Array.from(fullRolesCache.keys());
+	
+		  // Now we remove every rating role from the user and readd the right role for a lot of lines here:
+	
+	      for (let i = 0; i < ratingRoles.length; i++)
+	      {
+	        if (highestRating >= ratingRoles[i].rating)
+	          highestRatingRole = ratingRoles[i].id;
+	
+	        let index = fullRolesArray.indexOf(ratingRoles[i].id)
+	
+	        if(index != -1)
+	          fullRolesArray.splice(index, 1);
+	      }
+	
+	      for (let i = 0; i < puzzleRatingRoles.length; i++)
+	      {
+	        if (highestPuzzleRating >= puzzleRatingRoles[i].rating)
+	          highestPuzzleRatingRole = puzzleRatingRoles[i].id;
+	
+	        let index = fullRolesArray.indexOf(puzzleRatingRoles[i].id)
+	
+	        if(index != -1)
+	          fullRolesArray.splice(index, 1);
+	      }
+	
+	      for (let i = 0; i < titleRoles.length; i++) {
+	        if (titleRoles[i].title == lichessTitle || titleRoles[i].title == chessTitle)
+	          highestTitleRole = titleRoles[i].id;
+	
+	        let index = fullRolesArray.indexOf(titleRoles[i].id)
+	
+	        if (index != -1)
+	          fullRolesArray.splice(index, 1);
+	      }
+		
+		  let index = fullRolesArray.indexOf(verifyRole)
+	
+		  if (index != -1)
+		  	fullRolesArray.splice(index, 1)
+	
+		  index = fullRolesArray.indexOf(titledRole)
+	
+		  if (index != -1)
+		  	fullRolesArray.splice(index, 1)
+	
+	
+		  // End of deleting every CELOR related role, now we readd the right ones.
+	
+	      if (highestRatingRole != null)
+	        fullRolesArray.push(highestRatingRole)
+	
+	
+	      if (highestPuzzleRatingRole != null)
+	        fullRolesArray.push(highestPuzzleRatingRole)
+	
+	      if (highestTitleRole != null)
+		  {
+	        fullRolesArray.push(highestTitleRole)
+	
+			if(titledRole != undefined)
+				fullRolesArray.push(titledRole)
+		  }
+	
+		  if(verifyRole != null && (lichessAccount != null || chessComAccount != null) )
+		  	fullRolesArray.push(verifyRole)
+	
+	      // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
+	      if (fullRolesArray != Array.from(fullRolesCache.keys()) && !(chessComAccount === undefined && lichessAccount === undefined))
+	      {
+	        try
+	        {
+	          interaction.member.roles.set(fullRolesArray).catch(() => null)
+	        }
+	        catch {}
+	      }
+	    }
+	
+		// Don't set the timestamp cooldown if nothing is even linked...
+		if(!(chessComAccount === undefined && lichessAccount === undefined))
+		{
+			queues.push(queue);
+		}
 
-	  if (index != -1)
-	  	fullRolesArray.splice(index, 1)
+		if(interactions[0].remaining != undefined)
+		{
+			interactions[0].remaining = interactions.length - num
+		}
+	}
 
-	  index = fullRolesArray.indexOf(titledRole)
+	let finalQueue = [];
+	
+	for(let num=0;num < queues.length;num++)
+	{
+		// No clue which order to use...
+		finalQueue = Object.assign(finalQueue, queues[num]);
+	}
 
-	  if (index != -1)
-	  	fullRolesArray.splice(index, 1)
-
-
-	  // End of deleting every CELOR related role, now we readd the right ones.
-
-      if (highestRatingRole != null)
-        fullRolesArray.push(highestRatingRole)
-
-
-      if (highestPuzzleRatingRole != null)
-        fullRolesArray.push(highestPuzzleRatingRole)
-
-      if (highestTitleRole != null)
-	  {
-        fullRolesArray.push(highestTitleRole)
-
-		if(titledRole != undefined)
-			fullRolesArray.push(titledRole)
-	  }
-
-	  if(verifyRole != null && (lichessAccount != null || chessComAccount != null) )
-	  	fullRolesArray.push(verifyRole)
-
-      // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
-      if (fullRolesArray != Array.from(fullRolesCache.keys()) && !(chessComAccount === undefined && lichessAccount === undefined))
-      {
-        try
-        {
-          interaction.member.roles.set(fullRolesArray).catch(() => null)
-        }
-        catch {}
-      }
-    }
-
-	// Don't set the timestamp cooldown if nothing is even linked...
-	if(!(chessComAccount === undefined && lichessAccount === undefined))
-    	await settings.setMany(queue, true)
-
+	await settings.setMany(finalQueue, true);
+	
     return highestRating
 }
 
@@ -1397,4 +1446,4 @@ async function getDebugChannel()
 
 client.login(token)
 
-module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByMessage, updateProfileDataByInteraction, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList, getDebugChannel }
+module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByMessage, updateProfileDataByInteraction, updateProfileDataByInteractionsArray, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList, getDebugChannel }

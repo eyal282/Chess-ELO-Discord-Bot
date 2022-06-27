@@ -437,7 +437,7 @@ client.on('interactionCreate', async(interaction) => {
             // result.profile.location
             let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
 
-            if((result.profile?.location && result.profile.location.includes(fullDiscordUsername)) || (result.profile?.bio && result.profile.bio.includes(fullDiscordUsername)))
+            if(result.profile && ((result.profile.location && result.profile.location.includes(fullDiscordUsername)) || (result.profile.bio && result.profile.bio.includes(fullDiscordUsername))))
             {
                 queue[`lichess-account-of-${message.author.id}`] = result.username
                 queue[`cached-lichess-account-data-of-${message.author.id}`] = result
@@ -716,7 +716,7 @@ client.on('interactionCreate', async(interaction) => {
 						}
         			})
 
-					if(result?.id)
+					if(result && result.id)
 					{
 						let userName = result.id
 						
@@ -807,7 +807,7 @@ client.on('interactionCreate', async(interaction) => {
                 
                 let decryptedResult = jsGay.parseJwt(response.id_token)
               
-                if(decryptedResult?.preferred_username)
+                if(decryptedResult && decryptedResult.preferred_username)
                 {
                     let userName = decryptedResult.preferred_username
                     

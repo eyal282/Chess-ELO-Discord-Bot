@@ -36,7 +36,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const fs = require('fs');
 
-//deploySlashCommands() // Comment this line to avoid deploying the slash commands
+deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
 // deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands

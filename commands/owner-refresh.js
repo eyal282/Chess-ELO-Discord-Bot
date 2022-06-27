@@ -14,11 +14,8 @@ const jsGay = require('../util.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('unnuke')
-		.setDescription('Personal command of the developer. Unbans every member banned by target')
-
-    .addUserOption((option) =>
-      option.setName('user').setDescription('User that nuked the server. Will not ban him').setRequired(true)),
+		.setName('refresh')
+		.setDescription('Refreshes every member within the server by their cache.'),
 	
     async execute(client, interaction, settings, goodies) {
 
@@ -28,13 +25,6 @@ module.exports = {
 		
 	  let owner = await interaction.guild.fetchOwner()
 
-	embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`**This command is disabled.**`)
-
-      interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
-
-		return;
 	  if(owner.user.id != interaction.user.id)
 	  {
       embed = new MessageEmbed()
@@ -47,21 +37,39 @@ module.exports = {
 	  }
       
     
-	 await interaction.guild.bans.fetch().then(bans => {
-    bans.forEach(ban => 
-		 {
-			 console.log(ban.client.user.id);
-			 console.log(interaction.options.getUser('user').id);
-			 if(ban.client.user.id == interaction.options.getUser('user').id)
-			 {
-				 interaction.guild.bans.remove(ban.user.id);
-			 }
-		 })})
+		let timestamp = await settings.get(`last-refreshed-${interaction.user.id}`)
+
+		if(timestamp != undefined && timestamp + 600 * 1000 > Date.now())
+		{
+      		embed = new MessageEmbed()
+          		.setColor('#0099ff')
+          		.setDescription(`**This command has a 10 minute cooldown. It can be re-used in ${((timestamp + 600 * 1000) - Date.now()) / 1000} seconds.**`)
+
+			    interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
+
+			return;
+
+			
+		}
+
+	const members = await client.guilds.cache.get(interaction.guild.id).members.fetch();
+	
+	members.each(async (member) => {
+		let fakeInteraction = {}
+
+		fakeInteraction.guild = interaction.guild
+		fakeInteraction.user = member.user
+		fakeInteraction.member = member
+
+	    await jsGay.updateProfileDataByInteraction(fakeInteraction, true)
+	})
 		
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`**Success.**`)
+     		embed = new MessageEmbed()
+          		.setColor('#0099ff')
+          		.setDescription(`**Sucessfully refreshed every player's role.**`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
+
+		await settings.set(`last-refreshed-${interaction.user.id}`, Date.now())
     }
 };

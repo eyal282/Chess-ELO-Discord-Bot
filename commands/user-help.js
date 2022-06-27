@@ -51,6 +51,7 @@ module.exports = {
 	  	currentTitledRole = `<@&${titledRole}>`
 
       result = jsGay.addCommandToHelp(result, prefix, `embed ---> Sets up an embed for linking accounts. Best used by moderators`)
+      result = jsGay.addCommandToHelp(result, prefix, `refresh ---> Refreshes the roles of every member relative to the bot. Best used after using /setup for the first time. Locked only to the server owner.`)
       result = jsGay.addCommandToHelp(result, prefix, `lichess [username] ---> Tries to link your Lichess Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `chess [username] ---> Tries to link your Chess.com Account. Leave user empty to unlink`)
       result = jsGay.addCommandToHelp(result, prefix, `profile [@user] ---> Shows the profile of a target user. Leave user empty to see your profile`)

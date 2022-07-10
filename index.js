@@ -286,23 +286,23 @@ client.on("roleUpdate", function(oldRole, newRole){
 // Someone joined the guild, we will give him the roles if he already linked.
 client.on("guildMemberAdd", async function(member){
   
-    let fakeMessage = {}
-
-    fakeMessage.guild = member.guild
-    fakeMessage.author = member.user
-    fakeMessage.member = member
+	let fakeInteraction = {}
+	
+	fakeInteraction.guild = message.guild
+	fakeInteraction.user = message.author
+	fakeInteraction.member = message.member
 
     let timestamp = await settings.get(`last-updated-${fakeMessage.author.id}`)
 
     if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
     {
       // You can sneak a fake message if you assign .guild, .author and .member
-      jsGay.updateProfileDataByMessage(fakeMessage, false)
+      jsGay.updateProfileDataByInteraction(fakeInteraction, false)
     }
     else
     {
       // You can sneak a fake message if you assign .guild, .author and .member
-      jsGay.updateProfileDataByMessage(fakeMessage, true)
+      jsGay.updateProfileDataByInteraction(fakeInteraction, true)
     }
 });
 /* Emitted whenever the bot joins a guild.
@@ -370,7 +370,12 @@ client.on('interactionCreate', async(interaction) => {
 
   let username = splitURL[splitURL.length-1]
 
+  let fakeInteraction = {}
 
+  fakeInteraction.guild = message.guild
+  fakeInteraction.user = message.author
+  fakeInteraction.member = message.member
+	
   let message = interaction.message
 
   message.author = interaction.user // We do a little trolling
@@ -602,7 +607,7 @@ client.on('interactionCreate', async(interaction) => {
   await settings.setMany(queue, true)
 
   if(bUpdate)
-  	await jsGay.updateProfileDataByMessage(message, true)
+  	await jsGay.updateProfileDataByInteraction(fakeInteraction, true)
 });
 
 
@@ -1080,10 +1085,16 @@ if(debugMode)
 client.on("messageCreate", async message => {
     if (message.author.bot) return;
 
+	let fakeInteraction = {}
+
+	fakeInteraction.guild = message.guild
+	fakeInteraction.user = message.author
+	fakeInteraction.member = message.member
+	
     let timestamp = await settings.get(`last-updated-${message.author.id}`)
 
     if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
     {
-        jsGay.updateProfileDataByMessage(message, false)
+        jsGay.updateProfileDataByInteraction(fakeInteraction, false)
     }
 });

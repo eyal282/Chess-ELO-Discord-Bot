@@ -1,6 +1,7 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
 	
 
+let isFullyLoaded = false;
 const debugMode = false
 
 const jsGay = require('./util.js')
@@ -79,6 +80,8 @@ client.on('ready', async () => {
 	let channel = await jsGay.getDebugChannel();
 
 	await channel.send("Bot loaded");
+
+	isFullyLoaded = true;
 
 });
 
@@ -193,6 +196,7 @@ process.on('unhandledRejection', async error => {
 });
 // On Slash Command
 client.on('interactionCreate', async interaction => {
+	if (!isFullyLoaded) return;
 	if (!interaction.isCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
@@ -203,18 +207,19 @@ client.on('interactionCreate', async interaction => {
   {
 		return interaction.reply({ content: 'This bot does not accept DM Slash Commands', ephemeral: true });
   }
-	try
-  {
+
     if(ephemeralCommands.indexOf(command) == -1)
     {
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
-      await interaction.deferReply({ephemeral: ephemeral}).catch(() => null)
+      await interaction.deferReply({ephemeral: ephemeral}).catch(() => null);
     }
     else
     {
-      await interaction.deferReply({ephemeral: true}).catch(() => null)
+      await interaction.deferReply({ephemeral: true}).catch(() => null);
     }
+	try
+  {
     
     let goodies = {}
 		await command.execute(client, interaction, settings, goodies);
@@ -227,6 +232,7 @@ client.on('interactionCreate', async interaction => {
 
 // On Context Menu Command
 client.on('interactionCreate', async interaction => {
+	if (!isFullyLoaded) return;
 	if (!interaction.isContextMenu()) return;
 
 	const command = client.commands.get(interaction.commandName);
@@ -238,17 +244,17 @@ client.on('interactionCreate', async interaction => {
 			return interaction.reply({ content: 'This bot does not accept DM Context Menus', ephemeral: true });
 	}
 
+	if(ephemeralCommands.indexOf(command) == -1)
+	{
+		await interaction.deferReply({ephemeral: false}).catch(() => null);
+	}
+	else
+	{
+		await interaction.deferReply({ephemeral: true}).catch(() => null);
+	}
+	
 	try
-  	{
-		if(ephemeralCommands.indexOf(command) == -1)
-		{
-			await interaction.deferReply({ephemeral: false}).catch(() => null);
-		}
-		else
-		{
-			await interaction.deferReply({ephemeral: true}).catch(() => null);
-		}
-		
+  	{	
 		let goodies = {}
 
 		await command.execute(client, interaction, settings, goodies);
@@ -351,6 +357,7 @@ client.on("guildDelete", function(guild){
 
 // On Retry Link Button Pressed
 client.on('interactionCreate', async(interaction) => {
+	if (!isFullyLoaded) return;
 	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id) || !interaction.customId.includes("retry-link")) return;
 
   let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
@@ -588,6 +595,7 @@ client.on('interactionCreate', async(interaction) => {
 
 // On Embed Button Pressed
 client.on('interactionCreate', async(interaction) => {
+	if (!isFullyLoaded) return;
 	if (!interaction.isButton())
     return;
 

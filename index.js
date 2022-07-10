@@ -473,8 +473,6 @@ client.on('interactionCreate', async(interaction) => {
   // If not lichess
   else
   {
-      let timestamp = manyMuch[`last-command-${interaction.user.id}`]
-
       if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
           queue[`last-command-${interaction.user.id}`] = Date.now()
           let result = await fetch(`https://api.chess.com/pub/player/${username}`).then(response => {

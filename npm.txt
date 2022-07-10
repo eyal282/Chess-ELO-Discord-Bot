@@ -2,42 +2,13 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Sun, 10 Jul 2022 10:15:53 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Sun, 10 Jul 2022 10:15:53 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Sun, 10 Jul 2022 10:24:28 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Sun, 10 Jul 2022 10:24:28 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:6316) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(node:7039) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 (Use `node --trace-deprecation ...` to show where the warning was created)
 Connected, there are 6271 rows in the database.
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-
-<--- Last few GCs --->
-
-[6316:0x669ce30]   149517 ms: Mark-sweep (reduce) 511.2 (520.8) -> 510.7 (521.3) MB, 3691.7 / 0.0 ms  (+ 2734.4 ms in 373 steps since start of marking, biggest step 129.4 ms, walltime since start of marking 12103 ms) (average mu = 0.717, current mu = 0.59[6316:0x669ce30]   157947 ms: Mark-sweep (reduce) 511.9 (521.5) -> 511.1 (521.8) MB, 7820.9 / 0.0 ms  (+ 60.3 ms in 15 steps since start of marking, biggest step 11.7 ms, walltime since start of marking 8027 ms) (average mu = 0.514, current mu = 0.065) al
-
-<--- JS stacktrace --->
-
-FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
- 1: 0xafcff0 node::Abort() [node]
- 2: 0xa14113 node::FatalError(char const*, char const*) [node]
- 3: 0xce5c7e v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [node]
- 4: 0xce5ff7 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [node]
- 5: 0xeb4495  [node]
- 6: 0xec3c11 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [node]
- 7: 0xec67be v8::internal::Heap::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]
- 8: 0xe881ea v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType, v8::internal::AllocationOrigin) [node]
- 9: 0x11fd286 v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [node]
-10: 0x15e67d9  [node]
-Aborted (core dumped)
-npm ERR! code ELIFECYCLE
-npm ERR! errno 134
-npm ERR! Chess-ELO-Role@1.0.0 start: `node index.js`
-npm ERR! Exit status 134
-npm ERR! 
-npm ERR! Failed at the Chess-ELO-Role@1.0.0 start script.
-npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
-
-npm ERR! A complete log of this run can be found in:
-npm ERR!     /home/runner/.npm/_logs/2022-07-10T10_18_32_266Z-debug.log

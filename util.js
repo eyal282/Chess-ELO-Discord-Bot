@@ -328,10 +328,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 
 		highestRating = -1
 
-		if(num > 0)
-		{
-			 let [dummy_value100, dummy_value101, dummy_value102, dummy_value103, dummy_value104, dummy_value105, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, dummy_value106, dummy_value107, dummy_value108] = await getCriticalData(interaction)
-		}
+	 	let [dummy_value100, dummy_value101, dummy_value102, dummy_value103, dummy_value104, dummy_value105, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, dummy_value106, dummy_value107, dummy_value108] = await getCriticalData(interaction)
 		
 		ratingRoles = obj.ratingRoles
 		puzzleRatingRoles = obj.puzzleRatingRoles

@@ -297,16 +297,17 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 // You can sneak a fake interaction if you assign .guild, .user and .member
 async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 {
+	console.log("a")
     if(!interactions[0].guild.me.permissions.has('MANAGE_ROLES'))
         return -1;
 
+	console.log("b")
 	let highestRating = -1
 	
 	let queues = []
 
 	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[0])
 
-	
 	try {
 	  Parser.evaluate(lichessRatingEquation, { x: 1000 })
 	  Parser.evaluate(lichessRatingEquation, { x: 0 })
@@ -317,7 +318,6 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	  Parser.evaluate(chessComRatingEquation, { x: -1 })
 	}
 	catch {}
-	
 		
 	let obj = await wipeDeletedRolesFromDB(interactions[0], ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
 
@@ -329,11 +329,12 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 
 		highestRating = -1
 
+		console.log("i")
 		if(num > 0)
 		{
-			 let [ratingRoles, puzzleRatingRoles, titleRoles, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[num])
+			 let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interaction)
 		}
-	
+		
 		ratingRoles = obj.ratingRoles
 		puzzleRatingRoles = obj.puzzleRatingRoles
 		titleRoles = obj.titleRoles
@@ -341,6 +342,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 		verifyRole = obj.verifyRole
 		titledRole = obj.titledRole
 
+		console.log("k")
 	
 	    queue[`last-updated-${interaction.user.id}`] = Date.now()
 	
@@ -370,7 +372,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	        })
 	      }
 	    }
-	
+
 	    let highestPuzzleRating = -1
 	    let lichessHighestRating = -1
 	    let lichessPuzzleRating = -1
@@ -432,7 +434,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	      }
 	
 	      catch { console.log(error)}
-	
+
 	      lichessHighestRating = value
 	      highestRating = lichessHighestRating
 	      highestPuzzleRating = lichessPuzzleRating
@@ -440,7 +442,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	      if (result.title) 
 	        lichessTitle = result.title
 	    }
-	    
+
 	    if (chessComAccount == undefined) {
 	      result = null;
 	    }
@@ -465,6 +467,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	        })
 	      }
 	    }
+
 	    if(result != null)
 	    {
 			let result2 = await fetch(`https://api.chess.com/pub/player/${chessComAccount}`).then(response => {
@@ -504,7 +507,8 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	        })
 			
 			let puzzleRating = -1
-	
+
+			console.log("n1")
 			if(result3 != null)
 			{
 				for(let i=0;i < result3.stats.length;i++)
@@ -516,25 +520,33 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 					}
 				}
 			}
-	
+
+			console.log("n2")
 			// Override the future result of chess.com for premiums
 			if(result4 != null && result4.membership != undefined && result4.membership.level != undefined)
 			{
 				result.membership_level = result4.membership.level
 			}
-	
+
+			console.log("n3")
 			result.tactics.last = {}
 			result.tactics.last.rating = puzzleRating
+			console.log("n3.1")
 	
 			if(result2 != null)
 			{
+				console.log("n3.5")
 	      	queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = Object.assign(result2, result) // stats are the most important thing!
+				console.log("n3.6")
 			}
 			else
 			{
+				console.log("n3.7")
 				queue[`cached-chesscom-account-data-of-${interaction.user.id}`] = result;
+				console.log("n3.8")
 			}
-	
+
+			console.log("n4")
 		  let bulletRating = -1
 	      let blitzRating = -1
 	      let rapidRating = -1
@@ -552,7 +564,8 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	      if (result.chess_daily && result.chess_daily.last.rd < Constant_ProvisionalRD) corresRating = result.chess_daily.last.rating
 	
 	      if (result.tactics && result.tactics.highest) puzzleRating = result.tactics.last.rating
-	
+
+			console.log("n5")
 	
 		  if(!areBitsContained(timeControlsBitwise, Constant_BulletBitwise))
 		  	bulletRating = -1
@@ -571,7 +584,8 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 		  let chessComPuzzleRating = puzzleRating
 	
 	      let value = chessComHighestRating
-	
+
+			console.log("n6")
 	      try {
 			if(value != -1)
 	        	value = Math.round(Parser.evaluate(chessComRatingEquation, { x: chessComHighestRating }))
@@ -584,12 +598,14 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	
 	      if (result2 && result2.title)
 	        chessTitle = result2.title
+
+			console.log("n7")
 	    }
 	
 	    let highestRatingRole = null;
 	    let highestPuzzleRatingRole = null;
 	    let highestTitleRole = null;
-	
+		console.log("o")
 	    let fullRolesCache = interaction.member.roles.cache
 	
 	    if (fullRolesCache)
@@ -639,8 +655,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	
 		  if (index != -1)
 		  	fullRolesArray.splice(index, 1)
-	
-	
+
 		  // End of deleting every CELOR related role, now we readd the right ones.
 	
 	      if (highestRatingRole != null)
@@ -662,6 +677,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 		  	fullRolesArray.push(verifyRole)
 	
 	      // Don't set if nothing was changed. If both accounts are undefined ( never linked ) then do nothing.
+
 	      if (fullRolesArray != Array.from(fullRolesCache.keys()) && !(chessComAccount === undefined && lichessAccount === undefined))
 	      {
 	        try
@@ -671,7 +687,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	        catch {}
 	      }
 	    }
-	
+
 		// Don't set the timestamp cooldown if nothing is even linked...
 		if(!(chessComAccount === undefined && lichessAccount === undefined))
 		{
@@ -981,6 +997,7 @@ async function buildCanvasForChessCom(discordUsername)
   return attachment
 }
 
+// The order of declaration matters!!!
 async function getCriticalData(interaction)
 {
     let manyMuch = await settings.getMany([
@@ -1428,6 +1445,14 @@ async function getDebugChannel()
 {
 	return client.channels.cache.get(channelId);
 }
+
+async function logIfBotOwner(interaction, content)
+	{
+		if(interaction.user.id == "340586932998504449")
+		{
+			console.log(content)
+		}
+	}
 
 client.login(token)
 

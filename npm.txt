@@ -2,13 +2,529 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Sun, 10 Jul 2022 10:24:28 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Sun, 10 Jul 2022 10:24:28 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Sun, 10 Jul 2022 11:44:25 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Sun, 10 Jul 2022 11:44:25 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:7039) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(node:12822) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 (Use `node --trace-deprecation ...` to show where the warning was created)
-Connected, there are 6271 rows in the database.
+Connected, there are 6273 rows in the database.
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
+a
+b
+c
+d
+undefined
+e
+f
+g
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+foxboo
+j
+k
+l
+m
+foxboo
+{
+  avatar: 'https://images.chesscomfiles.com/uploads/v1/user/155377653.acccbbde.200x200o.581d32905f74.png',
+  player_id: 155377653,
+  '@id': 'https://api.chess.com/pub/player/foxboo',
+  url: 'https://www.chess.com/member/foxboo',
+  name: 'Aevy van Herp',
+  username: 'foxboo',
+  followers: 19,
+  country: 'https://api.chess.com/pub/country/NL',
+  last_online: 1654553268,
+  joined: 1632221575,
+  status: 'basic',
+  is_streamer: false,
+  verified: false,
+  chess_rapid: {
+    last: { rating: 685, date: 1652359491, rd: 91 },
+    best: {
+      rating: 962,
+      date: 1635431989,
+      game: 'https://www.chess.com/game/live/38678629541'
+    },
+    record: { win: 15, loss: 14, draw: 2 }
+  },
+  chess_blitz: {
+    last: { rating: 608, date: 1651268566, rd: 276 },
+    record: { win: 0, loss: 2, draw: 0 }
+  },
+  tactics: {
+    highest: { rating: 441, date: 1642015926 },
+    lowest: { rating: 392, date: 1639152826 },
+    last: { rating: 437 }
+  },
+  lessons: {},
+  puzzle_rush: {},
+  membership_level: 10
+}
+n1
+n2
+n3
+n3.1
+n3.5
+n3.6
+n4
+n5
+n6
+n7
+o
+p
+q
+r
+s
+h
+Test
+i
+eyal282
+Eyal282
+j
+Test1
+k
+l
+Test2
+Test3
+m
+eyal282
+{
+  avatar: 'https://images.chesscomfiles.com/uploads/v1/user/103072846.a9b7d0c9.200x200o.c8f66f756301.png',
+  player_id: 103072846,
+  '@id': 'https://api.chess.com/pub/player/eyal282',
+  url: 'https://www.chess.com/member/Eyal282',
+  username: 'eyal282',
+  followers: 4,
+  country: 'https://api.chess.com/pub/country/IL',
+  location: 'Eyal282#1334',
+  last_online: 1657448880,
+  joined: 1607538084,
+  status: 'basic',
+  is_streamer: false,
+  verified: false,
+  chess_daily: {
+    last: { rating: 800, date: 1631821820, rd: 350 },
+    record: { win: 0, loss: 2, draw: 0, time_per_move: 37, timeout_percent: 0 }
+  },
+  chess_rapid: {
+    last: { rating: 973, date: 1634456996, rd: 124 },
+    best: {
+      rating: 1092,
+      date: 1607735562,
+      game: 'https://www.chess.com/game/live/5985020298'
+    },
+    record: { win: 9, loss: 9, draw: 1 }
+  },
+  chess_bullet: {
+    last: { rating: 669, date: 1637412530, rd: 251 },
+    record: { win: 0, loss: 1, draw: 0 }
+  },
+  chess_blitz: {
+    last: { rating: 1277, date: 1648943422, rd: 47 },
+    best: {
+      rating: 1300,
+      date: 1648941441,
+      game: 'https://www.chess.com/game/live/39039056733'
+    },
+    record: { win: 145, loss: 110, draw: 21 }
+  },
+  tactics: {
+    highest: { rating: 621, date: 1645644089 },
+    lowest: { rating: 372, date: 1631821895 },
+    last: { rating: 621 }
+  },
+  lessons: {},
+  puzzle_rush: {},
+  membership_level: 10
+}
+Test4
+n1
+n2
+n3
+n3.1
+n3.5
+n3.6
+n4
+n5
+n6
+n7
+o
+Test5
+p
+Test6
+q
+eyal282
+Eyal282
+r
+Test SET
+s
+Test7
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+pumpplayschess
+j
+k
+l
+m
+pumpplayschess
+{
+  player_id: 167840597,
+  '@id': 'https://api.chess.com/pub/player/pumpplayschess',
+  url: 'https://www.chess.com/member/PumpPlaysChess',
+  username: 'pumpplayschess',
+  followers: 1,
+  country: 'https://api.chess.com/pub/country/BE',
+  location: 'PUMP BS#9289',
+  last_online: 1643366532,
+  joined: 1641496201,
+  status: 'basic',
+  is_streamer: false,
+  verified: false,
+  avatar: 'https://images.chesscomfiles.com/uploads/v1/user/103072846.a9b7d0c9.200x200o.c8f66f756301.png',
+  chess_daily: {
+    last: { rating: 800, date: 1631821820, rd: 350 },
+    record: { win: 0, loss: 2, draw: 0, time_per_move: 37, timeout_percent: 0 }
+  },
+  chess_rapid: {
+    last: { rating: 1601, date: 1643363548, rd: 44 },
+    best: {
+      rating: 1758,
+      date: 1641578581,
+      game: 'https://www.chess.com/game/live/35495169721'
+    },
+    record: { win: 32, loss: 36, draw: 8 }
+  },
+  chess_bullet: {
+    last: { rating: 669, date: 1637412530, rd: 251 },
+    record: { win: 0, loss: 1, draw: 0 }
+  },
+  chess_blitz: {
+    last: { rating: 903, date: 1643289239, rd: 112 },
+    best: {
+      rating: 981,
+      date: 1641638335,
+      game: 'https://www.chess.com/game/live/36007177719'
+    },
+    record: { win: 5, loss: 5, draw: 0 }
+  },
+  tactics: {
+    highest: { rating: 1420, date: 1643358664 },
+    lowest: { rating: 809, date: 1641509629 },
+    last: { rating: 2253 }
+  },
+  lessons: {},
+  puzzle_rush: {
+    best: { total_attempts: 36, score: 33 },
+    daily: { total_attempts: 33, score: 30 }
+  },
+  membership_level: 10
+}
+n1
+n2
+n3
+n3.1
+n3.5
+n3.6
+n4
+n5
+n6
+n7
+o
+p
+q
+r
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+Jjjusshsbsb
+j
+k
+l
+m
+Jjjusshsbsb
+{
+  player_id: 188356565,
+  '@id': 'https://api.chess.com/pub/player/jjjusshsbsb',
+  url: 'https://www.chess.com/member/Jjjusshsbsb',
+  username: 'jjjusshsbsb',
+  followers: 0,
+  country: 'https://api.chess.com/pub/country/IL',
+  last_online: 1656444234,
+  joined: 1656444234,
+  status: 'basic',
+  is_streamer: false,
+  verified: false,
+  fide: 0,
+  tactics: { last: { rating: -1 } },
+  lessons: {},
+  puzzle_rush: {},
+  membership_level: 10
+}
+n1
+n2
+n3
+n3.1
+n3.5
+n3.6
+n4
+n5
+n6
+n7
+o
+p
+q
+r
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+r
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+h
+i
+undefined
+j
+k
+l
+m
+undefined
+null
+o
+p
+q
+s
+a

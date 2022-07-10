@@ -304,7 +304,8 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 	
 	let queues = []
 
-	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[0])
+	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, dummy_value1, dummy_value2, dummy_value3, dummy_value4, dummy_value5, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interactions[0])
+
 
 	try {
 	  Parser.evaluate(lichessRatingEquation, { x: 1000 })
@@ -329,7 +330,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 
 		if(num > 0)
 		{
-			 let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await getCriticalData(interaction)
+			 let [dummy_value100, dummy_value101, dummy_value102, dummy_value103, dummy_value104, dummy_value105, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, dummy_value106, dummy_value107, dummy_value108] = await getCriticalData(interaction)
 		}
 		
 		ratingRoles = obj.ratingRoles

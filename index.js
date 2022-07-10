@@ -288,11 +288,11 @@ client.on("guildMemberAdd", async function(member){
   
 	let fakeInteraction = {}
 	
-	fakeInteraction.guild = message.guild
-	fakeInteraction.user = message.author
-	fakeInteraction.member = message.member
+	fakeInteraction.guild = member.guild
+	fakeInteraction.user = member.user
+	fakeInteraction.member = member
 
-    let timestamp = await settings.get(`last-updated-${fakeMessage.author.id}`)
+    let timestamp = await settings.get(`last-updated-${member.user.id}`)
 
     if ((timestamp == undefined || timestamp + 120 * 1000 < Date.now() || (jsGay.isBotSelfHosted() && timestamp + 10 * 1000 < Date.now())))
     {
@@ -353,54 +353,31 @@ client.on("guildDelete", function(guild){
 client.on('interactionCreate', async(interaction) => {
 	if (!interaction.isButton() || !interaction.customId.includes(interaction.user.id) || !interaction.customId.includes("retry-link")) return;
 
+  let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
+
+  let url = interaction.message.embeds[0].url
+
+  .replace('\\', '/')
+	
    await interaction.deferReply({ephemeral: true})
    
   let bUpdate = false
 
   let queue = {}
 
-  let bLichess = interaction.message.embeds[0].url.includes("lichess.org") || interaction.message.embeds[0].description.includes("lichess.org")
-
-  let url = interaction.message.embeds[0].url
-
-  .replace('\\', '/')
-
 
   let splitURL = url.split('/')
 
   let username = splitURL[splitURL.length-1]
-
-  let fakeInteraction = {}
-
-  fakeInteraction.guild = message.guild
-  fakeInteraction.user = message.author
-  fakeInteraction.member = message.member
 	
-  let message = interaction.message
+	let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await jsGay.getCriticalData(interaction)
 
-  message.author = interaction.user // We do a little trolling
-
-    let manyMuch = await settings.getMany([
-      `guild-prefix-${message.guild.id}`,
-      `guild-elo-roles-${message.guild.id}`,
-      `guild-puzzle-elo-roles-${message.guild.id}`,
-      `guild-title-roles-${message.guild.id}`,
-      `guild-bot-mods-${message.guild.id}`,
-      `guild-lichess-rating-equation-${message.guild.id}`,
-      `guild-chesscom-rating-equation-${message.guild.id}`,
-      `last-command-${message.author.id}`,
-      `lichess-account-of-${message.author.id}`,
-      `chesscom-account-of-${message.author.id}`,
-      `cached-lichess-account-data-of-${message.author.id}`,
-      `cached-chesscom-account-data-of-${message.author.id}`,
-    ])
+   
 
 	if(bLichess)
   {
-    let timestamp = manyMuch[`last-command-${message.author.id}`]
-
     if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-        queue[`last-command-${message.author.id}`] = Date.now()
+        queue[`last-command-${interaction.user.id}`] = Date.now()
 
         let result = await fetch(`https://lichess.org/api/user/${username}`).then(response => {
             if (response.status == 404) { // Not Found
@@ -440,12 +417,12 @@ client.on('interactionCreate', async(interaction) => {
         }
         else {
             // result.profile.location
-            let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
+            let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
             if(result.profile && ((result.profile.location && result.profile.location.includes(fullDiscordUsername)) || (result.profile.bio && result.profile.bio.includes(fullDiscordUsername))))
             {
-                queue[`lichess-account-of-${message.author.id}`] = result.username
-                queue[`cached-lichess-account-data-of-${message.author.id}`] = result
+                queue[`lichess-account-of-${interaction.user.id}`] = result.username
+                queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                 bUpdate = true
 
                 let embed = new MessageEmbed()
@@ -456,11 +433,11 @@ client.on('interactionCreate', async(interaction) => {
 
             }
             else {
-                let attachment = await jsGay.buildCanvasForLichess(message.author.username + "#" + message.author.discriminator)
+                let attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
                 let embed = new MessageEmbed()
                     .setColor('#0099ff')
                     .setURL(result.url)
-                    .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+                    .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
 
                     const row = new MessageActionRow()
                       .addComponents(
@@ -496,10 +473,10 @@ client.on('interactionCreate', async(interaction) => {
   // If not lichess
   else
   {
-      let timestamp = manyMuch[`last-command-${message.author.id}`]
+      let timestamp = manyMuch[`last-command-${interaction.user.id}`]
 
       if ((timestamp == undefined || timestamp + 10 * 1000 < Date.now())) {
-          queue[`last-command-${message.author.id}`] = Date.now()
+          queue[`last-command-${interaction.user.id}`] = Date.now()
           let result = await fetch(`https://api.chess.com/pub/player/${username}`).then(response => {
               if (response.status == 404) { // Not Found
                   return null
@@ -537,7 +514,7 @@ client.on('interactionCreate', async(interaction) => {
           }
           else {
               // result.profile.location
-              let fullDiscordUsername = message.author.username + "#" + message.author.discriminator
+              let fullDiscordUsername = interaction.user.username + "#" + interaction.user.discriminator
 
               if (result.location && fullDiscordUsername == result.location) {
 				  result2 = await fetch(`https://api.chess.com/pub/player/${result.username}/stats`).then(response => {
@@ -567,12 +544,12 @@ client.on('interactionCreate', async(interaction) => {
 
               }
               else {
-                  let attachment = await jsGay.buildCanvasForChessCom(message.author.username + "#" + message.author.discriminator)
+                  let attachment = await jsGay.buildCanvasForChessCom(interaction.user.username + "#" + interaction.user.discriminator)
 
                   let embed = new MessageEmbed()
                       .setColor('#0099ff')
                       .setURL(`https://www.chess.com/member/${username}`)
-                      .setDescription('You need to put `' + message.author.username + "#" + message.author.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
+                      .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
 
                         const row = new MessageActionRow()
                         .addComponents(
@@ -607,7 +584,7 @@ client.on('interactionCreate', async(interaction) => {
   await settings.setMany(queue, true)
 
   if(bUpdate)
-  	await jsGay.updateProfileDataByInteraction(fakeInteraction, true)
+  	await jsGay.updateProfileDataByInteraction(interaction, true)
 });
 
 

@@ -32,7 +32,7 @@ module.exports = {
       let lookupUsername = interaction.options.getString('username');
 
 	  let keyValues = await jsGay.settings.filter(value => typeof value === "string" && value.toUpperCase() == lookupUsername.toUpperCase());
-      
+
 	  let found = false
 	  embed = new MessageEmbed()
 		.setColor('#0099ff')

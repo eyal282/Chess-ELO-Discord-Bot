@@ -2,5 +2,3 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Sun, 10 Jul 2022 12:03:27 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Sun, 10 Jul 2022 12:03:27 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9

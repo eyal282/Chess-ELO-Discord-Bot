@@ -209,11 +209,11 @@ client.on('interactionCreate', async interaction => {
     {
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
-      await interaction.deferReply({ephemeral: ephemeral});
+      await interaction.deferReply({ephemeral: ephemeral}).catch(() => null)
     }
     else
     {
-      await interaction.deferReply({ephemeral: true});
+      await interaction.deferReply({ephemeral: true}).catch(() => null)
     }
     
     let goodies = {}
@@ -242,11 +242,11 @@ client.on('interactionCreate', async interaction => {
   	{
 		if(ephemeralCommands.indexOf(command) == -1)
 		{
-			await interaction.deferReply({ephemeral: false});
+			await interaction.deferReply({ephemeral: false}).catch(() => null);
 		}
 		else
 		{
-			await interaction.deferReply({ephemeral: true});
+			await interaction.deferReply({ephemeral: true}).catch(() => null);
 		}
 		
 		let goodies = {}

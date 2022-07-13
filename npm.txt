@@ -2,16 +2,13 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Sun, 10 Jul 2022 20:17:20 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Sun, 10 Jul 2022 20:17:20 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Wed, 13 Jul 2022 17:36:29 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Wed, 13 Jul 2022 17:36:29 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:151) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(node:49) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 (Use `node --trace-deprecation ...` to show where the warning was created)
-Connected, there are 6294 rows in the database.
+Connected, there are 6334 rows in the database.
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-340586932998504449
-Eyal282
-340586932998504449

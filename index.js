@@ -17,6 +17,8 @@ const Canvas = require('canvas');
 const { MessageEmbed, MessageAttachment } = require('discord.js');
 const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
+const { InteractionWebhook } = require('discord.js');
+
 const Parser = require('expr-eval').Parser;
 
 const Lichess = require('lichess-client')
@@ -76,7 +78,8 @@ passport.use("lichess-strategy", new CustomStrategy(
 		// Get the last characters of the state starting from index 128 because state = 128RandomLetters+interaction.user.id
 
 		let userID = state.substr(128);
-		
+
+		console.log(userID)
 		let manyMuch = await settings.getMany([
 		`last-lichess-state-of-${userID}`,
 		`last-lichess-code-verifier-of-${userID}`,
@@ -84,21 +87,22 @@ passport.use("lichess-strategy", new CustomStrategy(
 		`last-link-guild-of-${userID}`
 		])
 
+		console.log("a")
 		let lastState = manyMuch[`last-lichess-state-of-${userID}`]
-
+		console.log("b")
 		let code_verifier = manyMuch[`last-lichess-code-verifier-of-${userID}`]
-
+		console.log("c")
 		let token = manyMuch[`last-lichess-interaction-token-of-${userID}`]
-
+		console.log("d")
 		let guildID = manyMuch[`last-link-guild-of-${userID}`];
-
+		console.log("e")
 
 		let guild = await jsGay.client.guilds.cache.get(guildID);
-
+		console.log("f")
 		let member = await guild.members.fetch(userID)
-		
+		console.log("g")
 		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
-
+		console.log("h")
 		if(state != lastState)
 		{
 			console.log(`Stop by state for ${userID}`)
@@ -161,7 +165,7 @@ passport.use("lichess-strategy", new CustomStrategy(
 	})
 );
 
-passport.use(new CustomStrategy(
+passport.use("chesscom-strategy", new CustomStrategy(
 	async function(req, done)
 	{
 		let code = req.query.code
@@ -898,7 +902,7 @@ client.on('interactionCreate', async(interaction) => {
       await settings.setMany(queue, true)
 	  
       jsGay.app.get(chessComEndOfWebsite,
-         passport.authenticate("custom", { failureRedirect: '/fail' }),
+         passport.authenticate("chesscom-strategy", { failureRedirect: '/fail' }),
             async function(req, res) {
               // Successful authentication, redirect home.
 			  // NEVER DO ANYTHING IN THIS CALLBACK BESIDES REDIRECT YOU WILL REGRET IT!!!!

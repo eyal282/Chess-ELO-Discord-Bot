@@ -87,22 +87,20 @@ passport.use("lichess-strategy", new CustomStrategy(
 		`last-link-guild-of-${userID}`
 		])
 
-		console.log("a")
 		let lastState = manyMuch[`last-lichess-state-of-${userID}`]
-		console.log("b")
+
 		let code_verifier = manyMuch[`last-lichess-code-verifier-of-${userID}`]
-		console.log("c")
+
 		let token = manyMuch[`last-lichess-interaction-token-of-${userID}`]
-		console.log("d")
+
 		let guildID = manyMuch[`last-link-guild-of-${userID}`];
-		console.log("e")
 
 		let guild = await jsGay.client.guilds.cache.get(guildID);
-		console.log("f")
+
 		let member = await guild.members.fetch(userID)
-		console.log("g")
+
 		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
-		console.log("h")
+		
 		if(state != lastState)
 		{
 			console.log(`Stop by state for ${userID}`)

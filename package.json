@@ -21,7 +21,7 @@
     "crypto-js": "^4.1.1",
     "discord-api-types": "^0.23.1",
     "discord-canvas": "^1.4.1",
-    "discord.js": "^13.1.0",
+    "discord.js": "^13.8.1",
     "enmap": "^5.8.7",
     "expr-eval": "^2.0.2",
     "express": "^4.17.1",

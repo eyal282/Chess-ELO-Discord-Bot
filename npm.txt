@@ -2,21 +2,17 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Wed, 13 Jul 2022 21:59:57 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Wed, 13 Jul 2022 21:59:57 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Thu, 14 Jul 2022 19:40:41 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Thu, 14 Jul 2022 19:40:41 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:2072) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(node:346) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 (Use `node --trace-deprecation ...` to show where the warning was created)
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-340586932998504449
-a
-b
-c
-d
-e
-f
-g
-h
+648897419236474891
+648897419236474891
+Lichess account chsripo was linked to 648897419236474891
+(node:346) DeprecationWarning: Passing strings for MessageEmbed#setAuthor is deprecated. Pass a sole object instead.
+(node:346) DeprecationWarning: Passing strings for MessageEmbed#setFooter is deprecated. Pass a sole object instead.

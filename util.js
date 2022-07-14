@@ -155,10 +155,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 	verifyRole = obj.verifyRole
 	titledRole = obj.titledRole
 
-	let embed = new MessageEmbed()
-	          .setColor('#0099ff')
-			.setAuthor(`${interaction.member.displayName}'s Profile`, interaction.user.displayAvatarURL({dynamic : true}))
-		  	  .setFooter(`Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`)
+	let embed = new MessageEmbed({color: '#0099ff', author: `${interaction.member.displayName}'s Profile`, footer: `Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`})
 	
 	let description = "";
 	  

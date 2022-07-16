@@ -287,7 +287,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 
 	interactions.push(interaction);
 
-	await updateProfileDataByInteractionsArray(interactions, useCacheOnly);
+	return await updateProfileDataByInteractionsArray(interactions, useCacheOnly);
 }
 
 // This returns the best rating AFTER formula.
@@ -1236,6 +1236,7 @@ function addStarForBestRating(highestRating, ratingToTest, ratingEquation)
 
   catch { console.log(error)}
 
+  //console.log(result + " " + highestRating)
   if(result != highestRating)
     return ratingToTest
 

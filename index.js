@@ -19,6 +19,8 @@ const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { InteractionWebhook } = require('discord.js');
 
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+
 const Parser = require('expr-eval').Parser;
 
 const Lichess = require('lichess-client')

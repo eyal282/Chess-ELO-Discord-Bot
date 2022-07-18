@@ -26,7 +26,7 @@ module.exports =
       let row = undefined
       let attachment = undefined
 
-      if(!jsGay.botHasPermissionByGuild(interaction.guild, "MANAGE_ROLES"))
+      if(!jsGay.botHasPermissionByGuild(interaction.guild, PermissionsBitField.Flags.ManageRoles))
       {
         embed = new EmbedBuilder({description: `The bot is missing "Manage Roles" permission.`})
           .setColor(0x0099ff)

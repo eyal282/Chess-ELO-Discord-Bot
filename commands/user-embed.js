@@ -8,8 +8,8 @@ const { ChannelType } = require('discord-api-types/v9');
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
@@ -67,8 +67,8 @@ module.exports = {
 
 	  message = message.replaceAll("///n", '\n');
 		  
-      embed = new MessageEmbed()
-        .setColor('#0099ff')
+      embed = new EmbedBuilder()
+        .setColor(0x0099ff)
         .setDescription(message)
 
       row = new MessageActionRow()

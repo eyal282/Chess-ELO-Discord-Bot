@@ -5,8 +5,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
@@ -93,8 +93,8 @@ module.exports =
               }
           });
 
-          embed = new MessageEmbed()
-                .setColor('#0099ff')
+          embed = new EmbedBuilder()
+                .setColor(0x0099ff)
                 .setDescription(`Successfully purged all related roles.`)
       }
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles

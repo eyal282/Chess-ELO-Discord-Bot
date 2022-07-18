@@ -5,8 +5,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
@@ -28,8 +28,8 @@ module.exports =
 
       if(!jsGay.botHasPermissionByGuild(interaction.guild, "MANAGE_ROLES"))
       {
-        embed = new MessageEmbed()
-          .setColor('#0099ff')
+        embed = new EmbedBuilder()
+          .setColor(0x0099ff)
           .setDescription(`The bot is missing "Manage Roles" permission.`)
 
           await interaction.editReply({embeds: [embed], failIfNotExists: false})
@@ -60,8 +60,8 @@ module.exports =
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
       else if (botRole.rawPosition != 1 || ratingRoles.length > 0 || puzzleRatingRoles.length > 0 || titleRoles.length > 0) {
-              embed = new MessageEmbed()
-                .setColor('#0099ff')
+              embed = new EmbedBuilder()
+                .setColor(0x0099ff)
                 .setDescription(`Bot integration role must be the lowest position in the guild to execute this command\nAlso, no roles can be assigned to the bot besides moderator roles.\nNote: Sometimes discord forgets the bot's position, so play with it until you get it to the lowest role position and this should work.\nNote: \`/getelo /getpuzzleelo /gettitle\` are the commands to check if there are any roles left.`)
 
               ephemeral = true
@@ -206,8 +206,8 @@ module.exports =
         })
         .catch(console.error);
     
-        embed = new MessageEmbed()
-          .setColor('#0099ff')
+        embed = new EmbedBuilder()
+          .setColor(0x0099ff)
           .setDescription(`Successfully initiated quick setup.\n Use \`/getelo, /getpuzzleelo, /gettitle\` to see how it got set up.\nWarning: The bot cannot create more than 250 roles per 24 hours, don't abuse this or you will be forced to wait 24 hours.`)
       }
 

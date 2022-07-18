@@ -4,8 +4,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
@@ -27,8 +27,8 @@ module.exports = {
       
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
+      embed = new EmbedBuilder()
+          .setColor(0x0099ff)
           .setDescription(`**[Invite the Bot](https://top.gg/bot/886616669093503047)** or **[Join the Support Server](https://discord.gg/tznbm6XVrJ)**\n\nFeel free to vote within the invite link!`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral })

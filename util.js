@@ -42,9 +42,9 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 
 const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
@@ -161,7 +161,6 @@ async function generateEmbedForProfileByInteraction(interaction)
 
 	let authorObj = {iconURL: `${interaction.member.displayAvatarURL({dynamic: true})}`, name: `${interaction.member.displayName}'s Profile`}
 	let footerObj = {text: `Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`}
-	let embed = new EmbedBuilder({color: 0x0099ff, author: authorObj, footer: footerObj})
 	
 	let description = "";
 	  
@@ -280,7 +279,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 		description += `<:lichess_puzzles:927950539617087519> Puzzles: **${puzzleRating}** `
 	}
 	  
-	embed.setDescription(description);
+	let embed = new EmbedBuilder({color: 0x0099ff, description: description, author: authorObj, footer: footerObj})
 
 	return embed;
 }
@@ -870,17 +869,15 @@ function botHasPermissionByGuild(guild, permission)
 
 function replyAccessDeniedByMessage(message)
 {
-  let embed = new EmbedBuilder()
+  let embed = new EmbedBuilder({description: `Access Denied`})
       .setColor(0x0099ff)
-      .setDescription(`Access Denied`)
   return message.reply({embeds: [embed], failIfNotExists: false })
 }
 
 function replyAccessDeniedByInteraction(interaction)
 {
-  let embed = new EmbedBuilder()
+  let embed = new EmbedBuilder({description: `Access Denied`})
       .setColor(0x0099ff)
-      .setDescription(`Access Denied`)
 
   return interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true })
 }
@@ -907,7 +904,7 @@ async function buildCanvasForLichess(discordUsername)
 
   context.fillText(discordUsername, 795, 256);
   // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+  let attachment = new AttachmentBuilder(canvas.toBuffer(), 'profile-image.png');
 
   return attachment
 }
@@ -929,7 +926,7 @@ async function buildCanvasForChessCom(discordUsername)
 
   context.fillText(discordUsername, 541, 520);
   // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+  let attachment = new AttachmentBuilder(canvas.toBuffer(), 'profile-image.png');
 
   return attachment
 }

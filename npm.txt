@@ -2,19 +2,12 @@
 > Chess-ELO-Role@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Mon, 18 Jul 2022 19:20:45 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Mon, 18 Jul 2022 19:20:45 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Mon, 18 Jul 2022 21:13:22 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Mon, 18 Jul 2022 21:13:22 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:11836) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
+(node:1125) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
 Successfully unregistered guild application commands.
 Successfully registered global application commands.
-[0;32mChess ELO Role has been completely loaded and is ready to use
-Chess ELO Role has been completely loaded and is ready to use
-Chess ELO Role has been completely loaded and is ready to use
-(node:11836) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
-TypeError: MessageActionRow is not a constructor
-    at Object.execute (/home/runner/chess-elo-discord-bot/commands/user-embed.js:74:13)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-    at async Client.<anonymous> (/home/runner/chess-elo-discord-bot/index.js:397:3)
+(node:1125) DeprecationWarning: isConnected is deprecated and will be removed in the next major version

@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -24,9 +24,8 @@ module.exports = {
       let row = undefined
       let attachment = undefined
 
-      embed = new EmbedBuilder()
+      embed = new EmbedBuilder({description: `🏓Latency is ${Date.now() - interaction.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nBot is running for ${jsGay.getTimeDifference(jsGay.bootDate, new Date())}`})
                 .setColor(0x0099ff)
-                .setDescription(`🏓Latency is ${Date.now() - interaction.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms\nBot is running for ${jsGay.getTimeDifference(jsGay.bootDate, new Date())}`)
         interaction.editReply({embeds: [embed], ephemeral: true})
 	},
 };

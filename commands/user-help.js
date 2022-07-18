@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -84,9 +84,8 @@ module.exports = {
       result = result + "Note: Bot's access to a role is calculated from his special integration role, and not his highest role.\n"
       result = result + "Title List: `GM` `WGM` `IM` `WIM` `FM` `WFM` `NM` `CM` `WCM` `WNM` `LM` `BOT`\n"
       
-      embed = new EmbedBuilder()
-              .setColor(0x0099ff)
-              .setDescription(result)
+      embed = new EmbedBuilder({description: result})
+          .setColor(0x0099ff)
               
       interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
 	},

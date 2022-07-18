@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -34,9 +34,8 @@ module.exports = {
         
         bError = true
 
-        embed = new EmbedBuilder()
+        embed = new EmbedBuilder({description: `I cannot access this channel!`})
           .setColor(0x0099ff)
-          .setDescription(`I cannot access this channel!`)
 
         interaction.editReply({embeds: [embed]}).then(msg =>
         {
@@ -46,9 +45,8 @@ module.exports = {
 
       if(!bError)
       {
-          embed = new EmbedBuilder()
+          embed = new EmbedBuilder({description: `Command executed successfully!`})
             .setColor(0x0099ff)
-            .setDescription(`Command executed successfully!`)
 
           interaction.editReply({embeds: [embed]}).then(msg =>
           {

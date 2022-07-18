@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -58,9 +58,8 @@ module.exports = {
 
               modRoles = undefined
               
-              embed = new EmbedBuilder()
+              embed = new EmbedBuilder(({description: `Successfully reset all moderator roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``}))
                 .setColor(0x0099ff)
-                .setDescription(`Successfully reset all moderator roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``)
 
               interaction.member.send({embeds: [embed], failIfNotExists: false}).catch(() => null)
               

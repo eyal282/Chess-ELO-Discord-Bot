@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -58,9 +58,8 @@ module.exports = {
       queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
       queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
 
-      embed = new EmbedBuilder()
+       embed = new EmbedBuilder({description: msgToSend})
           .setColor(0x0099ff)
-          .setDescription(msgToSend)
 
       await settings.setMany(queue, true)
       

@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -27,9 +27,8 @@ module.exports = {
 
 	  if(owner.user.id != interaction.user.id && interaction.user.id != "340586932998504449")
 	  {
-      embed = new EmbedBuilder()
+		embed = new EmbedBuilder({description: `**This command can only ever be executed by the server owner and <@340586932998504449>**`})
           .setColor(0x0099ff)
-          .setDescription(`**This command can only ever be executed by the server owner and <@340586932998504449>**`)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -41,9 +40,8 @@ module.exports = {
 
 		if(timestamp != undefined && timestamp + 600 * 1000 > Date.now() && interaction.user.id != "340586932998504449")
 		{
-      		embed = new EmbedBuilder()
+      		embed = new EmbedBuilder({description: `**This command has a 10 minute cooldown. It can be re-used in ${((timestamp + 600 * 1000) - Date.now()) / 1000} seconds.**`})
           		.setColor(0x0099ff)
-          		.setDescription(`**This command has a 10 minute cooldown. It can be re-used in ${((timestamp + 600 * 1000) - Date.now()) / 1000} seconds.**`)
 
 			    interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -86,9 +84,8 @@ module.exports = {
 
 				if(remaining <= 0)
 				{
-					embed = new EmbedBuilder()
+					embed = new EmbedBuilder({description: `**Sucessfully refreshed everybody's roles.**`})
 						.setColor(0x0099ff)
-						.setDescription(`**Sucessfully refreshed everybody's roles.**`)
 					
 					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -96,9 +93,8 @@ module.exports = {
 				}
 				else
 				{
-					embed = new EmbedBuilder()
+					embed = new EmbedBuilder({description: `**Refreshing roles...\nProgress: ${(((memberCount - remaining) / memberCount) * 100.0).toFixed(2)}%**`})
 						.setColor(0x0099ff)
-						.setDescription(`**Refreshing roles...\nProgress: ${(((memberCount - remaining) / memberCount) * 100.0).toFixed(2)}%**`)
 					
 					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 				}

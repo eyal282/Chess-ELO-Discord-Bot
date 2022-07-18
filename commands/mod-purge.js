@@ -7,7 +7,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -93,9 +93,8 @@ module.exports =
               }
           });
 
-          embed = new EmbedBuilder()
+          embed = new EmbedBuilder(({description: `Successfully purged all related roles.`}))
                 .setColor(0x0099ff)
-                .setDescription(`Successfully purged all related roles.`)
       }
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
       queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles

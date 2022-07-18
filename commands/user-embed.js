@@ -10,7 +10,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -58,7 +58,7 @@ module.exports = {
 
 		if(slashChannel)
 		{
-			let channelURL = `https://discord.com/channels/${slashChannel.guild.id}/${slashChannel.id}`
+			let channelURL = slashChannel.url
 			message = message.replaceAll("/lichess", jsGay.hyperlinkBold('/lichess', channelURL))
 			message = message.replaceAll("/chess", jsGay.hyperlinkBold('/chess', channelURL))
 			
@@ -67,34 +67,33 @@ module.exports = {
 
 	  message = message.replaceAll("///n", '\n');
 		  
-      embed = new EmbedBuilder()
+      embed = new EmbedBuilder({description: message})
         .setColor(0x0099ff)
-        .setDescription(message)
 
-      row = new MessageActionRow()
+      row = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`link-lichess`)
             .setLabel(`Link Lichess Account`)
-            .setStyle('SUCCESS'))
+            .setStyle('Success'))
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`link-chesscom`)
             .setLabel(`Link Chess.com Account`)
-            .setStyle('SUCCESS')
+            .setStyle('Success')
       );
 
-      row2 = new MessageActionRow()
+      row2 = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`unlink-lichess`)
             .setLabel(`Unlink Lichess Account`)
-            .setStyle('DANGER'))
+            .setStyle('Danger'))
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`unlink-chesscom`)
             .setLabel(`Unlink Chess.com Account`)
-            .setStyle('DANGER')
+            .setStyle('Danger')
        );    
 
          

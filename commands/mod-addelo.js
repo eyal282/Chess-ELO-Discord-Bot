@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -52,9 +52,8 @@ module.exports =
           jsGay.replyAccessDeniedByInteraction(interaction)
       }
       else if (args.length == 0 || args.length % 2 != 0) {
-          embed = new EmbedBuilder()
+          embed = new EmbedBuilder({description: `/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`})
                   .setColor(0x0099ff)
-                  .setDescription(`/addelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
       }
       else
       {
@@ -87,9 +86,8 @@ module.exports =
 
         }
 
-        embed = new EmbedBuilder()
+        embed = new EmbedBuilder({description: msgToSend})
             .setColor(0x0099ff)
-            .setDescription(msgToSend)
       }
 
       queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles

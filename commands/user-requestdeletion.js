@@ -6,7 +6,7 @@ const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -47,9 +47,8 @@ module.exports =
       `chesscom-account-of-${interaction.user.id}`,
       `cached-lichess-account-data-of-${interaction.user.id}`,
       `cached-chesscom-account-data-of-${interaction.user.id}`]);
-	  embed = new EmbedBuilder()
-			.setColor(0x0099ff)
-			.setDescription(`Successfully deleted every data the bot 				has on you.`)
+	  embed = new EmbedBuilder({description: `Successfully deleted every data the bot has on you.`})
+		.setColor(0x0099ff)
 
       if(embed)
       {

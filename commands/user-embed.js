@@ -1,7 +1,7 @@
 
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
 const { ChannelType } = require('discord-api-types/v9');
 
@@ -23,7 +23,7 @@ module.exports = {
 		.addStringOption((option) =>
       	option.setName('message').setDescription('Optional message to use. Use `///n` for new line'))
 		 .addChannelOption((option) =>	
-      		option.setName('channel').setDescription('If message is ommitted, channel to redirect to for slash commands').addChannelTypes([ChannelType.GuildText])
+      		option.setName('channel').setDescription('If message is ommitted, channel to redirect to for slash commands').addChannelTypes(ChannelType.GuildText)
 					
     ),
     async execute(client, interaction, settings, goodies)

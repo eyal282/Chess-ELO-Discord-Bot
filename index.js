@@ -17,9 +17,9 @@ const Canvas = require('canvas');
 const { MessageEmbed, MessageAttachment } = require('discord.js');
 const { Permissions } = require('discord.js');
 const { MessageActionRow, MessageButton } = require('discord.js');
-const { InteractionWebhook } = require('discord.js');
+const { InteractionWebhook, InteractionType } = require('discord.js');
 
-const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
 const Parser = require('expr-eval').Parser;
 
@@ -37,14 +37,14 @@ const lichess_secret = process.env['LICHESS_OAUTH2']
 
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 const fs = require('fs');
 
 // deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 const client = jsGay.client
 
@@ -369,7 +369,7 @@ process.on('unhandledRejection', async error => {
 // On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
-	if (!interaction.isCommand()) return;
+	if (interaction.type != InteractionType.ApplicationCommand) return;
 
 	const command = client.commands.get(interaction.commandName);
 
@@ -405,7 +405,7 @@ client.on('interactionCreate', async interaction => {
 // On Context Menu Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
-	if (!interaction.isContextMenu()) return;
+	if (!interaction.isContextMenuCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
 
@@ -433,29 +433,6 @@ client.on('interactionCreate', async interaction => {
 	} catch (error) {
 		console.error(error);
 		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
-});
-
-client.on("roleCreate", role => {
-  const guild = role.guild
-
-  if(role.permissions.has('MANAGE_GUILD'))
-  {
-  	jsGay.updateSlashCommandPermissionsByGuild(guild)
-  }
-});
-
-// roleUpdate
-/* Emitted whenever a guild role is updated.
-PARAMETER      TYPE        DESCRIPTION
-oldRole        Role        The role before the update
-newRole        Role        The role after the update    */
-client.on("roleUpdate", function(oldRole, newRole){
-    const guild = newRole.guild
-
-	if(oldRole.permissions.has('MANAGE_GUILD') != newRole.permissions.has('MANAGE_GUILD'))
-	{
-		jsGay.updateSlashCommandPermissionsByGuild(guild)
 	}
 });
 
@@ -1049,18 +1026,18 @@ client.on('interactionCreate', async(interaction) => {
   			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)		
 		}
 
-		if(role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+		if(role.permissions.any([Permissions.Flags.KICK_MEMBERS,
+		Permissions.Flags.BAN_MEMBERS,
+		Permissions.Flags.MANAGE_CHANNELS,
+		Permissions.Flags.MANAGE_GUILD,
+		Permissions.Flags.MANAGE_MESSAGES,
+		Permissions.Flags.MUTE_MEMBERS, 
+		Permissions.Flags.MOVE_MEMBERS, 
+		Permissions.Flags.MANAGE_NICKNAMES, 
+		Permissions.Flags.MANAGE_ROLES, 
+		Permissions.Flags.MANAGE_WEBHOOKS, 
+		Permissions.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		Permissions.Flags.MANAGE_THREADS]))
 		{
   			embed = new MessageEmbed()
 				.setColor('#0099ff')

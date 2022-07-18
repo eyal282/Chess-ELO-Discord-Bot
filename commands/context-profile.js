@@ -1,5 +1,5 @@
 const { ApplicationCommandType } = require("discord-api-types/v9");
-const { ContextMenuCommandBuilder } = require('@discordjs/builders');
+const { ContextMenuCommandBuilder } = require('discord.js');
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');

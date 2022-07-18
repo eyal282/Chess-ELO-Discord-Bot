@@ -1,6 +1,4 @@
-// To do: progress bar.
-
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');

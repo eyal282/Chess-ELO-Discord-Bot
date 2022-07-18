@@ -1,5 +1,7 @@
 Each should be run seperately, with cmd.exe being run as admin.
 
+This is very outdated.
+
 npm install discord.js
 npm install node-fetch@2
 npm install expr-eval

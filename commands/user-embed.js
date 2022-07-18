@@ -59,8 +59,8 @@ module.exports = {
 		if(slashChannel)
 		{
 			let channelURL = `https://discord.com/channels/${slashChannel.guild.id}/${slashChannel.id}`
-			message = message.replaceAll("/lichess", hyperlink(bold('/lichess'), channelURL))
-			message = message.replaceAll("/chess", hyperlink(bold('/chess'), channelURL))
+			message = message.replaceAll("/lichess", jsGay.hyperlinkBold('/lichess', channelURL))
+			message = message.replaceAll("/chess", jsGay.hyperlinkBold('/chess', channelURL))
 			
 		}
 	  }

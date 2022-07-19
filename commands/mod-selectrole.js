@@ -1,14 +1,14 @@
 
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, SelectMenuBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -66,10 +66,20 @@ module.exports = {
 		let minRoles = interaction.options.getInteger('min_roles');
 		let maxRoles = interaction.options.getInteger('max_roles');
 
-		if(minRoles == 1 && maxRoles == 1 || minRoles > maxRoles)
+		if(minRoles > maxRoles)
 		{
-			minRoles = null;
-			maxRoles = null;
+			minRoles = 1;
+			maxRoles = 1;
+		}
+		  
+		if(minRoles == undefined || minRoles < 0 || minRoles > 25)
+		{
+			minRoles = 1;
+		}
+
+		if(maxRoles == undefined || maxRoles < 0 || maxRoles > 25)
+		{
+			maxRoles = 1
 		}
 		let args = interaction.options.getString('roles').replace(/`/g, "").trim().split(/ +/g)
 		
@@ -85,11 +95,10 @@ module.exports = {
 		message = message.replaceAll("///n", '\n');
 		message = message.replaceAll("{MAX_ROLES}", maxRoles);
 			
-		embed = new MessageEmbed()
-			.setColor('#0099ff')
-			.setDescription(message)
+		embed = new EmbedBuilder({description: message})
+			.setColor(0x0099ff)
 
-		let selectMenu = new MessageSelectMenu()
+		let selectMenu = new SelectMenuBuilder()
 				.setCustomId('select-role')
 				.setPlaceholder('Nothing selected')
 				.setMinValues(minRoles)
@@ -115,13 +124,12 @@ module.exports = {
 		
 		if(!bAnyRoles)
 		{
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription("Could not find any valid roles!")
+		embed = new EmbedBuilder({description: "Could not find any valid roles!"})
+				.setColor(0x0099ff)
 
 			return interaction.editReply({ embeds: [embed], failIfNotExists: false})
 		}
-		row = new MessageActionRow()
+		row = new ActionRowBuilder()
 			.addComponents(selectMenu)
 
 		queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles

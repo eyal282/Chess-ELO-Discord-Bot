@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -34,9 +34,8 @@ module.exports = {
 	  let keyValues = await jsGay.settings.filter(value => typeof value === "string" && value.toUpperCase() == lookupUsername.toUpperCase());
 
 	  let found = false
-	  embed = new MessageEmbed()
-		.setColor('#0099ff')
-		.setDescription(`Below is a list of matches of the username **${lookupUsername}** within the bot:`)
+	  embed = new EmbedBuilder({description: `Below is a list of matches of the username **${lookupUsername}** within the bot:`})
+		.setColor(0x0099ff)
 
 	  for(let i=0;i < keyValues.length;i++)
 	  {

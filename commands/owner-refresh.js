@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -27,9 +27,8 @@ module.exports = {
 
 	  if(owner.user.id != interaction.user.id && interaction.user.id != "340586932998504449")
 	  {
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(`**This command can only ever be executed by the server owner and <@340586932998504449>**`)
+		embed = new EmbedBuilder({description: `**This command can only ever be executed by the server owner and <@340586932998504449>**`})
+          .setColor(0x0099ff)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -41,9 +40,8 @@ module.exports = {
 
 		if(timestamp != undefined && timestamp + 600 * 1000 > Date.now() && interaction.user.id != "340586932998504449")
 		{
-      		embed = new MessageEmbed()
-          		.setColor('#0099ff')
-          		.setDescription(`**This command has a 10 minute cooldown. It can be re-used in ${((timestamp + 600 * 1000) - Date.now()) / 1000} seconds.**`)
+      		embed = new EmbedBuilder({description: `**This command has a 10 minute cooldown. It can be re-used in ${((timestamp + 600 * 1000) - Date.now()) / 1000} seconds.**`})
+          		.setColor(0x0099ff)
 
 			    interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -71,7 +69,10 @@ module.exports = {
 
 			// This is unique to updateProfileDataByInteractionsArray, is the amount of members remaining
 			fakeInteraction.remaining = memberCount
-	
+
+			// This is unique to updateProfileDataByInteractionsArray, is the original interaction to send followUps
+
+			fakeInteraction.original = interaction
 			interactions.push(fakeInteraction)
 		}))
 
@@ -83,9 +84,8 @@ module.exports = {
 
 				if(remaining <= 0)
 				{
-					embed = new MessageEmbed()
-						.setColor('#0099ff')
-						.setDescription(`**Sucessfully refreshed everybody's roles.**`)
+					embed = new EmbedBuilder({description: `**Sucessfully refreshed everybody's roles.**`})
+						.setColor(0x0099ff)
 					
 					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 
@@ -93,9 +93,8 @@ module.exports = {
 				}
 				else
 				{
-					embed = new MessageEmbed()
-						.setColor('#0099ff')
-						.setDescription(`**Refreshing roles...\nProgress: ${(((memberCount - remaining) / memberCount) * 100.0).toFixed(2)}%**`)
+					embed = new EmbedBuilder({description: `**Refreshing roles...\nProgress: ${(((memberCount - remaining) / memberCount) * 100.0).toFixed(2)}%**`})
+						.setColor(0x0099ff)
 					
 					interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: false })
 				}

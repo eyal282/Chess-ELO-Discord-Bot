@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/builders": "^0.11.0",
+    "@discordjs/builders": "^1.0.0",
     "@discordjs/rest": "0.1.0-canary.0",
     "@joshdb/core": "^1.2.6",
     "@joshdb/mongo": "^1.1.6",
@@ -21,7 +21,7 @@
     "crypto-js": "^4.1.1",
     "discord-api-types": "^0.23.1",
     "discord-canvas": "^1.4.1",
-    "discord.js": "^13.8.1",
+    "discord.js": "^14.0.2",
     "enmap": "^5.8.7",
     "expr-eval": "^2.0.2",
     "express": "^4.17.1",

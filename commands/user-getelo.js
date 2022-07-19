@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -60,9 +60,8 @@ module.exports = {
 
       await settings.setMany(queue, true)
 
-      embed = new MessageEmbed()
-          .setColor('#0099ff')
-          .setDescription(msgToSend)
+      embed = new EmbedBuilder({description: msgToSend})
+          .setColor(0x0099ff)
 
       interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: ephemeral})
 	},

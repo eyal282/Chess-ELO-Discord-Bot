@@ -14,12 +14,12 @@ const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
-const { InteractionWebhook } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
+const { InteractionWebhook, InteractionType } = require('discord.js');
 
-const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
 const Parser = require('expr-eval').Parser;
 
@@ -37,14 +37,14 @@ const lichess_secret = process.env['LICHESS_OAUTH2']
 
 Canvas.registerFont('fonts/ARIAL.TTF', { family: 'arial' });
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 const fs = require('fs');
 
 // deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
-// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 const client = jsGay.client
 
@@ -151,9 +151,8 @@ passport.use("lichess-strategy", new CustomStrategy(
 			fakeInteraction.user = member.user
 			fakeInteraction.member = member
 			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
-	let embed = new MessageEmbed()
-		.setColor('#0099ff')
-		.setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})`)
+		embed = new EmbedBuilder({description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})`})
+				.setColor(0x0099ff)
 	
 		await webhook.editMessage('@original', { embeds: [embed]}).catch(console.error)
 	
@@ -228,9 +227,7 @@ passport.use("chesscom-strategy", new CustomStrategy(
 			
 			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
 	
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})`})
 			
 			await webhook.editMessage('@original', { embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 	
@@ -251,7 +248,7 @@ client.on('ready', async () => {
 
 	let channel = await jsGay.getDebugChannel();
 
-	await channel.send("Bot loaded");
+	await channel.send("Bot loaded").catch(() => null);
 
 	isFullyLoaded = true;
 
@@ -369,7 +366,7 @@ process.on('unhandledRejection', async error => {
 // On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
-	if (!interaction.isCommand()) return;
+	if (interaction.type != InteractionType.ApplicationCommand) return;
 
 	const command = client.commands.get(interaction.commandName);
 
@@ -405,7 +402,7 @@ client.on('interactionCreate', async interaction => {
 // On Context Menu Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
-	if (!interaction.isContextMenu()) return;
+	if (!interaction.isContextMenuCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
 
@@ -433,29 +430,6 @@ client.on('interactionCreate', async interaction => {
 	} catch (error) {
 		console.error(error);
 		return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
-	}
-});
-
-client.on("roleCreate", role => {
-  const guild = role.guild
-
-  if(role.permissions.has('MANAGE_GUILD'))
-  {
-  	jsGay.updateSlashCommandPermissionsByGuild(guild)
-  }
-});
-
-// roleUpdate
-/* Emitted whenever a guild role is updated.
-PARAMETER      TYPE        DESCRIPTION
-oldRole        Role        The role before the update
-newRole        Role        The role after the update    */
-client.on("roleUpdate", function(oldRole, newRole){
-    const guild = newRole.guild
-
-	if(oldRole.permissions.has('MANAGE_GUILD') != newRole.permissions.has('MANAGE_GUILD'))
-	{
-		jsGay.updateSlashCommandPermissionsByGuild(guild)
 	}
 });
 
@@ -495,7 +469,7 @@ client.on("guildCreate", async function(guild){
     { 
         let targetMember = await guild.fetchOwner().catch(() => null)
 
-        if(jsGay.botHasPermissionByGuild(guild, "VIEW_AUDIT_LOG"))
+        if(jsGay.botHasPermissionByGuild(guild, PermissionsBitField.Flags.ViewAuditLog))
         {
             const fetchedLogs = await guild.fetchAuditLogs({
             limit: 1,
@@ -571,24 +545,21 @@ client.on('interactionCreate', async(interaction) => {
         })
 
         if (result == null) {
-                    let embed = new MessageEmbed()
-                        .setColor('#0099ff')
-                        .setDescription(`Username was not found!`)
+                    let embed = new EmbedBuilder({color: 0x0099ff, description: `Username was not found!`})
+						
                       interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true})
         }
         else if (result == "Rate Limit") {
-            let embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setURL(`https://lichess.org/@/${username}`)
-              .setDescription('Rate Limit Encountered! Please try again!')
+            let embed = new EmbedBuilder({url: `https://lichess.org/@/${username}`, description: 'Rate Limit Encountered! Please try again!'})
+              .setColor(0x0099ff)
 
-              const row = new MessageActionRow()
+              const row = new ActionRowBuilder()
                 .addComponents(
-                  new MessageButton()
+                  new ButtonBuilder()
                     .setCustomId(`retry-link-${interaction.user.id}`)
                     .setURL(`https://lichess.org/@/${username}`)
                     .setLabel(`Retry Link for ${username}`)
-                    .setStyle('PRIMARY'),
+                    .setStyle('Primary'),
                 );
 
 
@@ -604,26 +575,22 @@ client.on('interactionCreate', async(interaction) => {
                 queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                 bUpdate = true
 
-                let embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
+                let embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Lichess Profile](${result.url})`})
 
                 interaction.editReply({ embeds: [embed], failIfNotExists: false})
 
             }
             else {
                 let attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
-                let embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setURL(result.url)
-                    .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)')
+                let embed = new EmbedBuilder({url: result.url, description: 'You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Lichess Profile](https://lichess.org/account/profile)'})
+                    .setColor(0x0099ff)
 
-                    const row = new MessageActionRow()
+                    const row = new ActionRowBuilder()
                       .addComponents(
-                        new MessageButton()
+                        new ButtonBuilder()
                           .setCustomId(`retry-link-${interaction.user.id}`)
                           .setLabel(`Retry Link for ${username}`)
-                          .setStyle('PRIMARY'),
+                          .setStyle('Primary'),
                       );
 					
 
@@ -632,17 +599,15 @@ client.on('interactionCreate', async(interaction) => {
         }
     }
     else {
-      let embed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setURL(`https://lichess.org/@/${username}`)
-        .setDescription('Rate Limit Encountered! Please try again!')
+      let embed = new EmbedBuilder({url: `https://lichess.org/@/${username}`, description: 'Rate Limit Encountered! Please try again!'})
+        .setColor(0x0099ff)
 
-        const row = new MessageActionRow()
+        const row = new ActionRowBuilder()
           .addComponents(
-            new MessageButton()
+            new ButtonBuilder()
               .setCustomId(`retry-link-${interaction.user.id}`)
               .setLabel(`Retry Link for ${username}`)
-              .setStyle('PRIMARY'),
+              .setStyle('Primary'),
           );
 
 
@@ -668,23 +633,20 @@ client.on('interactionCreate', async(interaction) => {
 
 
           if (result == null) {
-            let embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(`User was not found!'`)
+            let embed = new EmbedBuilder({color: 0x0099ff, description: `User was not found!'`})
+			
               interaction.editReply({ embeds: [embed], failIfNotExists: false })
           }
           else if (result == "Rate Limit") {
-                let embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setURL(`https://www.chess.com/member/${username}`)
-                .setDescription('Rate Limit Encountered! Please try again!')
+                    let embed = new EmbedBuilder({url: `https://www.chess.com/member/${username}`, description: 'Rate Limit Encountered! Please try again!'})
+						.setColor(0x0099ff)
 
-                const row = new MessageActionRow()
+                const row = new ActionRowBuilder()
                   .addComponents(
-                    new MessageButton()
+                    new ButtonBuilder()
                       .setCustomId(`retry-link-${interaction.user.id}`)
                       .setLabel(`Retry Link for ${username}`)
-                      .setStyle('PRIMARY'),
+                      .setStyle('Primary'),
                   );
 
                 interaction.editReply({ embeds: [embed], components: [row], ephemeral: true,  failIfNotExists: false })
@@ -713,9 +675,7 @@ client.on('interactionCreate', async(interaction) => {
 				  bUpdate = true
 
 
-                  let embed = new MessageEmbed()
-                      .setColor('#0099ff')
-                      .setDescription(`Successfully linked your [Chess.com Profile](${result.url})`)
+                  let embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](${result.url})`})
 
                     interaction.editReply({ embeds: [embed], failIfNotExists: false })
 
@@ -723,17 +683,15 @@ client.on('interactionCreate', async(interaction) => {
               else {
                   let attachment = await jsGay.buildCanvasForChessCom(interaction.user.username + "#" + interaction.user.discriminator)
 
-                  let embed = new MessageEmbed()
-                      .setColor('#0099ff')
-                      .setURL(`https://www.chess.com/member/${username}`)
-                      .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)')
+                    let embed = new EmbedBuilder({url: `https://www.chess.com/member/${username}`, description: 'You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` in your [Chess.com Profile](https://www.chess.com/settings)'})
+                      .setColor(0x0099ff)
 
-                        const row = new MessageActionRow()
+                        const row = new ActionRowBuilder()
                         .addComponents(
-                          new MessageButton()
+                          new ButtonBuilder()
                             .setCustomId(`retry-link-${interaction.user.id}`)
                             .setLabel(`Retry Link for ${username}`)
-                            .setStyle('PRIMARY'),
+                            .setStyle('Primary'),
                         );
 
                         interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false, files: [attachment] })
@@ -741,17 +699,15 @@ client.on('interactionCreate', async(interaction) => {
           }
       }
       else {
-          let embed = new MessageEmbed()
-            .setColor('#0099ff')
-            .setURL(`https://www.chess.com/member/${username}`)
-            .setDescription('Rate Limit Encountered! Please try again!')
+          let embed = new EmbedBuilder({url: `https://www.chess.com/member/${username}`, description: 'Rate Limit Encountered! Please try again!'})
+            .setColor(0x0099ff)
 
-            const row = new MessageActionRow()
+            const row = new ActionRowBuilder()
               .addComponents(
-                new MessageButton()
+                new ButtonBuilder()
                   .setCustomId(`retry-link-${interaction.user.id}`)
                   .setLabel(`Retry Link for ${username}`)
-                  .setStyle('PRIMARY'),
+                  .setStyle('Primary'),
               );
 
             interaction.editReply({ embeds: [embed], components: [row], ephemeral: true, failIfNotExists: false })
@@ -802,9 +758,7 @@ client.on('interactionCreate', async(interaction) => {
       bUpdate = true
 	  bCache = false
 
-	embed = new MessageEmbed()
-	.setColor('#0099ff')
-	.setDescription(`Successfully linked your [Lichess Profile](https://lichess.org/@/${oldAccount})`)
+	embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${oldAccount})`})
 
 	interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
@@ -819,9 +773,7 @@ client.on('interactionCreate', async(interaction) => {
       bUpdate = true
 	  bCache = false
 
-	embed = new MessageEmbed()
-	.setColor('#0099ff')
-	.setDescription(`Successfully linked your [Chess.com Profile](https://chess.com/member/${oldAccount})`)
+	embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](https://chess.com/member/${oldAccount})`})
 
 	interaction.editReply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
   }
@@ -840,16 +792,14 @@ client.on('interactionCreate', async(interaction) => {
 	  queue[`last-lichess-interaction-token-of-${interaction.user.id}`] = interaction.token
 	  queue[`last-link-guild-of-${interaction.user.id}`] = interaction.guild.id
 	  
-      embed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setDescription(`Sign in with Lichess by pressing the button below:`)
+      embed = new EmbedBuilder({color: 0x0099ff, description: `Sign in with Lichess by pressing the button below:`})
 
-      row = new MessageActionRow()
+      row = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setLabel(`Sign in with Lichess`)
             .setURL(`https://lichess.org/oauth?response_type=code&redirect_uri=${myWebsite}${lichessEndOfWebsite}&code_challenge=${code_challenge}&code_challenge_method=S256&state=${state}&client_id=Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}`)
-            .setStyle('LINK')
+            .setStyle('Link')
       );
 
 
@@ -876,16 +826,14 @@ client.on('interactionCreate', async(interaction) => {
 
 	  state = state.concat(interaction.user.id);
 
-      embed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setDescription(`Sign in with Chess.com by pressing the button below:`)
+      embed = new EmbedBuilder({color: 0x0099ff, description: `Sign in with Chess.com by pressing the button below:`})
 
-      row = new MessageActionRow()
+      row = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setLabel(`Sign in with Chess.com`)
             .setURL(`https://oauth.chess.com/authorize?client_id=${chessComClientId}&redirect_uri=${myWebsite}${chessComEndOfWebsite}&response_type=code&scope=openid%20profile&state=${state}&code_challenge=${code_challenge}&code_challenge_method=S256`)
-            .setStyle('LINK')
+            .setStyle('Link')
       );
   
       await interaction.reply({ embeds: [embed], components: [row], failIfNotExists: false, ephemeral: true }).catch(() => null)
@@ -925,25 +873,21 @@ client.on('interactionCreate', async(interaction) => {
 		
 			bUpdate = true
 
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Successfully unlinked your Lichess Profile`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully unlinked your Lichess Profile`})
 
-			row = new MessageActionRow()
+			row = new ActionRowBuilder()
 					.addComponents(
-					new MessageButton()
+					new ButtonBuilder()
 					.setCustomId(`undo-unlink-lichess-${lichessAccount}`)
 					.setLabel(`Relink as ${lichessAccount}`)
-					.setStyle('PRIMARY')
+					.setStyle('Primary')
 			);
 		}
 		else
 		{
 			row = undefined
 			
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Could not find a linked Lichess Profile`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Could not find a linked Lichess Profile`})
 		}
 
 		if(row != undefined)
@@ -966,25 +910,21 @@ client.on('interactionCreate', async(interaction) => {
 		
 			bUpdate = true
 
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Successfully unlinked your Chess.com Profile`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully unlinked your Chess.com Profile`})
 
-			row = new MessageActionRow()
+			row = new ActionRowBuilder()
 					.addComponents(
-					new MessageButton()
+					new ButtonBuilder()
 					.setCustomId(`undo-unlink-chesscom-${chessComAccount}`)
 					.setLabel(`Relink as ${chessComAccount}`)
-					.setStyle('PRIMARY')
+					.setStyle('Primary')
 			);
 		}
 		else
 		{
 			row = undefined
 
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Could not find a linked Chess.com Profile`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Could not find a linked Chess.com Profile`})
 		}
 
 		if(row != undefined)
@@ -1034,37 +974,31 @@ client.on('interactionCreate', async(interaction) => {
 
 		if(!role)
 		{
-  			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Error: role ${options[i].label} was not found, please recreate the menu!`)
+  			embed = new EmbedBuilder({color: 0x0099ff, description: `Error: role ${options[i].label} was not found, please recreate the menu!`})
 
   			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)		
 		}
 		else if(!role.editable)
 		{
-  			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Error: I cannot give / remove the role <@&${role.id}> to other players. Please ensure the role is below my highest role`)
+  			embed = new EmbedBuilder({color: 0x0099ff, description: `Error: I cannot give / remove the role <@&${role.id}> to other players. Please ensure the role is below my highest role`})
 
   			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)		
 		}
 
-		if(role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+		if(role.permissions.any([PermissionsBitField.Flags.KickMembers,
+		PermissionsBitField.Flags.BanMembers,
+		PermissionsBitField.Flags.ManageChannels,
+		PermissionsBitField.Flags.ManageGuild,
+		PermissionsBitField.Flags.ManageMessages,
+		PermissionsBitField.Flags.MuteMembers, 
+		PermissionsBitField.Flags.MoveMembers, 
+		PermissionsBitField.Flags.ManageNicknames, 
+		PermissionsBitField.Flags.ManageRoles, 
+		PermissionsBitField.Flags.ManageWebhooks, 
+		PermissionsBitField.Flags.ManageEmojisAndStickers, 
+		PermissionsBitField.Flags.ManageThreads]))
 		{
-  			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Error: The role <@&${role.id}> has moderation capabilities, and cannot be given or taken`)
+  			embed = new EmbedBuilder({color: 0x0099ff, description: `Error: The role <@&${role.id}> has moderation capabilities, and cannot be given or taken`})
 
   			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)	
 		}
@@ -1095,25 +1029,19 @@ client.on('interactionCreate', async(interaction) => {
 
 	if(interaction.values.length == 0)
 	{
-			embed = new MessageEmbed()
-				.setColor('#0099ff')
-				.setDescription(`Successfully removed all roles you have in this menu.`)
+			embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully removed all roles you have in this menu.`})
 
 			return interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 	}
 	else if(interaction.values.length == 1)
 	{
 
-  		embed = new MessageEmbed()
-			.setColor('#0099ff')
-			.setDescription(`Successfully received <@&${interaction.values[0]}>, and removed all unselected roles in the menu.`)
+  		embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully received <@&${interaction.values[0]}>, and removed all unselected roles in the menu.`})
 	}
 	else
 	{
 
-  		embed = new MessageEmbed()
-			.setColor('#0099ff')
-			.setDescription(`Successfully received all selected roles, and removed all unselected roles in the menu.`)
+  		embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully received all selected roles, and removed all unselected roles in the menu.`})
 	}
 
   	interaction.reply({ embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)

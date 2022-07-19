@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -52,16 +52,15 @@ module.exports =
 		  let count = 0;
 		  interaction.guild.roles.cache.forEach(role => 
 			  {
-				  if(!role.managed && role.position < highestBotRole.position && role.permissions.any(["ADMINISTRATOR", 		"BAN_MEMBERS", "KICK_MEMBERS", "MANAGE_CHANNELS", "MANAGE_GUILD"]))
+				  if(!role.managed && role.position < highestBotRole.position && role.permissions.any([PermissionsBitField.Flags.Administrator, 		PermissionsBitField.Flags.BanMembers, PermissionsBitField.Flags.KickMembers, PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.ManageGuild]))
 				  {
 						interaction.guild.me.roles.add(role.id)
 					  	count++;
 				  }
 			  })
 		  
-      	   embed = new MessageEmbed()
-          	.setColor('#0099ff')
-          	.setDescription(`**I gave myself ${count} roles that have either Administrator, Manage Server, Manage Channels, Kick Members, or Ban Members.**`)
+      	   embed = new EmbedBuilder({description: `**I gave myself ${count} roles that have either Administrator, Manage Server, Manage Channels, Kick Members, or Ban Members.**`})
+          	.setColor(0x0099ff)
 		  
 	      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
 	      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles

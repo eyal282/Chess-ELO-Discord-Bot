@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -61,22 +61,19 @@ module.exports = {
               })
 
               if (result == null) {
-                embed = new MessageEmbed()
-                  .setColor('#0099ff')
-                  .setDescription('User was not found!')
+                embed = new EmbedBuilder({description: 'User was not found!'})
+                  .setColor(0x0099ff)
               }
               else if (result == "Rate Limit") {
-                  embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setURL(`https://lichess.org/@/${userName}`)
-                    .setDescription('Rate Limit Encountered! Please try again!')
+                  embed = new EmbedBuilder({url: `https://lichess.org/@/${userName}`, description: 'Rate Limit Encountered! Please try again!'})
+                    .setColor(0x0099ff)
 
-                    row = new MessageActionRow()
+                    row = new ActionRowBuilder()
                       .addComponents(
-                        new MessageButton()
+                        new ButtonBuilder()
                           .setCustomId(`retry-link-${interaction.user.id}`)
                           .setLabel(`Retry Link for ${userName}`)
-                          .setStyle('PRIMARY'),
+                          .setStyle('Primary'),
                       );
               }
               else {
@@ -88,41 +85,37 @@ module.exports = {
                       queue[`cached-lichess-account-data-of-${interaction.user.id}`] = result
                       bUpdate = true
 
-                      embed = new MessageEmbed()
-                          .setColor('#0099ff')
+                      embed = new EmbedBuilder()
+                          .setColor(0x0099ff)
                           .setDescription(`Successfully linked your [Lichess Profile](${result.url})`)
 
                   }
                   else {
                       attachment = await jsGay.buildCanvasForLichess(interaction.user.username + "#" + interaction.user.discriminator)
 
-                      embed = new MessageEmbed()
-                          .setColor('#0099ff')
-                          .setURL(result.url)
-                          .setDescription('You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` or `Biography` in your [Lichess Profile](https://lichess.org/account/profile)\nNote: If this never works, link with `/embed` instead.')
+                      embed = new EmbedBuilder({url: result.url, description: 'You need to put `' + interaction.user.username + "#" + interaction.user.discriminator + '` in `Location` or `Biography` in your [Lichess Profile](https://lichess.org/account/profile)\nNote: If this never works, link with `/embed` instead.'})
+                          .setColor(0x0099ff)
 
-                          row = new MessageActionRow()
+                          row = new ActionRowBuilder()
                             .addComponents(
-                              new MessageButton()
+                              new ButtonBuilder()
                                 .setCustomId(`retry-link-${interaction.user.id}`)
                                 .setLabel(`Retry Link for ${userName}`)
-                                .setStyle('PRIMARY'),
+                                .setStyle('Primary'),
                             );
                   }
               }
           }
           else {
-            embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setURL(`https://lichess.org/@/${userName}`)
-              .setDescription('Rate Limit Encountered! Please try again!')
+            embed = new EmbedBuilder({url: `https://lichess.org/@/${userName}`, description: 'Rate Limit Encountered! Please try again!'})
+              .setColor(0x0099ff)
 
-              row = new MessageActionRow()
+              row = new ActionRowBuilder()
                 .addComponents(
-                  new MessageButton()
+                  new ButtonBuilder()
                     .setCustomId(`retry-link-${interaction.user.id}`)
                     .setLabel(`Retry Link for ${userName}`)
-                    .setStyle('PRIMARY'),
+                    .setStyle('Primary'),
                 );
           }
       }
@@ -134,9 +127,8 @@ module.exports = {
           
           bUpdate = true
 
-          embed = new MessageEmbed()
-              .setColor('#0099ff')
-              .setDescription(`Successfully unlinked your Lichess Profile`)
+          embed = new EmbedBuilder({description: `Successfully unlinked your Lichess Profile`})
+              .setColor(0x0099ff)
 
       }
 

@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -51,9 +51,8 @@ module.exports = {
             {
                 queue[`guild-chesscom-rating-equation-${interaction.guild.id}`] = undefined
 
-                embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setDescription(`Successfully reset Chess.com rating equation to default: ${jsGay.Constant_chessComDefaultRatingEquation}`)
+                embed = new EmbedBuilder({description: `Successfully reset Chess.com rating equation to default: ${jsGay.Constant_chessComDefaultRatingEquation}`})
+                    .setColor(0x0099ff)
             }
             else
             {  
@@ -65,9 +64,8 @@ module.exports = {
                   Parser.evaluate(formula, { x: -1 })
               }
               catch (error) {
-                  embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setDescription(`Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`)
+                  embed = new EmbedBuilder({description: `Invalid formula! Must support preset values of x = 1000, x = 0, x = -1\nError: ${error.message}`})
+                    .setColor(0x0099ff)
 
                   await interaction.editReply({embeds: [embed], failIfNotExists: false});
 
@@ -76,9 +74,8 @@ module.exports = {
 
               queue[`guild-chesscom-rating-equation-${interaction.guild.id}`] = formula
 
-              embed = new MessageEmbed()
-                    .setColor('#0099ff')
-                    .setDescription(`Successfully set Chess.com rating equation to: ${formula}`)
+              embed = new EmbedBuilder({description: `Successfully set Chess.com rating equation to: ${formula}`})
+                    .setColor(0x0099ff)
             }
       }
 

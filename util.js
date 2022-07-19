@@ -38,14 +38,15 @@ let Constant_DefaultSelectUniqueRoleMessage = "Use the menu below to pick a uniq
 
 let Constant_DefaultSelectManyRolesMessage = "Use the menu below to pick up to {MAX_ROLES} unique roles. Every unpicked role is deleted."
 
-const Discord = require('discord.js');
+const { Client, GatewayIntentBits } = require('discord.js');
+
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 
-const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
 const Parser = require('expr-eval').Parser;
 
@@ -55,7 +56,8 @@ const fetch = require('node-fetch');
 
 var CryptoJS = require("crypto-js");
 
-const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES", 'DIRECT_MESSAGES']} );
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages]} );
 
 let modCommands = []
 
@@ -159,7 +161,6 @@ async function generateEmbedForProfileByInteraction(interaction)
 
 	let authorObj = {iconURL: `${interaction.member.displayAvatarURL({dynamic: true})}`, name: `${interaction.member.displayName}'s Profile`}
 	let footerObj = {text: `Note: Time Controls marked with X are never calculated as a role for this server.\nNote: Provisional rating in Chess.com is artifically calculated by Lichess standards.`}
-	let embed = new MessageEmbed({color: '#0099ff', author: authorObj, footer: footerObj})
 	
 	let description = "";
 	  
@@ -278,7 +279,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 		description += `<:lichess_puzzles:927950539617087519> Puzzles: **${puzzleRating}** `
 	}
 	  
-	embed.setDescription(description);
+	let embed = new EmbedBuilder({color: 0x0099ff, description: description, author: authorObj, footer: footerObj})
 
 	return embed;
 }
@@ -289,6 +290,8 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 {
 	let interactions = [];
 
+	interaction.original = interaction;
+	
 	interactions.push(interaction);
 
 	return await updateProfileDataByInteractionsArray(interactions, useCacheOnly);
@@ -298,7 +301,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 // You can sneak a fake interaction if you assign .guild, .user and .member
 async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 {
-    if(!interactions[0].guild.me.permissions.has('MANAGE_ROLES'))
+    if(!interactions[0].guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles))
         return -1;
 
 	let highestRating = -1
@@ -321,6 +324,8 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 		
 	let obj = await wipeDeletedRolesFromDB(interactions[0], ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
 
+	let sentError = false;
+	
 	for(let num=0;num < interactions.length;num++)
 	{
 		let queue = []
@@ -661,11 +666,17 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 
 	      if (fullRolesArray != Array.from(fullRolesCache.keys()) && !(chessComAccount === undefined && lichessAccount === undefined))
 	      {
-	        try
-	        {
-	          interaction.member.roles.set(fullRolesArray).catch(() => null)
-	        }
-	        catch {}
+	          interaction.member.roles.set(fullRolesArray).catch(async () => 
+				  {
+					  if(!sentError)
+					  {
+						  sendError = true;
+
+						  await interactions[0].original.editReply(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
+						  await interactions[0].original.followUp(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
+					  }
+
+				  })
 	      }
 	    }
 
@@ -781,7 +792,7 @@ function addCommandToHelp(result, prefix, commandData) {
 }
 
 async function isBotControlAdminByMessage(message, modRoles) {
-    if (message.member.permissions.has("MANAGE_GUILD", true))
+    if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild, true))
         return true;
 
 
@@ -796,7 +807,7 @@ async function isBotControlAdminByMessage(message, modRoles) {
 }
 
 async function isBotControlAdminByInteraction(interaction, modRoles) {
-    if (interaction.member.permissions.has("MANAGE_GUILD", true))
+    if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild, true))
         return true;
 
 
@@ -810,72 +821,16 @@ async function isBotControlAdminByInteraction(interaction, modRoles) {
     return false;
 }
 
-
-async function updateSlashCommandPermissionsByGuild(guild) {
-
-
-
-
-
-
-	
-	return false;
-
-
-
-
-
-
-
-
-    let roles = await guild.roles.fetch()
-
- 	let modRoles = await settings.get(`guild-bot-mods-${guild.id}`)
-
-    if (modRoles == undefined) {
-        modRoles = []
-    }
-
-	roles = roles.filter(role => {
-		return role.permissions.has('MANAGE_GUILD') || modRoles.indexOf(role.id) != -1
-	})
-
-	let commands = await client.application.commands.fetch()
-
-	for (const cmd of commands)
-	{
-		if(modCommands.indexOf(cmd[1].name) != -1)
-		{
-			console.log(cmd[1].name, guild.name)
-			await cmd[1].edit({ defaultPermission: true }).catch(console.error);
-			
-			await cmd[1].permissions.set({ guild: guild, permissions: [] }).catch(console.error);
-			let permissions = []
-			for (const role of roles) {
-				
-				let cmdPerm = {}
-				cmdPerm.id = role[1].id
-				cmdPerm.type = 'ROLE'
-				cmdPerm.permission = true
-				permissions.push(cmdPerm)
-			}
-
-			await cmd[1].permissions.add({ guild: guild, permissions: permissions }).catch(console.error);
-			
-		}
-	}
-}
-
 function botHasMessagingPermissionsByMessage(message)
 {
     let hasViewPermission = message.channel.permissionsFor(message.guild.me)
-    .has('VIEW_CHANNEL', false);
+    .has(PermissionsBitField.Flags.ViewChannel, false);
 
     let hasMessageHistoryPermission = message.channel.permissionsFor(message.guild.me)
-    .has('READ_MESSAGE_HISTORY')
+    .has(PermissionsBitField.Flags.ReadMessageHistory)
 
     let hasSendPermission = message.channel.permissionsFor(message.guild.me)
-    .has('SEND_MESSAGES', false);
+    .has(PermissionsBitField.Flags.SendMessages, false);
 
     if(hasViewPermission && hasMessageHistoryPermission && hasSendPermission)
         return true;
@@ -886,13 +841,13 @@ function botHasMessagingPermissionsByMessage(message)
 function botHasBasicPermissionsByGuild(guild)
 {
 
-    let hasViewPermission = guild.me.permissions.has('VIEW_CHANNEL')
+    let hasViewPermission = guild.members.me.permissions.has(PermissionsBitField.Flags.ViewChannel)
 
-    let hasMessageHistoryPermission = guild.me.permissions.has('READ_MESSAGE_HISTORY')
+    let hasMessageHistoryPermission = guild.members.me.permissions.has(PermissionsBitField.Flags.ReadMessageHistory)
 
-    let hasSendPermission = guild.me.permissions.has('SEND_MESSAGES')
+    let hasSendPermission = guild.members.me.permissions.has(PermissionsBitField.Flags.SendMessages)
 
-    let hasManageRolesPermission = guild.me.permissions.has('MANAGE_ROLES')
+    let hasManageRolesPermission = guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)
 
     if(hasViewPermission && hasSendPermission && hasManageRolesPermission && hasMessageHistoryPermission)
         return true;
@@ -904,7 +859,7 @@ function botHasBasicPermissionsByGuild(guild)
 function botHasPermissionByGuild(guild, permission)
 {
 
-    let hasPermission = guild.me.permissions.has(permission)
+    let hasPermission = guild.members.me.permissions.has(permission)
 
     if(hasPermission)
         return true;
@@ -914,17 +869,15 @@ function botHasPermissionByGuild(guild, permission)
 
 function replyAccessDeniedByMessage(message)
 {
-  let embed = new MessageEmbed()
-      .setColor('#0099ff')
-      .setDescription(`Access Denied`)
+  let embed = new EmbedBuilder({description: `Access Denied`})
+      .setColor(0x0099ff)
   return message.reply({embeds: [embed], failIfNotExists: false })
 }
 
 function replyAccessDeniedByInteraction(interaction)
 {
-  let embed = new MessageEmbed()
-      .setColor('#0099ff')
-      .setDescription(`Access Denied`)
+  let embed = new EmbedBuilder({description: `Access Denied`})
+      .setColor(0x0099ff)
 
   return interaction.editReply({embeds: [embed], failIfNotExists: false, ephemeral: true })
 }
@@ -951,7 +904,7 @@ async function buildCanvasForLichess(discordUsername)
 
   context.fillText(discordUsername, 795, 256);
   // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+  let attachment = new AttachmentBuilder(canvas.toBuffer(), 'profile-image.png');
 
   return attachment
 }
@@ -973,7 +926,7 @@ async function buildCanvasForChessCom(discordUsername)
 
   context.fillText(discordUsername, 541, 520);
   // Use the helpful Attachment class structure to process the file for you
-  let attachment = new MessageAttachment(canvas.toBuffer(), 'profile-image.png');
+  let attachment = new AttachmentBuilder(canvas.toBuffer(), 'profile-image.png');
 
   return attachment
 }
@@ -1077,18 +1030,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                     let role = roles.get(ratingRoles[i].id)
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([PermissionsBitField.Flags.KICK_MEMBERS,
+		PermissionsBitField.Flags.BAN_MEMBERS,
+		PermissionsBitField.Flags.MANAGE_CHANNELS,
+		PermissionsBitField.Flags.MANAGE_GUILD,
+		PermissionsBitField.Flags.MANAGE_MESSAGES,
+		PermissionsBitField.Flags.MUTE_MEMBERS, 
+		PermissionsBitField.Flags.MOVE_MEMBERS, 
+		PermissionsBitField.Flags.MANAGE_NICKNAMES, 
+		PermissionsBitField.Flags.MANAGE_ROLES, 
+		PermissionsBitField.Flags.MANAGE_WEBHOOKS, 
+		PermissionsBitField.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		PermissionsBitField.Flags.MANAGE_THREADS]))
                     {
                         ratingRoles.splice(i, 1)
                         i--
@@ -1100,18 +1053,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
                     let role = roles.get(puzzleRatingRoles[i].id)
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([PermissionsBitField.Flags.KICK_MEMBERS,
+		PermissionsBitField.Flags.BAN_MEMBERS,
+		PermissionsBitField.Flags.MANAGE_CHANNELS,
+		PermissionsBitField.Flags.MANAGE_GUILD,
+		PermissionsBitField.Flags.MANAGE_MESSAGES,
+		PermissionsBitField.Flags.MUTE_MEMBERS, 
+		PermissionsBitField.Flags.MOVE_MEMBERS, 
+		PermissionsBitField.Flags.MANAGE_NICKNAMES, 
+		PermissionsBitField.Flags.MANAGE_ROLES, 
+		PermissionsBitField.Flags.MANAGE_WEBHOOKS, 
+		PermissionsBitField.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		PermissionsBitField.Flags.MANAGE_THREADS]))
                     {
                       puzzleRatingRoles.splice(i, 1)
                       i--
@@ -1123,18 +1076,18 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
 
 
                     // if role doesn't exist or is above bot.
-                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+                    if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([PermissionsBitField.Flags.KICK_MEMBERS,
+		PermissionsBitField.Flags.BAN_MEMBERS,
+		PermissionsBitField.Flags.MANAGE_CHANNELS,
+		PermissionsBitField.Flags.MANAGE_GUILD,
+		PermissionsBitField.Flags.MANAGE_MESSAGES,
+		PermissionsBitField.Flags.MUTE_MEMBERS, 
+		PermissionsBitField.Flags.MOVE_MEMBERS, 
+		PermissionsBitField.Flags.MANAGE_NICKNAMES, 
+		PermissionsBitField.Flags.MANAGE_ROLES, 
+		PermissionsBitField.Flags.MANAGE_WEBHOOKS, 
+		PermissionsBitField.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		PermissionsBitField.Flags.MANAGE_THREADS]))
                     {
                       titleRoles.splice(i, 1)
                       i--
@@ -1144,36 +1097,36 @@ async function wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRole
 				let role = roles.get(verifyRole)
 
 				// if role doesn't exist or is above bot.
-				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([PermissionsBitField.Flags.KICK_MEMBERS,
+		PermissionsBitField.Flags.BAN_MEMBERS,
+		PermissionsBitField.Flags.MANAGE_CHANNELS,
+		PermissionsBitField.Flags.MANAGE_GUILD,
+		PermissionsBitField.Flags.MANAGE_MESSAGES,
+		PermissionsBitField.Flags.MUTE_MEMBERS, 
+		PermissionsBitField.Flags.MOVE_MEMBERS, 
+		PermissionsBitField.Flags.MANAGE_NICKNAMES, 
+		PermissionsBitField.Flags.MANAGE_ROLES, 
+		PermissionsBitField.Flags.MANAGE_WEBHOOKS, 
+		PermissionsBitField.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		PermissionsBitField.Flags.MANAGE_THREADS]))
 					
 					verifyRole = undefined
 
 				role = roles.get(titledRole)
 
 				// if role doesn't exist or is above bot.
-				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([Permissions.FLAGS.KICK_MEMBERS,
-		Permissions.FLAGS.BAN_MEMBERS,
-		Permissions.FLAGS.MANAGE_CHANNELS,
-		Permissions.FLAGS.MANAGE_GUILD,
-		Permissions.FLAGS.MANAGE_MESSAGES,
-		Permissions.FLAGS.MUTE_MEMBERS, 
-		Permissions.FLAGS.MOVE_MEMBERS, 
-		Permissions.FLAGS.MANAGE_NICKNAMES, 
-		Permissions.FLAGS.MANAGE_ROLES, 
-		Permissions.FLAGS.MANAGE_WEBHOOKS, 
-		Permissions.FLAGS.MANAGE_EMOJIS_AND_STICKERS, 
-		Permissions.FLAGS.MANAGE_THREADS]))
+				if (role == undefined || highestBotRole.rawPosition < role.rawPosition || role.permissions.any([PermissionsBitField.Flags.KICK_MEMBERS,
+		PermissionsBitField.Flags.BAN_MEMBERS,
+		PermissionsBitField.Flags.MANAGE_CHANNELS,
+		PermissionsBitField.Flags.MANAGE_GUILD,
+		PermissionsBitField.Flags.MANAGE_MESSAGES,
+		PermissionsBitField.Flags.MUTE_MEMBERS, 
+		PermissionsBitField.Flags.MOVE_MEMBERS, 
+		PermissionsBitField.Flags.MANAGE_NICKNAMES, 
+		PermissionsBitField.Flags.MANAGE_ROLES, 
+		PermissionsBitField.Flags.MANAGE_WEBHOOKS, 
+		PermissionsBitField.Flags.MANAGE_EMOJIS_AND_STICKERS, 
+		PermissionsBitField.Flags.MANAGE_THREADS]))
 					titledRole = undefined
             }
         })
@@ -1442,4 +1395,4 @@ function hyperlinkBold(text, URL)
 }
 client.login(token)
 
-module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByInteraction, updateProfileDataByInteractionsArray, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, updateSlashCommandPermissionsByGuild, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList, getDebugChannel, hyperlinkBold }
+module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByInteraction, updateProfileDataByInteractionsArray, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList, getDebugChannel, hyperlinkBold }

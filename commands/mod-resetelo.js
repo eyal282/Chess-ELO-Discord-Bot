@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
 
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -50,17 +50,16 @@ module.exports = {
           msgToSend = msgToSend.trim() + "`"
 
           if (!msgToSend.includes('<@')) {
-              embed = new MessageEmbed()
-                    .setColor('#0099ff')
+              embed = new EmbedBuilder()
+                    .setColor(0x0099ff)
                     .setDescription(`There were no role milestones to delete.`)
           }
           else {
 
               ratingRoles = undefined
               
-              embed = new MessageEmbed()
-                .setColor('#0099ff')
-                .setDescription(`Successfully reset all elo related roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``)
+              embed = new EmbedBuilder({description: `Successfully reset all elo related roles! Command to undo:\n\`\`\`\n${msgToSend}\n\`\`\``})
+                .setColor(0x0099ff)
 
               interaction.member.send({embeds: [embed], failIfNotExists: false}).catch(() => null)
               

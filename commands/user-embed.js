@@ -1,16 +1,16 @@
 
 
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('discord.js');
+const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
 const { ChannelType } = require('discord-api-types/v9');
 
 const Discord = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
-const { MessageEmbed, MessageAttachment } = require('discord.js');
-const { Permissions } = require('discord.js');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { EmbedBuilder, MessageAttachment } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
 const Parser = require('expr-eval').Parser;
 const fetch = require('node-fetch');
 
@@ -23,7 +23,7 @@ module.exports = {
 		.addStringOption((option) =>
       	option.setName('message').setDescription('Optional message to use. Use `///n` for new line'))
 		 .addChannelOption((option) =>	
-      		option.setName('channel').setDescription('If message is ommitted, channel to redirect to for slash commands').addChannelTypes([ChannelType.GuildText])
+      		option.setName('channel').setDescription('If message is ommitted, channel to redirect to for slash commands').addChannelTypes(ChannelType.GuildText)
 					
     ),
     async execute(client, interaction, settings, goodies)
@@ -58,7 +58,7 @@ module.exports = {
 
 		if(slashChannel)
 		{
-			let channelURL = `https://discord.com/channels/${slashChannel.guild.id}/${slashChannel.id}`
+			let channelURL = slashChannel.url
 			message = message.replaceAll("/lichess", jsGay.hyperlinkBold('/lichess', channelURL))
 			message = message.replaceAll("/chess", jsGay.hyperlinkBold('/chess', channelURL))
 			
@@ -67,34 +67,33 @@ module.exports = {
 
 	  message = message.replaceAll("///n", '\n');
 		  
-      embed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setDescription(message)
+      embed = new EmbedBuilder({description: message})
+        .setColor(0x0099ff)
 
-      row = new MessageActionRow()
+      row = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`link-lichess`)
             .setLabel(`Link Lichess Account`)
-            .setStyle('SUCCESS'))
+            .setStyle('Success'))
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`link-chesscom`)
             .setLabel(`Link Chess.com Account`)
-            .setStyle('SUCCESS')
+            .setStyle('Success')
       );
 
-      row2 = new MessageActionRow()
+      row2 = new ActionRowBuilder()
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`unlink-lichess`)
             .setLabel(`Unlink Lichess Account`)
-            .setStyle('DANGER'))
+            .setStyle('Danger'))
         .addComponents(
-          new MessageButton()
+          new ButtonBuilder()
             .setCustomId(`unlink-chesscom`)
             .setLabel(`Unlink Chess.com Account`)
-            .setStyle('DANGER')
+            .setStyle('Danger')
        );    
 
          

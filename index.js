@@ -368,15 +368,11 @@ client.on("debug", function(info){
 process.on('uncaughtException', async error => {
     console.log("uncaughtException:")
 	console.log(error)
-
-	process.kill(1, 'SIGINT');
 });
 
 process.on('unhandledRejection', async error => {
     console.log("unhandledRejection:")
 	console.log(error)
-
-	process.kill(1, 'SIGINT');
 });
 
 // On Slash Command

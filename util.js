@@ -291,6 +291,7 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 	let interactions = [];
 
 	interaction.original = interaction;
+
 	
 	interactions.push(interaction);
 
@@ -301,7 +302,9 @@ async function updateProfileDataByInteraction(interaction, useCacheOnly)
 // You can sneak a fake interaction if you assign .guild, .user and .member
 async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 {
-    if(!interactions[0].guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles))
+    interactions[0].isOriginalReal = (typeof interactions[0].original.editReply !== "undefined")
+
+	if(!interactions[0].guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles))
         return -1;
 
 	let highestRating = -1
@@ -671,7 +674,7 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 					  if(!sentError)
 					  {
 						  sendError = true;
-						  if(interactions[0].original)
+						  if(interactions[0].isOriginalReal)
 						  {
 							  
 

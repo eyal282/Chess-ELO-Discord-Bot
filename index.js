@@ -44,7 +44,7 @@ const fs = require('fs');
 // deploySlashCommands() // Comment this line to avoid deploying the slash commands
 
 
-deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
+// deployGlobalSlashCommands() // Comment this line to avoid deploying the global slash commands
 
 const client = jsGay.client
 
@@ -88,7 +88,7 @@ passport.use("lichess-strategy", new CustomStrategy(
 		`last-lichess-interaction-token-of-${userID}`,
 		`last-link-guild-of-${userID}`
 		])
-
+		console.log("A")
 		let lastState = manyMuch[`last-lichess-state-of-${userID}`]
 
 		let code_verifier = manyMuch[`last-lichess-code-verifier-of-${userID}`]
@@ -102,7 +102,8 @@ passport.use("lichess-strategy", new CustomStrategy(
 		let member = await guild.members.fetch(userID)
 
 		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
-		
+
+		console.log("B")	
 		if(state != lastState)
 		{
 			console.log(`Stop by state for ${userID}`)
@@ -111,18 +112,20 @@ passport.use("lichess-strategy", new CustomStrategy(
 
 		let body = `grant_type=authorization_code&client_id=Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}&redirect_uri=${myWebsite}${lichessEndOfWebsite}&code=${code}&code_verifier=${code_verifier}`
 
+		console.log("C")
 		let response = await fetch(`https://lichess.org/api/token`, {
 		method: 'POST',
 		body: body,
 		headers: {'Content-Type': 'application/x-www-form-urlencoded' }
 		})
-	
+		console.log("D")
 		response = await response.json()
-		
+
+		console.log("E" + response.access_token)
 		if(!response.access_token)
 			return;
 	
-
+		console.log("F")
 		let result = await fetch(`https://lichess.org/api/account`, {
 			method: 'GET',
 			headers: {'Authorization': `Bearer ${response.access_token}`}
@@ -138,11 +141,11 @@ passport.use("lichess-strategy", new CustomStrategy(
 				return response.json()
 			}
 		})
-
+		console.log("G")
 		if(result && result.id)
 		{
 			let userName = result.id
-			
+			console.log("H")
 			await settings.set(`lichess-account-of-${userID}`, result.id)
 
 			let fakeInteraction = {}
@@ -150,11 +153,13 @@ passport.use("lichess-strategy", new CustomStrategy(
 			fakeInteraction.guild = member.guild
 			fakeInteraction.user = member.user
 			fakeInteraction.member = member
+			console.log("I + updateProfileData")
 			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
 		embed = new EmbedBuilder({description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})`})
 				.setColor(0x0099ff)
-	
-		await webhook.editMessage('@original', { embeds: [embed]}).catch(console.error)
+
+			console.log("J + webhook.editMessage")
+		webhook.editMessage('@original', { embeds: [embed]}).catch(() => null)
 	
 		console.log(`Lichess account ${result.id} was linked to ${userID}`)
 			done(null, "Success");
@@ -229,7 +234,7 @@ passport.use("chesscom-strategy", new CustomStrategy(
 	
 			embed = new EmbedBuilder({color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})`})
 			
-			await webhook.editMessage('@original', { embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+			webhook.editMessage('@original', { embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
 	
 			console.log(`CC account ${userName} was linked to ${userID}`)
 			
@@ -360,9 +365,20 @@ client.on("debug", function(info){
 	}
 });
 
-process.on('unhandledRejection', async error => {
-    await jsGay.getDebugChannel().send("Found Error:\n" + error);
+process.on('uncaughtException', async error => {
+    console.log("uncaughtException:")
+	console.log(error)
+
+	process.kill(1, 'SIGINT');
 });
+
+process.on('unhandledRejection', async error => {
+    console.log("unhandledRejection:")
+	console.log(error)
+
+	process.kill(1, 'SIGINT');
+});
+
 // On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;

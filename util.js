@@ -671,9 +671,13 @@ async function updateProfileDataByInteractionsArray(interactions, useCacheOnly)
 					  if(!sentError)
 					  {
 						  sendError = true;
+						  if(interactions[0].original)
+						  {
+							  
 
-						  await interactions[0].original.editReply(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
-						  await interactions[0].original.followUp(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
+							  await interactions[0].original.editReply(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
+							  await interactions[0].original.followUp(`Could not assign roles. This is likely due to a permission issue. Bot's role must be lifted above rating roles, verified role, titled roles, etc...`).catch(() => null)
+						  }
 					  }
 
 				  })

@@ -376,7 +376,7 @@ process.on('unhandledRejection', async error => {
 // On Slash Command
 client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
-	if (interaction.type != InteractionType.ApplicationCommand) return;
+	if (interaction.type != InteractionType.ApplicationCommand || !interaction.isChatInputCommand()) return;
 
 	const command = client.commands.get(interaction.commandName);
 

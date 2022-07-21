@@ -6,7 +6,7 @@ const debugMode = false
 
 const jsGay = require('./util.js')
 
-const { clientId, guildId, chessComClientId, chessComEndOfWebsite, lichessEndOfWebsite, myWebsite } = require('./config.json');
+const { clientId, guildId, chessComClientId, chessComEndOfWebsite, lichessEndOfWebsite, myWebsite, profileContextCommandId } = require('./config.json');
 
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
@@ -17,7 +17,7 @@ const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
 const { PermissionsBitField } = require('discord.js');
 const { ActionRowBuilder, ButtonBuilder } = require('discord.js');
-const { InteractionWebhook, InteractionType } = require('discord.js');
+const { InteractionWebhook, InteractionType, ApplicationCommandPermissionType } = require('discord.js');
 
 const { bold, italic, strikethrough, underscore, spoiler, quote, blockQuote, hyperlink, hideLinkEmbed } = require('discord.js');
 
@@ -88,7 +88,7 @@ passport.use("lichess-strategy", new CustomStrategy(
 		`last-lichess-interaction-token-of-${userID}`,
 		`last-link-guild-of-${userID}`
 		])
-		console.log("A")
+
 		let lastState = manyMuch[`last-lichess-state-of-${userID}`]
 
 		let code_verifier = manyMuch[`last-lichess-code-verifier-of-${userID}`]
@@ -103,7 +103,7 @@ passport.use("lichess-strategy", new CustomStrategy(
 
 		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
 
-		console.log("B")	
+
 		if(state != lastState)
 		{
 			console.log(`Stop by state for ${userID}`)
@@ -112,20 +112,19 @@ passport.use("lichess-strategy", new CustomStrategy(
 
 		let body = `grant_type=authorization_code&client_id=Eyal282-Chess-ELO-Role-Bot-${jsGay.client.user.id}&redirect_uri=${myWebsite}${lichessEndOfWebsite}&code=${code}&code_verifier=${code_verifier}`
 
-		console.log("C")
+
 		let response = await fetch(`https://lichess.org/api/token`, {
 		method: 'POST',
 		body: body,
 		headers: {'Content-Type': 'application/x-www-form-urlencoded' }
 		})
-		console.log("D")
+
 		response = await response.json()
 
-		console.log("E" + response.access_token)
 		if(!response.access_token)
 			return;
 	
-		console.log("F")
+
 		let result = await fetch(`https://lichess.org/api/account`, {
 			method: 'GET',
 			headers: {'Authorization': `Bearer ${response.access_token}`}
@@ -141,11 +140,11 @@ passport.use("lichess-strategy", new CustomStrategy(
 				return response.json()
 			}
 		})
-		console.log("G")
+
 		if(result && result.id)
 		{
 			let userName = result.id
-			console.log("H")
+
 			await settings.set(`lichess-account-of-${userID}`, result.id)
 
 			let fakeInteraction = {}
@@ -153,12 +152,11 @@ passport.use("lichess-strategy", new CustomStrategy(
 			fakeInteraction.guild = member.guild
 			fakeInteraction.user = member.user
 			fakeInteraction.member = member
-			console.log("I + updateProfileData")
+
 			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
 		embed = new EmbedBuilder({description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})`})
 				.setColor(0x0099ff)
 
-			console.log("J + webhook.editMessage")
 		webhook.editMessage('@original', { embeds: [embed]}).catch(() => null)
 	
 		console.log(`Lichess account ${result.id} was linked to ${userID}`)
@@ -393,7 +391,13 @@ client.on('interactionCreate', async interaction => {
     {
       let ephemeral = interaction.options.getBoolean('ephemeral');
 
-      await interaction.deferReply({ephemeral: ephemeral}).catch(() => null);
+	  let bForbidden = await interaction.guild.commands.permissions.has({ command: profileContextCommandId, permissionId: interaction.channel, permissionType: ApplicationCommandPermissionType.Channel})
+
+		
+	  if(bForbidden)
+		  ephemeral = true;
+		
+	  await interaction.deferReply({ephemeral: ephemeral}).catch(() => null);
     }
     else
     {
@@ -416,6 +420,8 @@ client.on('interactionCreate', async interaction => {
 	if (!isFullyLoaded) return;
 	if (!interaction.isContextMenuCommand()) return;
 
+	// Uncomment this to find the command ID of the context menu "Profile" to put in config.json
+	//console.log(interaction.commandId)
 	const command = client.commands.get(interaction.commandName);
 
 	if (!command) return;
@@ -427,7 +433,15 @@ client.on('interactionCreate', async interaction => {
 
 	if(ephemeralCommands.indexOf(command) == -1)
 	{
-		await interaction.deferReply({ephemeral: false}).catch(() => null);
+      let ephemeral = false;
+
+	  let bForbidden = await interaction.guild.commands.permissions.has({ command: profileContextCommandId, permissionId: interaction.channel, permissionType: ApplicationCommandPermissionType.Channel})
+
+		
+	  if(bForbidden)
+		ephemeral = true;
+		
+		await interaction.deferReply({ephemeral: ephemeral}).catch(() => null);
 	}
 	else
 	{

@@ -2,23 +2,13 @@
 > chess-elo-discord-bot@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Wed, 20 Jul 2022 23:13:30 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Wed, 20 Jul 2022 23:13:30 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Thu, 21 Jul 2022 05:51:32 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Thu, 21 Jul 2022 05:51:32 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:750) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
+(node:5345) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:750) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-unhandledRejection:
-TypeError: interactions[0].original.editReply is not a function
-    at /home/runner/chess-elo-discord-bot/util.js:681:41
-    at runMicrotasks (<anonymous>)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-unhandledRejection:
-TypeError: interactions[0].original.editReply is not a function
-    at /home/runner/chess-elo-discord-bot/util.js:681:41
-    at runMicrotasks (<anonymous>)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+(node:5345) DeprecationWarning: isConnected is deprecated and will be removed in the next major version

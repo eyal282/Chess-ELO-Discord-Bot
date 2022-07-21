@@ -421,7 +421,7 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isContextMenuCommand()) return;
 
 	// Uncomment this to find the command ID of the context menu "Profile" to put in config.json
-	//console.log(interaction.commandId)
+	// console.log(interaction.commandId)
 	const command = client.commands.get(interaction.commandName);
 
 	if (!command) return;

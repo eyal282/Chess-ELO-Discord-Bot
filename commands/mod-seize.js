@@ -41,7 +41,7 @@ module.exports =
       let queue = {}
       
       let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
-  
+	  
       if (!isAdmin) {
           jsGay.replyAccessDeniedByInteraction(interaction)
       }

@@ -2,13 +2,10 @@
 > chess-elo-discord-bot@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Thu, 21 Jul 2022 05:58:17 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Thu, 21 Jul 2022 05:58:17 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+Sun, 24 Jul 2022 01:34:03 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Sun, 24 Jul 2022 01:34:03 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:5965) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
+(node:1710) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:5965) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
-[0;32mChess ELO Role has been completely loaded and is ready to use
-Chess ELO Role has been completely loaded and is ready to use
-Chess ELO Role has been completely loaded and is ready to use
+(node:1710) DeprecationWarning: isConnected is deprecated and will be removed in the next major version

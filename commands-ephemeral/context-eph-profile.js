@@ -13,59 +13,56 @@ const fetch = require('node-fetch');
 const jsGay = require('../util.js')
 
 let contextMenu = new ContextMenuCommandBuilder()
-		.setType(ApplicationCommandType.User)
-		.setName('Profile Ephemeral')
-		.setDefaultPermission(true)
+	.setType(ApplicationCommandType.User)
+	.setName('Profile Ephemeral')
+	.setDefaultPermission(true)
 
 
 module.exports =
-{
-	data: contextMenu,
-  async execute(client, interaction, settings, goodies)
-  {  
-      let embed = undefined
-      let row = undefined
-      let attachment = undefined
+	{
+		data: contextMenu,
+		async execute(client, interaction, settings, goodies) {
+			let embed = undefined
+			let row = undefined
+			let attachment = undefined
 
-  	  let trueUser = interaction.user
-      let trueMember = interaction.member
+			let trueUser = interaction.user
+			let trueMember = interaction.member
 
-      let fakeUser = interaction.options.getUser('user');
-      let fakeMember = interaction.options.getMember('user');
-      
-      if(!fakeUser)
-      {
-          fakeUser = trueUser
-      }
+			let fakeUser = interaction.options.getUser('user');
+			let fakeMember = interaction.options.getMember('user');
 
-      if(!fakeMember)
-      {
-          fakeMember = trueMember
-      }
+			if (!fakeUser) {
+				fakeUser = trueUser
+			}
 
-      // We do a little trolling
-      interaction.user = fakeUser
-      interaction.member = fakeMember
+			if (!fakeMember) {
+				fakeMember = trueMember
+			}
 
-	  embed = await jsGay.generateEmbedForProfileByInteraction(interaction)
+			// We do a little trolling
+			interaction.user = fakeUser
+			interaction.member = fakeMember
 
-	  interaction.user = trueUser
-      interaction.member = trueMember
-	  
-      interaction.editReply({ embeds: [embed], failIfNotExists: false})
-  }
-}
+			embed = await jsGay.generateEmbedForProfileByInteraction(interaction)
+
+			interaction.user = trueUser
+			interaction.member = trueMember
+
+			await interaction.editReply({ embeds: [embed], failIfNotExists: false })
+		}
+	}
 
 function splitBy(text, delimiter) {
-    var delimiterPATTERN = "(" + delimiter + ")",
-        delimiterRE = new RegExp(delimiterPATTERN, "g");
+	var delimiterPATTERN = "(" + delimiter + ")",
+		delimiterRE = new RegExp(delimiterPATTERN, "g");
 
-    return text.split(delimiterRE).reduce(function (chunks, item) {
-        if (item.match(delimiterRE)) {
-            chunks[chunks.length - 1] += item;
-        } else {
-            chunks.push(item.trim());
-        }
-        return chunks;
-    }, []);
+	return text.split(delimiterRE).reduce(function(chunks, item) {
+		if (item.match(delimiterRE)) {
+			chunks[chunks.length - 1] += item;
+		} else {
+			chunks.push(item.trim());
+		}
+		return chunks;
+	}, []);
 }

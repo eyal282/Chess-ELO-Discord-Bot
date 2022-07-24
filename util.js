@@ -199,7 +199,7 @@ async function generateEmbedForProfileByInteraction(interaction)
 			if (result.perfs.classical)
 			classicalRating = emptyStr.concat(areBitsContained(timeControlsBitwise, Constant_ClassicalBitwise) ? "" : ":x:", result.perfs.classical.rating.toString(), (result.perfs.classical.prov == undefined ? "" : "(?)"))
 
-			if (result.perfs.puzzle && result.perfs.puzzle.prov == undefined)
+			if (result.perfs.puzzle)
 			puzzleRating = emptyStr.concat(result.perfs.puzzle.rating.toString(), (result.perfs.puzzle.prov == undefined ? "" : "(?)"))
 		}
 			// Username

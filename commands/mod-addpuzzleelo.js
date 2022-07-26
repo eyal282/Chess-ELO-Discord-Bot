@@ -13,106 +13,103 @@ const fetch = require('node-fetch');
 const jsGay = require('../util.js')
 
 let slashCommand = new SlashCommandBuilder()
-		.setName('addpuzzleelo')
-		.setDescription(`Adds as many elo <---> role pairs as you want to the bot for puzzles.`)
+	.setName('addpuzzleelo')
+	.setDescription(`Adds as many elo <---> role pairs as you want to the bot for puzzles.`)
 
-    .addStringOption((option) =>
-      option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addpuzzleelo -1 @Unrated 0 @0~600 600 @600~800').setRequired(true))
+	.addStringOption((option) =>
+		option.setName('arguments').setDescription('Pairs of elo and roles. Example: /addpuzzleelo -1 @Unrated 0 @0~600 600 @600~800').setRequired(true))
 
 
 module.exports =
-{
-	data: slashCommand,
-  async execute(client, interaction, settings, goodies)
-  {  
-      let embed = undefined
-      let row = undefined
-      let attachment = undefined
-      
-      let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
-      
-      let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await jsGay.getCriticalData(interaction)
-      
-      let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
-	  
-	  ratingRoles = obj.ratingRoles
-	  puzzleRatingRoles = obj.puzzleRatingRoles
-	  titleRoles = obj.titleRoles
-	  let guildRoles = obj.guildRoles
-	  verifyRole = obj.verifyRole
-	  titledRole = obj.titledRole
+	{
+		data: slashCommand,
+		async execute(client, interaction, settings, goodies) {
+			let embed = undefined
+			let row = undefined
+			let attachment = undefined
 
-      let queue = {}
-      
-      let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
-  
-      if (!isAdmin) {
-          jsGay.replyAccessDeniedByInteraction(interaction)
-      }
-      else if (args.length == 0 || args.length % 2 != 0) {
-          embed = new EmbedBuilder()
-                  .setColor(0x0099ff)
-                  .setDescription(`/addpuzzleelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
-      }
-      else
-      {
-        let msgToSend = ""
+			let args = interaction.options.getString('arguments').replace(/`/g, "").trim().split(/ +/g)
 
-        for (let i = 0; i < (args.length / 2); i++)
-        {
-            let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
+			let [ratingRoles, puzzleRatingRoles, titleRoles, lichessRatingEquation, chessComRatingEquation, modRoles, timestamp, lichessAccount, chessComAccount, lichessAccountData, chessComAccountData, verifyRole, titledRole, timeControlsBitwise] = await jsGay.getCriticalData(interaction)
 
-            let result = 'Could not find role'
+			let obj = await jsGay.wipeDeletedRolesFromDB(interaction, ratingRoles, puzzleRatingRoles, titleRoles, verifyRole, titledRole)
 
-            if(role)
-            {
-                result = jsGay.addPuzzleEloCommand(interaction, puzzleRatingRoles, role, args[2 * i + 0], guildRoles)
-            }
+			ratingRoles = obj.ratingRoles
+			puzzleRatingRoles = obj.puzzleRatingRoles
+			titleRoles = obj.titleRoles
+			let guildRoles = obj.guildRoles
+			verifyRole = obj.verifyRole
+			titledRole = obj.titledRole
 
-            if(result == undefined)
-              result = "This role was already added to the bot!"
+			let queue = {}
 
-            else if(result == -1)
-              result = "This role is above the bot's highest role!"
-              
-            else if(result != 'Could not find role')
-            {
-              puzzleRatingRoles.push(result)            
-              result = "Success."
-            }
+			let isAdmin = await jsGay.isBotControlAdminByInteraction(interaction, modRoles)
 
-            msgToSend = `${msgToSend} ${i+1}. ${result}\n`
+			if (!isAdmin) {
+				jsGay.replyAccessDeniedByInteraction(interaction)
+			}
+			else if (args.length == 0 || args.length % 2 != 0) {
+				embed = new EmbedBuilder()
+					.setColor(0x0099ff)
+					.setDescription(`/addpuzzleelo [elo] [@role] (elo2) (@role2) (elo3) (@role3) ... ...`)
+			}
+			else {
+				let msgToSend = ""
 
-        }
+				for (let i = 0; i < (args.length / 2); i++) {
+					let role = jsGay.getRoleFromMentionString(interaction.guild, args[2 * i + 1])
 
-        embed = new EmbedBuilder(({description: msgToSend}))
-            .setColor(0x0099ff)
-      }
+					let result = 'Could not find role'
 
-      queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
-      queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
-      queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
-      queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+					if (role) {
+						result = jsGay.addPuzzleEloCommand(interaction, puzzleRatingRoles, role, args[2 * i + 0], guildRoles)
+					}
 
-      await settings.setMany(queue, true)
+					if (result == undefined)
+						result = "This role was already added to the bot!"
 
-      if(embed)
-      {
-        await interaction.editReply({embeds: [embed], failIfNotExists: false});
-      }
-  }
-}
+					else if (result == -1)
+						result = "This role is above the bot's highest role!"
+
+					else if (result == -2)
+						result = "The minimum ELO to gain the role must be a whole number."
+
+					else if (result != 'Could not find role') {
+						puzzleRatingRoles.push(result)
+						result = "Success."
+					}
+
+					msgToSend = `${msgToSend} ${i + 1}. ${result}\n`
+
+				}
+
+				embed = new EmbedBuilder(({ description: msgToSend }))
+					.setColor(0x0099ff)
+			}
+
+			queue[`guild-elo-roles-${interaction.guild.id}`] = ratingRoles
+			queue[`guild-puzzle-elo-roles-${interaction.guild.id}`] = puzzleRatingRoles
+			queue[`guild-title-roles-${interaction.guild.id}`] = titleRoles
+			queue[`guild-bot-mods-${interaction.guild.id}`] = modRoles
+
+			await settings.setMany(queue, true)
+
+			if (embed) {
+				await interaction.editReply({ embeds: [embed], failIfNotExists: false });
+			}
+		}
+	}
 
 function splitBy(text, delimiter) {
-    var delimiterPATTERN = "(" + delimiter + ")",
-        delimiterRE = new RegExp(delimiterPATTERN, "g");
+	var delimiterPATTERN = "(" + delimiter + ")",
+		delimiterRE = new RegExp(delimiterPATTERN, "g");
 
-    return text.split(delimiterRE).reduce(function (chunks, item) {
-        if (item.match(delimiterRE)) {
-            chunks[chunks.length - 1] += item;
-        } else {
-            chunks.push(item.trim());
-        }
-        return chunks;
-    }, []);
+	return text.split(delimiterRE).reduce(function(chunks, item) {
+		if (item.match(delimiterRE)) {
+			chunks[chunks.length - 1] += item;
+		} else {
+			chunks.push(item.trim());
+		}
+		return chunks;
+	}, []);
 }

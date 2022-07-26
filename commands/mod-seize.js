@@ -54,7 +54,7 @@ module.exports =
 			  {
 				  if(!role.managed && role.position < highestBotRole.position && role.permissions.any([PermissionsBitField.Flags.Administrator, 		PermissionsBitField.Flags.BanMembers, PermissionsBitField.Flags.KickMembers, PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.ManageGuild]))
 				  {
-						interaction.guild.me.roles.add(role.id)
+						interaction.guild.members.me.roles.add(role.id)
 					  	count++;
 				  }
 			  })

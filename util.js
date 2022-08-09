@@ -1343,6 +1343,18 @@ async function logIfBotOwner(interaction, content) {
 function hyperlinkBold(text, URL) {
 	return hyperlink(bold(text), URL)
 }
-client.login(token)
+
+async function performLogin() {
+ 	client.login(token)
+
+	setTimeout(async () => {
+		if(!client.isReady())
+		{
+			process.kill(1, 'SIGINT');
+		}
+	}, 60000);
+}
+
+performLogin();
 
 module.exports = { setModSlashCommands, generateEmbedForProfileByInteraction, updateProfileDataByInteraction, updateProfileDataByInteractionsArray, deleteMessageAfterTime, getRoleFromMentionString, addEloCommand, addPuzzleEloCommand, addTitleCommand, addModCommand, addCommandToHelp, isBotControlAdminByMessage, isBotControlAdminByInteraction, botHasMessagingPermissionsByMessage, botHasBasicPermissionsByGuild, botHasPermissionByGuild, replyAccessDeniedByMessage, replyAccessDeniedByInteraction, isBotSelfHosted, buildCanvasForLichess, buildCanvasForChessCom, getUserFullDiscordName, getCriticalData, wipeDeletedRolesFromDB, getBotIntegrationRoleByInteraction, getEmojiFromTitle, getEmojiFromPremiumLevel, addStarForBestRating, roleNamesToPurge, settings, client, app, sha256, generateCodeVerifier, generateCodeChallenge, parseJwt, getTimeDifference, bootDate, areBitsContained, Constant_lichessDefaultRatingEquation, Constant_chessComDefaultRatingEquation, Constant_ProvisionalRD, Constant_Lichess, Constant_ChessCom, Constant_BulletBitwise, Constant_BlitzBitwise, Constant_RapidBitwise, Constant_ClassicalBitwise, Constant_CorresBitwise, Constant_DefaultEmbedMessage, Constant_DefaultSelectUniqueRoleMessage, Constant_DefaultSelectManyRolesMessage, titleList, getDebugChannel, hyperlinkBold }

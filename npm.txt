@@ -2,34 +2,14 @@
 > chess-elo-discord-bot@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-Tue, 26 Jul 2022 13:39:44 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Tue, 26 Jul 2022 13:39:44 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+v16.16.0
+Tue, 09 Aug 2022 17:40:42 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
+Tue, 09 Aug 2022 17:40:42 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:1963) ExperimentalWarning: stream/web is an experimental feature. This feature could change at any time
-(Use `node --trace-warnings ...` to show where the warning was created)
-[WS => Manager] Fetched Gateway Information
-    URL: wss://gateway.discord.gg
-    Recommended Shards: 1
-[WS => Manager] Session Limit Information
-    Total: 1000
-    Remaining: 997
-[WS => Manager] Spawning shards: 0
-[WS => Shard 0] [CONNECT]
-    Gateway    : wss://gateway.discord.gg/
-    Version    : 10
-    Encoding   : json
-    Compression: none
-[WS => Shard 0] Setting a HELLO timeout for 20s.
-[WS => Shard 0] [CONNECTED] Took 863ms
-[WS => Shard 0] Clearing the HELLO timeout.
-[WS => Shard 0] Setting a heartbeat interval for 41250ms.
-[WS => Shard 0] [IDENTIFY] Shard 0/1 with intents: 4611
-[WS => Shard 0] [READY] Session 6691ef9e3f8cd4be3de8c3ceac3413b3.
-[WS => Shard 0] [ReadyHeartbeat] Sending a heartbeat.
-[WS => Shard 0] Shard received all its guilds. Marking as fully ready.
-[WS => Shard 0] Heartbeat acknowledged, latency of 2861ms.
+the client left a guild: 1004919883387121664 ---> undefined
+(node:89) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(Use `node --trace-deprecation ...` to show where the warning was created)
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-(node:1963) DeprecationWarning: isConnected is deprecated and will be removed in the next major version

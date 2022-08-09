@@ -1,5 +1,6 @@
 // Critical Note: Changing the project or author names ( changing the team's name or forking the project ) demands you update your URL in Uptime Robot, as it changes as well.
 
+console.log(process.version)
 let isFullyLoaded = false;
 const debugMode = false
 
@@ -341,22 +342,6 @@ function deployGlobalSlashCommands() {
 		.then(() => console.log('Successfully registered global application commands.'))
 		.catch(console.error);
 }
-
-client.rest.on('request', function(info) {
-	console.log("a")
-	console.log(info)
-});
-client.on("debug", function(info) {
-	const regex = /Limit +: +(.+)/;
-	const found = info.match(regex);
-	console.log(info)
-	if (found && found[1] == Infinity) {
-		// Cannot send messages, await will be done forever.
-		//await jsGay.getDebugChannel().send("IP Banned. Killing process...");
-
-		process.kill(1, 'SIGINT');
-	}
-});
 
 process.on('uncaughtException', async error => {
 	console.log("uncaughtException:")

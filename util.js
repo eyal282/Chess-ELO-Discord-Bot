@@ -1348,6 +1348,7 @@ async function performLogin() {
  	client.login(token)
 
 	setTimeout(async () => {
+		console.log(client.isReady())
 		if(!client.isReady())
 		{
 			process.kill(1, 'SIGINT');

@@ -11,7 +11,7 @@ const { clientId, guildId, chessComClientId, chessComEndOfWebsite, lichessEndOfW
 const token = process.env["SECRET_BOT_TOKEN"]
 const mongoPassword = process.env["SECRET_MONGO_PASSWORD"]
 
-const Discord = require('discord.js');
+const { Discord, ActivityType } = require('discord.js');
 const { Collection } = require('discord.js');
 const Canvas = require('canvas');
 const { EmbedBuilder, MessageAttachment } = require('discord.js');
@@ -98,10 +98,14 @@ passport.use("lichess-strategy", new CustomStrategy(
 
 		let guild = await jsGay.client.guilds.cache.get(guildID);
 
-		let member = await guild.members.fetch(userID)
-
-		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
-
+		let member;
+		let webhook;
+		if(guild)
+		{
+			member = await guild.members.fetch(userID)
+	
+			webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
+		}
 
 		if (state != lastState) {
 			console.log(`Stop by state for ${userID}`)
@@ -144,17 +148,20 @@ passport.use("lichess-strategy", new CustomStrategy(
 
 			await settings.set(`lichess-account-of-${userID}`, result.id)
 
-			let fakeInteraction = {}
-
-			fakeInteraction.guild = member.guild
-			fakeInteraction.user = member.user
-			fakeInteraction.member = member
-
-			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
-			embed = new EmbedBuilder({ description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})` })
+			if(guild)
+			{
+				let fakeInteraction = {}
+	
+				fakeInteraction.guild = member.guild
+				fakeInteraction.user = member.user
+				fakeInteraction.member = member
+	
+				await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
+				embed = new EmbedBuilder({ description: `Successfully linked your [Lichess Profile](https://lichess.org/@/${result.id})` })
 				.setColor(0x0099ff)
 
-			webhook.editMessage('@original', { embeds: [embed] }).catch(() => null)
+				webhook.editMessage('@original', { embeds: [embed] }).catch(() => null)
+			}
 
 			console.log(`Lichess account ${result.id} was linked to ${userID}`)
 			done(null, "Success");
@@ -189,9 +196,15 @@ passport.use("chesscom-strategy", new CustomStrategy(
 
 		let guild = await jsGay.client.guilds.cache.get(guildID);
 
-		let member = await guild.members.fetch(userID)
+		let member;
+		let webhook;
+		
+		if(guild)
+		{
+			member = await guild.members.fetch(userID)
 
-		let webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
+			webhook = new InteractionWebhook(jsGay.client, jsGay.client.application.id, token)
+		}
 
 		if (state != lastState)
 			return;
@@ -217,17 +230,20 @@ passport.use("chesscom-strategy", new CustomStrategy(
 
 			await settings.set(`chesscom-account-of-${userID}`, userName)
 
-			let fakeInteraction = {}
-
-			fakeInteraction.guild = member.guild
-			fakeInteraction.user = member.user
-			fakeInteraction.member = member
-
-			await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
-
-			embed = new EmbedBuilder({ color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})` })
-
-			webhook.editMessage('@original', { embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+			if(guild)
+			{
+				let fakeInteraction = {}
+	
+				fakeInteraction.guild = member.guild
+				fakeInteraction.user = member.user
+				fakeInteraction.member = member
+	
+				await jsGay.updateProfileDataByInteraction(fakeInteraction, false)
+	
+				embed = new EmbedBuilder({ color: 0x0099ff, description: `Successfully linked your [Chess.com Profile](https://chess.com/member/${userName})` })
+	
+				webhook.editMessage('@original', { embeds: [embed], failIfNotExists: false, ephemeral: true }).catch(() => null)
+			}
 
 			console.log(`CC account ${userName} was linked to ${userID}`)
 
@@ -240,7 +256,7 @@ passport.use("chesscom-strategy", new CustomStrategy(
 
 client.on('ready', async () => {
 
-	await client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
+	await client.user.setPresence({   activities: [{ name: ` ${client.guilds.cache.size} servers`, type: ActivityType.Watching }],   status: 'online', });
 
 	console.log("\033[0;32mChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use\nChess ELO Role has been completely loaded and is ready to use");
 
@@ -458,7 +474,7 @@ guild        Guild        The created guild    */
 client.on("guildCreate", async function(guild) {
 	console.log(`the client joins a guild: ${guild.id} ---> ${guild.name}`);
 
-	client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
+	client.user.setPresence({   activities: [{ name: ` ${client.guilds.cache.size} servers`, type: ActivityType.Watching }],   status: 'online', });
 
 	if (!jsGay.botHasBasicPermissionsByGuild(guild)) {
 		let targetMember = await guild.fetchOwner().catch(() => null)
@@ -488,8 +504,8 @@ PARAMETER    TYPE         DESCRIPTION
 guild        Guild        The guild that was deleted    */
 client.on("guildDelete", function(guild) {
 	console.log(`the client left a guild: ${guild.id} ---> ${guild.name}`);
-
-	client.user.setActivity(` ${client.guilds.cache.size} servers`, { type: `WATCHING` });
+	
+	client.user.setPresence({   activities: [{ name: ` ${client.guilds.cache.size} servers`, type: ActivityType.Watching }],   status: 'online', });
 });
 
 

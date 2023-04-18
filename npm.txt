@@ -2,33 +2,14 @@
 > chess-elo-discord-bot@1.0.0 start /home/runner/chess-elo-discord-bot
 > node index.js
 
-v16.16.0
-Tue, 06 Sep 2022 16:52:00 GMT express-session deprecated undefined resave option; provide resave option at util.js:20:9
-Tue, 06 Sep 2022 16:52:00 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:20:9
+v16.18.1
+Tue, 29 Nov 2022 20:28:39 GMT express-session deprecated undefined resave option; provide resave option at util.js:31:9
+Tue, 29 Nov 2022 20:28:39 GMT express-session deprecated undefined saveUninitialized option; provide saveUninitialized option at util.js:31:9
 Fontconfig error: Cannot load default config file
 Example app listening at http://localhost:3000
-(node:101) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
-(Use `node --trace-deprecation ...` to show where the warning was created)
 [0;32mChess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
 Chess ELO Role has been completely loaded and is ready to use
-a
+(node:2201) DeprecationWarning: isConnected is deprecated and will be removed in the next major version
+(Use `node --trace-deprecation ...` to show where the warning was created)
 true
-unhandledRejection:
-ReferenceError: member is not defined
-    at Strategy._verify (/home/runner/chess-elo-discord-bot/index.js:233:29)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-unhandledRejection:
-ReferenceError: member is not defined
-    at Strategy._verify (/home/runner/chess-elo-discord-bot/index.js:233:29)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-unhandledRejection:
-ReferenceError: member is not defined
-    at Strategy._verify (/home/runner/chess-elo-discord-bot/index.js:233:29)
-    at runMicrotasks (<anonymous>)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)
-unhandledRejection:
-ReferenceError: member is not defined
-    at Strategy._verify (/home/runner/chess-elo-discord-bot/index.js:233:29)
-    at runMicrotasks (<anonymous>)
-    at processTicksAndRejections (node:internal/process/task_queues:96:5)

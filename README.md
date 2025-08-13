@@ -29,4 +29,4 @@ View how to setup and use the bot here [Here](https://www.youtube.com/watch?v=S0
 
 
 # Invite Link:
-https://discord.boats/bot/886616669093503047
+https://discord.com/oauth2/authorize?client_id=886616669093503047&permissions=543783509185&scope=bot+applications.commands
